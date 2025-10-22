@@ -7,15 +7,24 @@ A modern cryptocurrency payment platform with a RESTful API backend and React fr
 ```
 CoinPay/
 ├── CoinPay.Api/          # .NET Core Minimal API Backend
-│   └── CoinPay.Api/      # API Project
-│       ├── Models/       # Data models
-│       ├── Data/         # Database context
-│       └── Program.cs    # API endpoints and configuration
-└── CoinPay.Web/          # React Frontend Application
-    └── src/              # React source files
+│   ├── Models/           # Data models
+│   ├── Data/             # Database context
+│   └── Program.cs        # API endpoints and configuration
+├── CoinPay.Gateway/      # YARP API Gateway
+│   ├── Program.cs        # Gateway configuration
+│   └── appsettings.json  # Route configuration
+├── CoinPay.Web/          # React Frontend Application
+│   └── src/              # React source files
+└── docfx/                # API Documentation
+    └── _site/            # Generated documentation site
 ```
 
 ## Technologies Used
+
+### Gateway (CoinPay.Gateway)
+- **.NET 9.0** - Latest .NET framework
+- **YARP** - Yet Another Reverse Proxy for routing
+- **CORS** - Cross-Origin Resource Sharing enabled
 
 ### Backend (CoinPay.Api)
 - **.NET 9.0** - Latest .NET framework
@@ -30,62 +39,68 @@ CoinPay/
 - **Vite** - Fast build tool and dev server
 - **Tailwind CSS** - Utility-first CSS framework
 
+### Documentation
+- **DocFX** - Static documentation site generator
+
 ## Getting Started
 
 ### Prerequisites
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Node.js](https://nodejs.org/) (v18 or higher)
+- [DocFX](https://dotnet.github.io/docfx/) (for documentation)
 - Git
 
-### Backend Setup
+### Quick Start (Using Gateway - Recommended)
 
-1. Navigate to the API directory:
-```bash
-cd CoinPay.Api/CoinPay.Api
-```
+The gateway provides a single entry point for all services.
 
-2. Restore dependencies:
+1. **Start the API** (Terminal 1):
 ```bash
-dotnet restore
-```
-
-3. Build the project:
-```bash
-dotnet build
-```
-
-4. Run the API:
-```bash
+cd CoinPay.Api
 dotnet run --launch-profile http
 ```
+API runs on: **http://localhost:7777**
 
-The API will start on **http://localhost:7777**
+2. **Start DocFX** (Terminal 2):
+```bash
+cd docfx
+docfx serve _site --port 8080
+```
+Docs run on: **http://localhost:8080**
 
-5. Access Swagger Documentation:
-Open your browser and navigate to: **http://localhost:7777/swagger**
+3. **Start the Gateway** (Terminal 3):
+```bash
+cd CoinPay.Gateway
+dotnet run --launch-profile http
+```
+Gateway runs on: **http://localhost:5000**
 
-### Frontend Setup
-
-1. Navigate to the Web directory:
+4. **Start the Frontend** (Terminal 4):
 ```bash
 cd CoinPay.Web
-```
-
-2. Install dependencies:
-```bash
 npm install
-```
-
-3. Start the development server:
-```bash
 npm run dev
 ```
+Frontend runs on: **http://localhost:3000**
 
-The web application will typically start on **http://localhost:5173**
+### Access URLs (Through Gateway)
+
+Once all services are running, access everything through the gateway:
+
+- **Frontend Application**: http://localhost:3000
+- **API Endpoints**: http://localhost:5000/api/transactions
+- **Swagger UI**: http://localhost:5000/swagger/
+- **API Documentation**: http://localhost:5000/docs/
+- **Gateway Info**: http://localhost:5000/
 
 ## API Documentation
 
-### Base URL
+### Base URL (via Gateway)
+```
+http://localhost:5000/api
+```
+
+### Direct API URL (for development)
 ```
 http://localhost:7777/api
 ```
