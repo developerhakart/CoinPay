@@ -63,3 +63,9 @@ Desktop.ini
 coverage/
 *.coverage
 .nyc_output/
+
+# DocFX
+docfx/_site/
+docfx/api/
+docfx/obj/
+*.xml
