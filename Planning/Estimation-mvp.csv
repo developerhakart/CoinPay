@@ -1,0 +1,195 @@
+Epic,Story,Stream,Task Description,O (days),M (days),P (days),Expected,Notes/Assumptions
+Project Setup & Infrastructure,Initial Project Structure,Backend,Create ASP.NET Core Web API project with clean architecture structure,0.25,0.5,1,0.54,Layers: API Application Domain Infrastructure
+Project Setup & Infrastructure,Development Environment,Backend,Configure local development environment Docker Compose for PostgreSQL,0.25,0.5,1,0.54,Includes .env configuration
+Project Setup & Infrastructure,Database Setup,Backend,PostgreSQL database setup connection pooling initial migration infrastructure,0.5,1,2,1.08,Using EF Core Code-First
+Project Setup & Infrastructure,Hashicorp Vault Integration,Backend,Configure Hashicorp Vault for secrets management setup SDK connection management,1,2,3,2.00,Store API keys encryption keys
+Project Setup & Infrastructure,Logging Infrastructure,Backend,Setup structured logging with Serilog correlation IDs log levels,0.5,1,1.5,1.00,JSON output to console/file
+Project Setup & Infrastructure,Health Checks,Backend,Implement health check endpoints for DB Vault external APIs,0.5,1,1.5,1.00,/health /health/ready
+Project Setup & Infrastructure,CORS Configuration,Backend,Configure CORS policies for frontend communication,0.25,0.5,1,0.54,Development and production policies
+Project Setup & Infrastructure,API Gateway Setup,Backend,Configure YARP gateway routing rules load balancing,1,2,3,2.00,Based on existing gateway
+Project Setup & Infrastructure,Exception Handling Middleware,Backend,Global exception handler error response standardization,0.5,1,2,1.08,Consistent error format
+Project Setup & Infrastructure,Initial React Project Setup,Frontend,Configure Vite/Create React App with TypeScript,0.25,0.5,1,0.54,Includes ESLint Prettier path aliases
+Project Setup & Infrastructure,Install Dependencies,Frontend,Install and configure dependencies (React viem Circle SDK),0.25,0.5,1,0.54,Package.json setup version management
+Project Setup & Infrastructure,Environment Configuration,Frontend,Setup environment configuration (.env files validation),0.25,0.5,0.75,0.50,CLIENT_KEY CLIENT_URL API endpoints
+Project Setup & Infrastructure,Build Pipeline,Frontend,Configure build pipeline and dev server,0.25,0.5,1,0.54,Dev/prod builds HMR configuration
+Project Setup & Infrastructure,State Management Setup,Frontend,Setup React Context API for wallet state,0.5,1,1.5,1.00,WalletContext UserContext
+Project Setup & Infrastructure,Custom Hooks,Frontend,Create custom hooks for SDK interactions,0.5,1,2,1.08,useCircleWallet useTransaction usePasskey
+Project Setup & Infrastructure,State Persistence,Frontend,Setup state persistence (localStorage/sessionStorage),0.5,0.75,1.5,0.88,Persist auth state wallet address
+Project Setup & Infrastructure,Routing & Navigation,Frontend,Configure React Router for SPA navigation,0.5,0.75,1,0.75,Protected routes auth guards
+Project Setup & Infrastructure,Navigation Component,Frontend,Create navigation component with routing structure,0.5,1,1.5,1.00,Sidebar/navbar with active states
+Project Setup & Infrastructure,CSS Framework Setup,Frontend,Setup CSS framework (Tailwind/MUI/custom),0.5,1,2,1.08,Based on project preference theme configuration
+Project Setup & Infrastructure,Design Tokens,Frontend,Create design tokens (colors typography spacing),0.5,0.75,1,0.75,Theme variables CSS custom properties
+Project Setup & Infrastructure,Button Component,Frontend,Build reusable Button component with variants,0.25,0.5,0.75,0.50,Primary secondary disabled states
+Project Setup & Infrastructure,Input Component,Frontend,Build Input component with validation states,0.5,0.75,1,0.75,Text number error/success states
+Project Setup & Infrastructure,Card Component,Frontend,Build Card component for content containers,0.25,0.5,0.75,0.50,Shadow border padding variants
+Project Setup & Infrastructure,Modal Component,Frontend,Build Modal/Dialog component,0.5,1,1.5,1.00,Overlay close handlers accessibility
+Project Setup & Infrastructure,Toast Component,Frontend,Build Toast/Notification component,0.5,0.75,1.5,0.88,Success error info variants auto-dismiss
+Project Setup & Infrastructure,Loading Components,Frontend,Build Loading/Spinner components,0.25,0.5,0.75,0.50,Full-page inline skeleton loaders
+Project Setup & Infrastructure,Error Boundary Setup,Frontend,Create global error boundary component,0.5,0.75,1,0.75,Catch React errors fallback UI
+Project Setup & Infrastructure,Error Logging,Frontend,Implement error logging and reporting,0.5,0.75,1.5,0.88,Console logging error tracking setup
+Project Setup & Infrastructure,Test Environment Setup,QA,Configure test environments (Polygon Amoy testnet backend API frontend),1,1.5,3,1.67,Requires coordination with DevOps/BE for env configs
+Project Setup & Infrastructure,Test Data Management,QA,Create test data generation scripts for wallets transactions users,0.5,1,2,1.08,Includes test USDC funding on Amoy
+Project Setup & Infrastructure,CI/CD Integration,QA,Integrate Playwright Cypress and K6 into CI/CD pipeline,1,2,3,2.00,Assumes GitHub Actions/Azure DevOps
+Project Setup & Infrastructure,Test Reporting Setup,QA,Configure test reporting dashboards (Allure/ReportPortal),0.5,1,1.5,1.00,Optional but recommended
+Project Setup & Infrastructure,Mock Services Setup,QA,Setup mocks for WhiteBit API fiat gateway for isolated testing,1,1.5,2.5,1.58,Enables testing without external dependencies
+Project Setup & Infrastructure,GENERAL (sum),Backend+Frontend+QA,Project Setup & Infrastructure - Total,19.5,34.25,56.5,35.20,Combined effort across all streams
+Database Schema Design,User & Authentication Schema,Backend,Design Users table passkey credentials storage,0.5,1,2,1.08,Links to WebAuthn credential IDs
+Database Schema Design,Wallet Account Schema,Backend,Design WalletAccount table with address chain ID timestamps,0.25,0.5,1,0.54,One-to-one with User initially
+Database Schema Design,Transaction Schema,Backend,Design TransactionRecord table for USDC transfers,0.5,1,1.5,1.00,Includes userOpHash status tracking
+Database Schema Design,Bank Account Schema,Backend,Design BankAccount table with encrypted fields,0.5,1,2,1.08,Encryption at application layer
+Database Schema Design,Fiat Payout Schema,Backend,Design FiatPayoutTransaction table,0.5,1,1.5,1.00,Links to bank accounts and wallets
+Database Schema Design,Exchange Connection Schema,Backend,Design ExchangeConnection table with encrypted API credentials,0.5,1,1.5,1.00,Support for WhiteBit
+Database Schema Design,Investment Position Schema,Backend,Design InvestmentPosition table for tracking yield positions,0.5,1,2,1.08,Principal rewards APY tracking
+Database Schema Design,Database Indexes & Constraints,Backend,Create indexes for common queries foreign keys unique constraints,0.5,1,1.5,1.00,Performance optimization
+Database Schema Design,Initial Migration Scripts,Backend,Create EF Core migrations for all tables,0.5,1,2,1.08,Seed data for dev environment
+Database Schema Design,Data Encryption Service,Backend,Implement field-level encryption service for sensitive data,1,2,3,2.00,AES-256 key rotation support
+Database Schema Design,GENERAL (sum),Backend,Database Schema Design - Total,4.75,9.5,16,9.83,Backend-only epic
+Phase 1: Core Wallet Foundation,Circle SDK Configuration,Backend,Configure Circle Modular Wallets SDK in .NET backend,1,2,3,2.00,HTTP client wrapper retry policies
+Phase 1: Core Wallet Foundation,Environment Configuration Service,Backend,Load and validate Circle client keys from Vault,0.5,1,1.5,1.00,Configuration validation on startup
+Phase 1: Core Wallet Foundation,Passkey Registration API,Backend,POST /api/auth/register - initiate passkey registration,1,2,3,2.00,WebAuthn challenge generation
+Phase 1: Core Wallet Foundation,Passkey Verification API,Backend,POST /api/auth/verify - verify passkey credential,1,2,4,2.17,WebAuthn assertion validation
+Phase 1: Core Wallet Foundation,Session Management,Backend,JWT token generation refresh tokens session storage,1,2,3,2.00,Redis for session state optional
+Phase 1: Core Wallet Foundation,Smart Account Creation API,Backend,POST /api/wallet/create - create Circle smart account,1.5,3,5,3.08,Circle API integration
+Phase 1: Core Wallet Foundation,Wallet Repository,Backend,Data access layer for wallet CRUD operations,0.5,1,2,1.08,EF Core repository pattern
+Phase 1: Core Wallet Foundation,Get Wallet Balance API,Backend,GET /api/wallet/{address}/balance - fetch USDC balance,1,2,3,2.00,Polygon RPC integration
+Phase 1: Core Wallet Foundation,USDC Transfer API,Backend,POST /api/transactions/transfer - send gasless USDC,2,4,6,4.00,UserOperation construction paymaster
+Phase 1: Core Wallet Foundation,Transaction Status Tracking,Backend,GET /api/transactions/{id}/status - poll transaction status,1,2,3,2.00,Receipt polling status updates
+Phase 1: Core Wallet Foundation,Transaction Repository,Backend,Data access for transaction records,0.5,1,1.5,1.00,Transaction history storage
+Phase 1: Core Wallet Foundation,Blockchain RPC Service,Backend,Service for interacting with Polygon Amoy testnet,1,2,4,2.17,Viem/Web3 .NET integration
+Phase 1: Core Wallet Foundation,UserOperation Service,Backend,Service to construct and submit UserOperations,2,3,5,3.17,ERC-4337 bundler integration
+Phase 1: Core Wallet Foundation,Paymaster Integration,Backend,Configure Circle paymaster for gas sponsorship,1,2,4,2.17,Paymaster API calls
+Phase 1: Core Wallet Foundation,Wallet Creation Landing,Frontend,Create wallet creation landing page,0.5,1,1.5,1.00,Hero section CTA feature highlights
+Phase 1: Core Wallet Foundation,Username Input Form,Frontend,Build username input form with validation,0.5,0.75,1,0.75,Regex validation error messages
+Phase 1: Core Wallet Foundation,WebAuthn Integration,Frontend,Integrate WebAuthn passkey creation API,1,2,3,2.00,Circle SDK integration browser compatibility
+Phase 1: Core Wallet Foundation,Passkey Success/Failure,Frontend,Handle passkey registration success/failure states,0.5,1,1.5,1.00,Success redirect error handling
+Phase 1: Core Wallet Foundation,Passkey Instructions UI,Frontend,Build passkey setup instructions UI,0.5,0.75,1,0.75,Multi-device setup guide security tips
+Phase 1: Core Wallet Foundation,Loading States,Frontend,Add loading states during passkey creation,0.25,0.5,0.75,0.50,Progress indicators UX feedback
+Phase 1: Core Wallet Foundation,Login Page,Frontend,Create login page with passkey authentication,0.5,1,1.5,1.00,Passkey prompt fallback options
+Phase 1: Core Wallet Foundation,Passkey Authentication,Frontend,Integrate WebAuthn passkey authentication,1,1.5,2.5,1.58,Circle SDK login credential verification
+Phase 1: Core Wallet Foundation,Session Setup,Frontend,Handle authentication success and session setup,0.5,1,1.5,1.00,Store auth token redirect to dashboard
+Phase 1: Core Wallet Foundation,Auth Error Handling,Frontend,Build authentication error handling,0.5,0.75,1.5,0.88,Invalid passkey timeout cancel scenarios
+Phase 1: Core Wallet Foundation,Remember Device,Frontend,Implement Remember this device functionality,0.5,1,2,1.08,localStorage session persistence
+Phase 1: Core Wallet Foundation,Dashboard Layout,Frontend,Build dashboard layout with navigation,0.5,1,1.5,1.00,Sidebar header main content area
+Phase 1: Core Wallet Foundation,Address Display,Frontend,Create wallet address display component,0.5,0.75,1,0.75,Copy to clipboard QR code truncation
+Phase 1: Core Wallet Foundation,Balance Display,Frontend,Build USDC balance display with formatting,0.5,0.75,1.5,0.88,Decimal handling (6 decimals) USD equivalent
+Phase 1: Core Wallet Foundation,Balance Refresh,Frontend,Add balance refresh functionality,0.5,0.75,1,0.75,Manual refresh button auto-refresh timer
+Phase 1: Core Wallet Foundation,Connection Status,Frontend,Implement wallet connection status indicator,0.25,0.5,0.75,0.50,Connected/disconnected states
+Phase 1: Core Wallet Foundation,Recipient Input,Frontend,Build recipient address input with validation,0.5,1,1.5,1.00,Address format validation ENS support planning
+Phase 1: Core Wallet Foundation,Amount Input,Frontend,Create amount input with max balance button,0.5,0.75,1,0.75,Numeric validation insufficient balance check
+Phase 1: Core Wallet Foundation,Transaction Preview,Frontend,Display transaction preview before submission,0.5,0.75,1.5,0.88,Recipient amount fees (gas-free highlight)
+Phase 1: Core Wallet Foundation,Send UserOperation,Frontend,Integrate Circle SDK sendUserOperation,1,2,3,2.00,UserOperation construction paymaster integration
+Phase 1: Core Wallet Foundation,Passkey Signature,Frontend,Handle passkey signature request flow,0.5,1,1.5,1.00,Trigger WebAuthn handle user denial
+Phase 1: Core Wallet Foundation,Submission Loading,Frontend,Build transaction submission loading state,0.5,0.75,1,0.75,Progress bar estimated time display
+Phase 1: Core Wallet Foundation,Success/Failure Notifications,Frontend,Implement transaction success/failure notifications,0.5,0.75,1.5,0.88,Toast messages transaction hash display
+Phase 1: Core Wallet Foundation,Form Validation,Frontend,Add form validation and error messages,0.5,0.75,1,0.75,Required fields format validation
+Phase 1: Core Wallet Foundation,Passkey Registration Testing,QA,Manual testing of passkey registration flow across browsers,1,1.5,2,1.50,Cross-browser compatibility critical
+Phase 1: Core Wallet Foundation,Passkey Registration Automation,QA,Playwright tests for passkey registration (WebAuthn simulation),1.5,2.5,4,2.67,WebAuthn automation is complex
+Phase 1: Core Wallet Foundation,Passkey Login Testing,QA,Manual testing of passkey login flow error scenarios,0.5,1,1.5,1.00,Test multiple devices if possible
+Phase 1: Core Wallet Foundation,Passkey Login Automation,QA,Playwright tests for passkey login flow,1,1.5,2.5,1.58,Reuse registration automation patterns
+Phase 1: Core Wallet Foundation,Passkey Recovery Testing,QA,Manual testing of recovery instructions and multi-device flows,0.5,1,1.5,1.00,Simplified flow in MVP
+Phase 1: Core Wallet Foundation,Passkey Security Testing,QA,Validate passkeys never leave device verify domain binding,1,1.5,2,1.50,Security audit of passkey implementation
+Phase 1: Core Wallet Foundation,Smart Account Functional,QA,Test wallet creation address generation deterministic behavior,1,1.5,2,1.50,Validate contract deployment on first tx
+Phase 1: Core Wallet Foundation,Smart Account Automation,QA,Cypress E2E test for complete wallet creation journey,1,1.5,2,1.50,End-to-end user flow
+Phase 1: Core Wallet Foundation,Account Properties,QA,Verify single signer correct chain ID address format,0.5,1,1.5,1.00,Data validation testing
+Phase 1: Core Wallet Foundation,Gasless Transfer Happy,QA,Manual testing of successful USDC transfer with paymaster,1,1.5,2,1.50,Requires test USDC on Amoy
+Phase 1: Core Wallet Foundation,Gasless Transfer Errors,QA,Test insufficient balance invalid address network errors,1,1.5,2.5,1.58,Edge case coverage
+Phase 1: Core Wallet Foundation,Gasless Transfer Automation,QA,Playwright tests for USDC transfer flow,1.5,2,3,2.08,Cover happy path + error scenarios
+Phase 1: Core Wallet Foundation,UserOperation Validation,QA,Verify UserOperation construction paymaster inclusion,1,1.5,2,1.50,Technical validation of bundler integration
+Phase 1: Core Wallet Foundation,Gas Sponsorship Verify,QA,Validate 100% gas sponsorship (user pays 0 gas),0.5,1,1.5,1.00,Critical business requirement
+Phase 1: Core Wallet Foundation,Transaction Status Testing,QA,Test pending → confirmed → success flow error handling,1,1.5,2,1.50,State machine validation
+Phase 1: Core Wallet Foundation,Receipt Parsing,QA,Validate receipt data accuracy hash consistency,0.5,1,1.5,1.00,Data integrity testing
+Phase 1: Core Wallet Foundation,Failure Handling Testing,QA,Test graceful failure handling and user feedback,1,1.5,2,1.50,UX validation for errors
+Phase 1: Core Wallet Foundation,Core Regression,QA,Execute full regression for Phase 1 after bug fixes,1,2,3,2.00,Assumes 2-3 regression cycles
+Phase 1: Core Wallet Foundation,GENERAL (sum),Backend+Frontend+QA,Phase 1 Core Wallet - Total,44.5,87,139.75,88.29,Combined effort across all streams
+Phase 2: Transaction Management,Transaction History API,Backend,GET /api/transactions - fetch last 20 transactions,1,2,3,2.00,Pagination filtering by status
+Phase 2: Transaction Management,Transaction Details API,Backend,GET /api/transactions/{id} - get detailed transaction info,0.5,1,2,1.08,Include blockchain explorer links
+Phase 2: Transaction Management,Monitoring Service,Backend,Background service to monitor pending transactions,2,3,5,3.17,Hosted service periodic polling
+Phase 2: Transaction Management,Webhook Handler,Backend,POST /api/webhooks/transactions - receive Circle webhooks,1,2,3,2.00,If Circle supports webhooks
+Phase 2: Transaction Management,Failure Handling,Backend,Retry logic and error classification for failed transactions,1,2,4,2.17,Circuit breaker pattern
+Phase 2: Transaction Management,Balance Refresh Service,Backend,Service to update wallet balances periodically,1,1.5,3,1.67,Cache with TTL
+Phase 2: Transaction Management,History List Component,Frontend,Create transaction list component,0.5,1,1.5,1.00,Table/card view responsive design
+Phase 2: Transaction Management,Transaction Item Card,Frontend,Build transaction item card with details,0.5,1,1.5,1.00,From/to amount status badge timestamp
+Phase 2: Transaction Management,Status Indicators,Frontend,Implement status indicators (pending confirmed failed),0.5,0.75,1,0.75,Color-coded badges icons
+Phase 2: Transaction Management,Timestamp Formatting,Frontend,Add timestamp formatting (relative time),0.25,0.5,0.75,0.50,2 hours ago full date on hover
+Phase 2: Transaction Management,Detail Modal,Frontend,Create transaction detail modal,0.5,1,1.5,1.00,Full details block explorer link
+Phase 2: Transaction Management,API Integration,Frontend,Integrate API for fetching last 20 transactions,0.5,1,2,1.08,Pagination setup loading states
+Phase 2: Transaction Management,Filter UI,Frontend,Build filter UI (by status),0.5,0.75,1.5,0.88,Dropdown/tabs for filtering
+Phase 2: Transaction Management,Empty State,Frontend,Implement empty state for no transactions,0.25,0.5,0.75,0.50,Illustration call-to-action
+Phase 2: Transaction Management,Polling Mechanism,Frontend,Setup polling mechanism for pending transactions,0.5,1,2,1.08,Poll every 5-10s stop on confirmation
+Phase 2: Transaction Management,Progress Indicator,Frontend,Display transaction progress indicator,0.5,0.75,1.5,0.88,Estimated confirmation time progress steps
+Phase 2: Transaction Management,Confirmation Updates,Frontend,Handle transaction confirmation updates,0.5,0.75,1,0.75,Update status show notification
+Phase 2: Transaction Management,Failure Handling UI,Frontend,Implement transaction failure handling,0.5,1,1.5,1.00,Error messages retry options
+Phase 2: Transaction Management,Balance Card,Frontend,Create balance card component,0.5,0.75,1,0.75,USDC amount USD equivalent
+Phase 2: Transaction Management,Refresh Button,Frontend,Add manual refresh button with loading state,0.25,0.5,0.75,0.50,Spinner cooldown timer
+Phase 2: Transaction Management,Auto-refresh,Frontend,Implement auto-refresh on transaction completion,0.5,0.75,1,0.75,Listen to transaction events
+Phase 2: Transaction Management,Last Updated,Frontend,Display last updated timestamp,0.25,0.5,0.75,0.50,Relative time format
+Phase 2: Transaction Management,History Display Testing,QA,Test last 20 transactions display pagination,0.5,1,1.5,1.00,UI/UX validation
+Phase 2: Transaction Management,History Automation,QA,Playwright tests for transaction history UI,1,1.5,2,1.50,Test data generation required
+Phase 2: Transaction Management,Filter Testing,QA,Test filtering (pending confirmed failed),0.5,1,1.5,1.00,Filter logic validation
+Phase 2: Transaction Management,Data Accuracy,QA,Verify recipient amount status timestamp accuracy,1,1.5,2,1.50,Cross-reference with blockchain data
+Phase 2: Transaction Management,Real-time Updates Testing,QA,Test transaction status updates in UI without refresh,1,1.5,2.5,1.58,WebSocket/polling behavior
+Phase 2: Transaction Management,Balance Display Testing,QA,Validate USDC balance accuracy refresh behavior,0.5,1,1.5,1.00,Data accuracy critical
+Phase 2: Transaction Management,Dashboard UI Testing,QA,Test overall dashboard layout responsiveness,0.5,1,1.5,1.00,Cross-device testing
+Phase 2: Transaction Management,Error Message Validation,QA,Test all error messages are clear and actionable,1,1.5,2,1.50,UX-focused testing
+Phase 2: Transaction Management,User Feedback Testing,QA,Test loading states success/failure notifications,0.5,1,1.5,1.00,UI state management
+Phase 2: Transaction Management,Phase 2 Regression,QA,Execute Phase 2 regression suite,0.5,1,2,1.08,Lighter regression
+Phase 2: Transaction Management,GENERAL (sum),Backend+Frontend+QA,Phase 2 Transaction - Total,19,35.75,58.25,36.08,Combined effort across all streams
+Phase 3: Fiat Off-Ramp,Bank Account API,Backend,POST /api/bank-accounts - add bank account (encrypted),1.5,3,5,3.08,Field encryption validation
+Phase 3: Fiat Off-Ramp,Account Validation,Backend,Validate routing number format account number format,1,2,3,2.00,US ACH validation rules
+Phase 3: Fiat Off-Ramp,Get Bank Accounts,Backend,GET /api/bank-accounts - list user's bank accounts,0.5,1,1.5,1.00,Decrypt for display
+Phase 3: Fiat Off-Ramp,Delete Bank Account,Backend,DELETE /api/bank-accounts/{id} - remove bank account,0.5,1,1.5,1.00,Soft delete preferred
+Phase 3: Fiat Off-Ramp,Fiat Gateway Client,Backend,HTTP client for fiat gateway provider (RedotPay or similar),2,4,6,4.00,API discovery authentication
+Phase 3: Fiat Off-Ramp,Exchange Rate Service,Backend,Real-time USDC/USD rate fetching and caching,1,2,3,2.00,30-second rate lock
+Phase 3: Fiat Off-Ramp,Fee Calculation,Backend,Calculate conversion fees (1-2%) transparently,0.5,1,2,1.08,Configurable fee structure
+Phase 3: Fiat Off-Ramp,Payout Preview,Backend,POST /api/payouts/preview - calculate USD amount and fees,1,2,3,2.00,No DB write
+Phase 3: Fiat Off-Ramp,Execute Payout,Backend,POST /api/payouts/execute - submit payout to gateway,2,4,6,4.00,Transaction atomicity critical
+Phase 3: Fiat Off-Ramp,Status Tracking,Backend,Background service to poll gateway for payout status,2,3,5,3.17,Update DB on status changes
+Phase 3: Fiat Off-Ramp,Payout History API,Backend,GET /api/payouts - list fiat payout transactions,1,2,3,2.00,Filter by status pagination
+Phase 3: Fiat Off-Ramp,Payout Repository,Backend,Data access for fiat payout records,0.5,1,1.5,1.00,CRUD operations
+Phase 3: Fiat Off-Ramp,Gateway Webhook,Backend,POST /api/webhooks/payouts - receive gateway status updates,1,2,4,2.17,Signature verification
+Phase 3: Fiat Off-Ramp,Notification Service,Backend,Send notifications on payout completion,1,1.5,3,1.67,Email/push integration
+Phase 3: Fiat Off-Ramp,Bank Account List,Frontend,Create bank account list/empty state,0.5,0.75,1,0.75,Single account limit for MVP
+Phase 3: Fiat Off-Ramp,Add Bank Form,Frontend,Build add bank account form,0.5,1,1.5,1.00,Account holder routing account number
+Phase 3: Fiat Off-Ramp,Form Validation,Frontend,Implement form validation (routing/account format),0.5,1,1.5,1.00,US routing number validation error messages
+Phase 3: Fiat Off-Ramp,Account Display,Frontend,Add bank account display with masked details,0.5,0.75,1,0.75,Show last 4 digits bank name
+Phase 3: Fiat Off-Ramp,Verification Status,Frontend,Create bank account verification status indicator,0.25,0.5,0.75,0.50,Verified badge
+Phase 3: Fiat Off-Ramp,Save API Integration,Frontend,Integrate API for saving encrypted bank details,0.5,1,2,1.08,POST request error handling
+Phase 3: Fiat Off-Ramp,Conversion Calculator,Frontend,Build conversion calculator component,0.5,1,1.5,1.00,USDC input USD output real-time calculation
+Phase 3: Fiat Off-Ramp,Exchange Rate Display,Frontend,Display real-time exchange rate,0.5,0.75,1.5,0.88,Fetch from API refresh every 30s
+Phase 3: Fiat Off-Ramp,Fee Breakdown,Frontend,Show conversion fee breakdown,0.5,0.75,1,0.75,Percentage and dollar amount
+Phase 3: Fiat Off-Ramp,Rate Lock Timer,Frontend,Implement rate lock countdown timer,0.5,1,1.5,1.00,30-second countdown visual indicator
+Phase 3: Fiat Off-Ramp,Rate Expired Handling,Frontend,Add Rate expired handling and refresh,0.5,0.75,1.5,0.88,Auto-refresh or manual refresh option
+Phase 3: Fiat Off-Ramp,Payout Form,Frontend,Create payout form with amount input,0.5,1,1.5,1.00,USDC amount validate against balance
+Phase 3: Fiat Off-Ramp,Bank Selection,Frontend,Build bank account selection dropdown,0.25,0.5,0.75,0.50,Single account for MVP add account link
+Phase 3: Fiat Off-Ramp,Payout Summary,Frontend,Display payout summary preview,0.5,1,1.5,1.00,USDC sent USD received fees rate settlement time
+Phase 3: Fiat Off-Ramp,Payout Submission,Frontend,Integrate payout submission API,0.5,1,2,1.08,POST request handle response
+Phase 3: Fiat Off-Ramp,Passkey Confirmation,Frontend,Add passkey confirmation for payout,0.5,0.75,1.5,0.88,WebAuthn signature user confirmation
+Phase 3: Fiat Off-Ramp,Payout Loading,Frontend,Build payout submission loading state,0.5,0.75,1,0.75,Progress indicator estimated processing time
+Phase 3: Fiat Off-Ramp,Success Notification,Frontend,Implement payout success notification,0.5,0.75,1,0.75,Toast message redirect to history
+Phase 3: Fiat Off-Ramp,Error Handling,Frontend,Handle payout errors gracefully,0.5,1,1.5,1.00,Insufficient balance API errors user feedback
+Phase 3: Fiat Off-Ramp,Payout History List,Frontend,Create payout history list component,0.5,1,1.5,1.00,Table/card layout responsive
+Phase 3: Fiat Off-Ramp,Payout Card,Frontend,Build payout transaction card,0.5,1,1.5,1.00,USDC/USD amounts rate fee status date
+Phase 3: Fiat Off-Ramp,Status Filter,Frontend,Add status filter (pending processing completed failed),0.5,0.75,1.5,0.88,Dropdown/tabs
+Phase 3: Fiat Off-Ramp,Detail Modal,Frontend,Implement payout detail modal,0.5,1,1.5,1.00,Full transaction details timestamps
+Phase 3: Fiat Off-Ramp,History API,Frontend,Integrate payout history API,0.5,1,2,1.08,Fetch pagination loading states
+Phase 3: Fiat Off-Ramp,Empty State,Frontend,Build empty state for no payouts,0.25,0.5,0.75,0.50,Illustration CTA to create payout
+Phase 3: Fiat Off-Ramp,Add Bank Testing,QA,Test adding US bank account validation rules,1,1.5,2,1.50,MVP: 1 account per user
+Phase 3: Fiat Off-Ramp,Add Bank Automation,QA,Playwright tests for bank account addition,1,1.5,2,1.50,Form validation automation
+Phase 3: Fiat Off-Ramp,Storage Security,QA,Verify encryption of account/routing numbers,1,2,3,2.00,Security testing
+Phase 3: Fiat Off-Ramp,Detail Validation,QA,Test routing number format account number validation,0.5,1,1.5,1.00,Edge cases (invalid formats)
+Phase 3: Fiat Off-Ramp,Rate Display Testing,QA,Test real-time USDC/USD rate accuracy,0.5,1,1.5,1.00,Integration with price feed
+Phase 3: Fiat Off-Ramp,Conversion Calculation,QA,Validate recipient amount calculation fee deduction,1,1.5,2,1.50,Financial calculation accuracy
+Phase 3: Fiat Off-Ramp,Fee Transparency,QA,Verify 1-2% fee display and accuracy,0.5,1,1.5,1.00,Business logic validation
+Phase 3: Fiat Off-Ramp,Rate Lock Testing,QA,Test 30-second rate lock mechanism,1,1.5,2.5,1.58,Time-based testing
+Phase 3: Fiat Off-Ramp,Payout Happy Path,QA,Manual test of successful USDC → USD payout,1.5,2,3,2.08,Requires fiat gateway integration
+Phase 3: Fiat Off-Ramp,Payout Errors,QA,Test insufficient balance invalid bank gateway errors,1,2,3,2.00,Error handling critical
+Phase 3: Fiat Off-Ramp,Status Tracking Testing,QA,Test pending → processing → completed flow,1,1.5,2.5,1.58,Async flow validation
+Phase 3: Fiat Off-Ramp,Notification Testing,QA,Verify user notifications on completion/failure,0.5,1,1.5,1.00,UX requirement
+Phase 3: Fiat Off-Ramp,Payout E2E,QA,Cypress E2E test for complete payout flow,2,3,4.5,3.08,Complex integration test
+Phase 3: Fiat Off-Ramp,Gateway Integration,QA,Test RedotPay API calls error responses,1.5,2,3,2.08,Depends on gateway availability
+Phase 3: Fiat Off-Ramp,Retry Testing,QA,Validate retry logic for failed gateway calls,1,1.5,2,1.50,Resilience testing
+Phase 3: Fiat Off-Ramp,History Display Testing,QA,Test payout history UI data accuracy,0.5,1,1.5,1.00,Similar to transaction history
+Phase 3: Fiat Off-Ramp,History Filtering,QA,Test status filter functionality,0.5,1,1.5,1.00,Filter validation
+Phase 3: Fiat Off-Ramp,Performance Testing,QA,Test 80%+ completion within 24 hours (monitoring),1,1.5,2,1.50,NFR validation
+Phase 3: Fiat Off-Ramp,Phase 3 Regression,QA,Execute Phase 3 regression suite,1,2,3,2.00,Critical financial flow
+Phase 3: Fiat Off-Ramp,GENERAL (sum),Backend+Frontend+QA,Phase 3 Fiat Off-Ramp - Total,42.5,77,117.5,78.50,Combined effort across all streams

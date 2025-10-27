@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoinPay.Api", "CoinPay.Api\CoinPay.Api.csproj", "{2A4FA468-67A4-760A-51CF-1170103ED46C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoinPay.Gateway", "CoinPay.Gateway\CoinPay.Gateway.csproj", "{228E97E6-C78E-D48E-723D-2F7435122BF1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2A4FA468-67A4-760A-51CF-1170103ED46C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A4FA468-67A4-760A-51CF-1170103ED46C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A4FA468-67A4-760A-51CF-1170103ED46C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A4FA468-67A4-760A-51CF-1170103ED46C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{228E97E6-C78E-D48E-723D-2F7435122BF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{228E97E6-C78E-D48E-723D-2F7435122BF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{228E97E6-C78E-D48E-723D-2F7435122BF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{228E97E6-C78E-D48E-723D-2F7435122BF1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D6A599F5-D6CA-45EF-A98D-A4F6EF5E7773}
+	EndGlobalSection
+EndGlobal

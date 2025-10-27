@@ -1,0 +1,77 @@
+gantt
+    title CoinPay Wallet MVP - Project Timeline
+    dateFormat YYYY-MM-DD
+
+    section Project Setup
+    Infrastructure Setup           :done, setup1, 2025-01-06, 10d
+    Database Schema Design         :done, setup2, 2025-01-06, 10d
+    Test Environment Setup         :done, setup3, 2025-01-06, 8d
+
+    section Phase 1: Core Wallet
+    Backend - Circle SDK Integration    :active, p1be1, 2025-01-13, 14d
+    Backend - Passkey APIs              :active, p1be2, 2025-01-13, 9d
+    Backend - Smart Account & Transfer  :p1be3, after p1be2, 16d
+    Frontend - Passkey UI               :p1fe1, 2025-01-13, 12d
+    Frontend - Dashboard & Transfer     :p1fe2, after p1fe1, 10d
+    QA - Passkey Testing                :p1qa1, after p1fe1, 10d
+    QA - Transfer Testing               :p1qa2, after p1be3, 8d
+    Phase 1 Regression                  :p1qa3, after p1qa2, 4d
+
+    section Phase 2: Transactions
+    Backend - Transaction APIs          :p2be1, after p1be3, 10d
+    Backend - Monitoring Service        :p2be2, after p2be1, 7d
+    Frontend - Transaction History UI   :p2fe1, after p1fe2, 8d
+    Frontend - Real-time Updates        :p2fe2, after p2fe1, 6d
+    QA - Transaction Testing            :p2qa1, after p2fe2, 6d
+    Phase 2 Regression                  :p2qa2, after p2qa1, 2d
+
+    section Phase 3: Fiat Off-Ramp
+    Backend - Bank Account APIs         :p3be1, after p2be2, 10d
+    Backend - Fiat Gateway Integration  :p3be2, after p3be1, 16d
+    Backend - Payout Execution          :p3be3, after p3be2, 14d
+    Frontend - Bank & Payout UI         :p3fe1, after p2fe2, 12d
+    Frontend - Conversion Calculator    :p3fe2, after p3fe1, 10d
+    QA - Fiat Flow Testing              :p3qa1, after p3fe2, 12d
+    QA - E2E Payout Tests               :p3qa2, after p3qa1, 6d
+    Phase 3 Regression                  :p3qa3, after p3qa2, 4d
+
+    section Phase 4: Investment
+    Backend - WhiteBit API Client       :p4be1, after p3be1, 16d
+    Backend - Investment APIs           :p4be2, after p4be1, 20d
+    Backend - Position Sync Service     :p4be3, after p4be2, 10d
+    Frontend - WhiteBit Connection UI   :p4fe1, after p3fe1, 8d
+    Frontend - Investment Flow UI       :p4fe2, after p4fe1, 12d
+    Frontend - Position Dashboard       :p4fe3, after p4fe2, 6d
+    QA - Investment Testing             :p4qa1, after p4fe3, 14d
+    QA - Integration Testing            :p4qa2, after p4qa1, 8d
+    Phase 4 Regression                  :p4qa3, after p4qa2, 5d
+
+    section Phase 5: Swap
+    Backend - DEX Aggregator            :p5be1, after p4be2, 8d
+    Backend - Swap Execution            :p5be2, after p5be1, 6d
+    Frontend - Swap UI                  :p5fe1, after p4fe2, 10d
+    Frontend - Rate Display             :p5fe2, after p5fe1, 7d
+    QA - Swap Testing                   :p5qa1, after p5fe2, 8d
+    Phase 5 Regression                  :p5qa2, after p5qa1, 3d
+
+    section Cross-Cutting
+    Security & Compliance               :crit, security, 2025-01-20, 80d
+    API Documentation                   :docs, 2025-01-27, 60d
+    Monitoring & Observability          :monitor, 2025-02-03, 70d
+    DevOps & Deployment                 :devops, 2025-01-13, 75d
+    Performance Optimization            :perf, 2025-03-10, 25d
+    Accessibility (WCAG 2.1 AA)        :a11y, 2025-03-10, 20d
+
+    section Testing & Launch
+    E2E Integration Testing             :e2e, 2025-04-07, 12d
+    Security Testing (OWASP)            :sectest, 2025-04-14, 10d
+    Performance Testing (K6)            :perftest, 2025-04-21, 8d
+    Beta User Recruitment               :beta1, 2025-04-28, 3d
+    Beta Testing (50-100 users)         :crit, beta2, after beta1, 14d
+    Bug Fixes & Iteration               :beta3, after beta2, 7d
+    Production Environment Setup        :prod1, 2025-05-05, 10d
+    Production Testing                  :prod2, after prod1, 8d
+    Security Audit                      :crit, audit, after prod2, 5d
+    Documentation Finalization          :prod3, after beta3, 5d
+    Go-Live Preparation                 :crit, golive, after audit, 3d
+    MVP Launch                          :milestone, launch, after golive, 1d

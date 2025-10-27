@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "postgres-full": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-postgres-full-access",
+        "postgresql://postgres:root@localhost:5432/coinpay"
+      ],
+      "env": {
+        "TRANSACTION_TIMEOUT_MS": "60000",
+        "MAX_CONCURRENT_TRANSACTIONS": "5"
+      }
+    }
+  }
+}

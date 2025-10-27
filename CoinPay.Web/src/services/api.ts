@@ -1,6 +1,6 @@
 import type { Transaction, CreateTransactionRequest } from '../types/transaction';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://localhost:5100/api';
 
 export const transactionApi = {
   // Get all transactions
