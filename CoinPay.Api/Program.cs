@@ -3,6 +3,8 @@ using CoinPay.Api.Data;
 using CoinPay.Api.Models;
 using CoinPay.Api.Middleware;
 using CoinPay.Api.HealthChecks;
+using CoinPay.Api.Services.Auth;
+using CoinPay.Api.Services.Circle;
 using Serilog;
 using Serilog.Events;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -88,6 +90,14 @@ builder.Services.AddCors(options =>
               .WithExposedHeaders("X-Correlation-ID");
     });
 });
+
+// Configure Circle SDK options
+builder.Services.Configure<CircleOptions>(
+    builder.Configuration.GetSection("Circle"));
+
+// Register services
+builder.Services.AddScoped<ICircleService, CircleService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
     var app = builder.Build();
 
@@ -283,6 +293,209 @@ app.MapPatch("/api/transactions/{id}/status", async (int id, string status, AppD
 .WithSummary("Update transaction status")
 .WithDescription("Updates the status of a transaction (Pending, Completed, Failed)");
 
+// ============================================================================
+// USER ENDPOINTS (Test/Development)
+// ============================================================================
+
+// GET: Get all users
+app.MapGet("/api/users", async (AppDbContext db) =>
+{
+    var users = await db.Users.ToListAsync();
+    return Results.Ok(users);
+})
+.WithName("GetAllUsers")
+.WithTags("Users")
+.WithSummary("Get all users")
+.WithDescription("Retrieves a list of all users in the system");
+
+// GET: Get user by ID
+app.MapGet("/api/users/{id}", async (int id, AppDbContext db) =>
+{
+    var user = await db.Users.FindAsync(id);
+    return user is not null ? Results.Ok(user) : Results.NotFound();
+})
+.WithName("GetUserById")
+.WithTags("Users")
+.WithSummary("Get user by ID")
+.WithDescription("Retrieves a specific user by their unique identifier");
+
+// GET: Get user by username
+app.MapGet("/api/users/username/{username}", async (string username, AppDbContext db) =>
+{
+    var user = await db.Users.FirstOrDefaultAsync(u => u.Username == username);
+    return user is not null ? Results.Ok(user) : Results.NotFound();
+})
+.WithName("GetUserByUsername")
+.WithTags("Users")
+.WithSummary("Get user by username")
+.WithDescription("Retrieves a specific user by their username");
+
+// POST: Create a new user
+app.MapPost("/api/users", async (User user, AppDbContext db) =>
+{
+    // Set creation timestamp
+    user.CreatedAt = DateTime.UtcNow;
+
+    db.Users.Add(user);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/api/users/{user.Id}", user);
+})
+.WithName("CreateUser")
+.WithTags("Users")
+.WithSummary("Create a new user")
+.WithDescription("Creates a new user with the provided details");
+
+// PUT: Update user
+app.MapPut("/api/users/{id}", async (int id, User updatedUser, AppDbContext db) =>
+{
+    var user = await db.Users.FindAsync(id);
+    if (user is null)
+    {
+        return Results.NotFound();
+    }
+
+    user.Username = updatedUser.Username;
+    user.CircleUserId = updatedUser.CircleUserId;
+    user.CredentialId = updatedUser.CredentialId;
+    user.WalletAddress = updatedUser.WalletAddress;
+    user.LastLoginAt = updatedUser.LastLoginAt;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(user);
+})
+.WithName("UpdateUser")
+.WithTags("Users")
+.WithSummary("Update a user")
+.WithDescription("Updates an existing user with new details");
+
+// DELETE: Delete user
+app.MapDelete("/api/users/{id}", async (int id, AppDbContext db) =>
+{
+    var user = await db.Users.FindAsync(id);
+    if (user is null)
+    {
+        return Results.NotFound();
+    }
+
+    db.Users.Remove(user);
+    await db.SaveChangesAsync();
+
+    return Results.NoContent();
+})
+.WithName("DeleteUser")
+.WithTags("Users")
+.WithSummary("Delete a user")
+.WithDescription("Deletes a user from the system");
+
+// ============================================================================
+// AUTHENTICATION ENDPOINTS (Passkey-based)
+// ============================================================================
+
+// POST: Check if username exists
+app.MapPost("/api/auth/check-username", async (UsernameCheckRequest request, IAuthService authService) =>
+{
+    var exists = await authService.UsernameExistsAsync(request.Username);
+    return Results.Ok(new { exists });
+})
+.WithName("CheckUsername")
+.WithTags("Authentication")
+.WithSummary("Check if username exists")
+.WithDescription("Verifies if a username is already taken");
+
+// POST: Initiate user registration
+app.MapPost("/api/auth/register/initiate", async (InitiateRegistrationRequest request, IAuthService authService) =>
+{
+    try
+    {
+        var challenge = await authService.InitiateRegistrationAsync(request.Username);
+        return Results.Ok(challenge);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error initiating registration for username: {Username}", request.Username);
+        return Results.Problem("An error occurred during registration initiation");
+    }
+})
+.WithName("InitiateRegistration")
+.WithTags("Authentication")
+.WithSummary("Initiate user registration")
+.WithDescription("Starts the passkey-based registration process and returns a challenge");
+
+// POST: Complete user registration
+app.MapPost("/api/auth/register/complete", async (CompleteRegistrationRequest request, IAuthService authService) =>
+{
+    try
+    {
+        var result = await authService.CompleteRegistrationAsync(request);
+        return Results.Created($"/api/users/{result.UserId}", result);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error completing registration for username: {Username}", request.Username);
+        return Results.Problem("An error occurred during registration completion");
+    }
+})
+.WithName("CompleteRegistration")
+.WithTags("Authentication")
+.WithSummary("Complete user registration")
+.WithDescription("Completes the passkey-based registration process after passkey creation");
+
+// POST: Initiate user login
+app.MapPost("/api/auth/login/initiate", async (InitiateLoginRequest request, IAuthService authService) =>
+{
+    try
+    {
+        var challenge = await authService.InitiateLoginAsync(request.Username);
+        return Results.Ok(challenge);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error initiating login for username: {Username}", request.Username);
+        return Results.Problem("An error occurred during login initiation");
+    }
+})
+.WithName("InitiateLogin")
+.WithTags("Authentication")
+.WithSummary("Initiate user login")
+.WithDescription("Starts the passkey-based login process and returns a challenge");
+
+// POST: Complete user login
+app.MapPost("/api/auth/login/complete", async (CompleteLoginRequest request, IAuthService authService) =>
+{
+    try
+    {
+        var result = await authService.CompleteLoginAsync(request);
+        return Results.Ok(result);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error completing login for username: {Username}", request.Username);
+        return Results.Problem("An error occurred during login completion");
+    }
+})
+.WithName("CompleteLogin")
+.WithTags("Authentication")
+.WithSummary("Complete user login")
+.WithDescription("Completes the passkey-based login process after passkey verification");
+
     Log.Information("CoinPay API started successfully");
     app.Run();
 }
@@ -294,3 +507,11 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+// ============================================================================
+// REQUEST DTOs for API endpoints
+// ============================================================================
+
+public record UsernameCheckRequest(string Username);
+public record InitiateRegistrationRequest(string Username);
+public record InitiateLoginRequest(string Username);
