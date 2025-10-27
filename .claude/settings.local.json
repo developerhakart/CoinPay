@@ -4,7 +4,8 @@
       "Bash(tasklist:*)",
       "Bash(findstr:*)",
       "Bash(dotnet:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []
