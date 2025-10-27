@@ -1,8 +1,37 @@
 using Microsoft.EntityFrameworkCore;
 using CoinPay.Api.Data;
 using CoinPay.Api.Models;
+using CoinPay.Api.Middleware;
+using CoinPay.Api.HealthChecks;
+using Serilog;
+using Serilog.Events;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-var builder = WebApplication.CreateBuilder(args);
+// Configure Serilog before building the application
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .Enrich.WithEnvironmentName()
+    .Enrich.WithMachineName()
+    .Enrich.WithThreadId()
+    .WriteTo.Console(
+        outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+    .WriteTo.File(
+        path: "logs/coinpay-.log",
+        rollingInterval: RollingInterval.Day,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+    .CreateLogger();
+
+try
+{
+    Log.Information("Starting CoinPay API application");
+
+    var builder = WebApplication.CreateBuilder(args);
+
+    // Use Serilog for logging
+    builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
@@ -21,32 +50,65 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Add DbContext with InMemory database
+// Add DbContext with PostgreSQL database
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseInMemoryDatabase("CoinPayDb"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add CORS
+// Add Health Checks
+builder.Services.AddHealthChecks()
+    .AddCheck<DatabaseHealthCheck>("database", tags: new[] { "db", "ready" });
+
+// Add CORS with environment-specific policies
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    // Development policy - allows local development servers
+    options.AddPolicy("DevelopmentPolicy", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(
+                "http://localhost:3000",      // React default
+                "http://localhost:5173",      // Vite default
+                "http://localhost:5100",      // Custom frontend port
+                "http://localhost:5174",      // Additional Vite port
+                "http://localhost:4200")      // Angular default
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials()
+              .WithExposedHeaders("X-Correlation-ID");
+    });
+
+    // Production policy - restrict to specific domains
+    options.AddPolicy("ProductionPolicy", policy =>
+    {
+        policy.WithOrigins(
+                "https://app.coinpay.com",
+                "https://www.coinpay.com")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials()
+              .WithExposedHeaders("X-Correlation-ID");
     });
 });
 
-var app = builder.Build();
+    var app = builder.Build();
 
-// Ensure database is created and seeded
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.EnsureCreated();
-}
+    // Apply pending migrations automatically
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        dbContext.Database.Migrate();
+        Log.Information("Database migrations applied successfully");
+    }
 
-// Configure the HTTP request pipeline.
-app.UseSwagger();
+    // Configure the HTTP request pipeline.
+    // IMPORTANT: Middleware order matters! Exception handler must be first.
+
+    // 1. Global exception handler - catches all unhandled exceptions
+    app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+
+    // 2. CorrelationId middleware - adds tracking to all requests
+    app.UseMiddleware<CorrelationIdMiddleware>();
+
+    app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "CoinPay API V1");
@@ -55,7 +117,39 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseHttpsRedirection();
-app.UseCors("AllowAll");
+
+// Use environment-specific CORS policy
+var corsPolicy = app.Environment.IsDevelopment() ? "DevelopmentPolicy" : "ProductionPolicy";
+app.UseCors(corsPolicy);
+Log.Information("Using CORS policy: {CorsPolicy}", corsPolicy);
+
+// Health Check Endpoints
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => true,
+    ResultStatusCodes =
+    {
+        [HealthStatus.Healthy] = StatusCodes.Status200OK,
+        [HealthStatus.Degraded] = StatusCodes.Status200OK,
+        [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable
+    }
+});
+
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResultStatusCodes =
+    {
+        [HealthStatus.Healthy] = StatusCodes.Status200OK,
+        [HealthStatus.Degraded] = StatusCodes.Status200OK,
+        [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable
+    }
+});
+
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => false // No checks, just responds if app is running
+});
 
 // API Endpoints
 
@@ -189,4 +283,14 @@ app.MapPatch("/api/transactions/{id}/status", async (int id, string status, AppD
 .WithSummary("Update transaction status")
 .WithDescription("Updates the status of a transaction (Pending, Completed, Failed)");
 
-app.Run();
+    Log.Information("CoinPay API started successfully");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

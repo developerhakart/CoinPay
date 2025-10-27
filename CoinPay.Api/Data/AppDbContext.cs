@@ -15,7 +15,7 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Seed some initial data
+        // Seed some initial data with static timestamps
         modelBuilder.Entity<Transaction>().HasData(
             new Transaction
             {
@@ -28,8 +28,8 @@ public class AppDbContext : DbContext
                 SenderName = "John Doe",
                 ReceiverName = "Jane Smith",
                 Description = "Payment for services",
-                CreatedAt = DateTime.UtcNow.AddDays(-2),
-                CompletedAt = DateTime.UtcNow.AddDays(-2)
+                CreatedAt = new DateTime(2025, 10, 25, 0, 0, 0, DateTimeKind.Utc),
+                CompletedAt = new DateTime(2025, 10, 25, 0, 0, 0, DateTimeKind.Utc)
             },
             new Transaction
             {
@@ -42,8 +42,8 @@ public class AppDbContext : DbContext
                 SenderName = "Alice Johnson",
                 ReceiverName = "Bob Wilson",
                 Description = "Money transfer",
-                CreatedAt = DateTime.UtcNow.AddDays(-1),
-                CompletedAt = DateTime.UtcNow.AddDays(-1)
+                CreatedAt = new DateTime(2025, 10, 26, 0, 0, 0, DateTimeKind.Utc),
+                CompletedAt = new DateTime(2025, 10, 26, 0, 0, 0, DateTimeKind.Utc)
             },
             new Transaction
             {
@@ -56,7 +56,7 @@ public class AppDbContext : DbContext
                 SenderName = "Charlie Brown",
                 ReceiverName = "David Lee",
                 Description = "Pending payment",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = new DateTime(2025, 10, 27, 0, 0, 0, DateTimeKind.Utc)
             }
         );
     }
