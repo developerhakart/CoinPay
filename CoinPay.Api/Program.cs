@@ -5,6 +5,7 @@ using CoinPay.Api.Middleware;
 using CoinPay.Api.HealthChecks;
 using CoinPay.Api.Services.Auth;
 using CoinPay.Api.Services.Circle;
+using CoinPay.Api.Services.Wallet;
 using Serilog;
 using Serilog.Events;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -95,9 +96,31 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<CircleOptions>(
     builder.Configuration.GetSection("Circle"));
 
+// Configure JWT Authentication
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
+                System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!)),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 // Register services
 builder.Services.AddScoped<ICircleService, CircleService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<JwtTokenService>();
+builder.Services.AddScoped<IWalletService, WalletService>();
 
     var app = builder.Build();
 
@@ -132,6 +155,10 @@ app.UseHttpsRedirection();
 var corsPolicy = app.Environment.IsDevelopment() ? "DevelopmentPolicy" : "ProductionPolicy";
 app.UseCors(corsPolicy);
 Log.Information("Using CORS policy: {CorsPolicy}", corsPolicy);
+
+// Add authentication and authorization middleware
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Health Check Endpoints
 app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
@@ -495,6 +522,157 @@ app.MapPost("/api/auth/login/complete", async (CompleteLoginRequest request, IAu
 .WithTags("Authentication")
 .WithSummary("Complete user login")
 .WithDescription("Completes the passkey-based login process after passkey verification");
+
+// ============================================================================
+// PROTECTED ENDPOINTS (Require Authentication)
+// ============================================================================
+
+// GET: Get current user profile
+app.MapGet("/api/me", async (HttpContext context, AppDbContext db) =>
+{
+    var userIdClaim = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+    if (userIdClaim == null)
+        return Results.Unauthorized();
+
+    var userId = int.Parse(userIdClaim.Value);
+    var user = await db.Users.FindAsync(userId);
+
+    if (user == null)
+        return Results.NotFound();
+
+    return Results.Ok(new
+    {
+        user.Id,
+        user.Username,
+        user.CircleUserId,
+        user.WalletAddress,
+        user.CreatedAt,
+        user.LastLoginAt
+    });
+})
+.RequireAuthorization()
+.WithName("GetCurrentUser")
+.WithTags("Protected")
+.WithSummary("Get current user profile")
+.WithDescription("Returns the authenticated user's profile information");
+
+// ============================================================================
+// WALLET ENDPOINTS (Require Authentication)
+// ============================================================================
+
+// POST: Create wallet for current user
+app.MapPost("/api/wallet/create", async (HttpContext context, IWalletService walletService) =>
+{
+    try
+    {
+        var userIdClaim = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+            return Results.Unauthorized();
+
+        var userId = int.Parse(userIdClaim.Value);
+        var result = await walletService.CreateWalletAsync(userId);
+
+        return Results.Created($"/api/wallet/balance/{result.WalletAddress}", result);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error creating wallet for user");
+        return Results.Problem("An error occurred during wallet creation");
+    }
+})
+.RequireAuthorization()
+.WithName("CreateWallet")
+.WithTags("Wallet")
+.WithSummary("Create wallet for current user")
+.WithDescription("Creates a new Circle Web3 Services wallet for the authenticated user");
+
+// GET: Get wallet balance
+app.MapGet("/api/wallet/balance/{walletAddress}", async (string walletAddress, IWalletService walletService) =>
+{
+    try
+    {
+        var result = await walletService.GetWalletBalanceAsync(walletAddress);
+        return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error getting wallet balance for {WalletAddress}", walletAddress);
+        return Results.Problem("An error occurred while fetching wallet balance");
+    }
+})
+.RequireAuthorization()
+.WithName("GetWalletBalance")
+.WithTags("Wallet")
+.WithSummary("Get wallet balance")
+.WithDescription("Retrieves the USDC balance for a wallet address");
+
+// POST: Transfer USDC
+app.MapPost("/api/wallet/transfer", async (TransferRequest request, IWalletService walletService) =>
+{
+    try
+    {
+        var result = await walletService.TransferUSDCAsync(request);
+        return Results.Ok(result);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error transferring USDC from {From} to {To}", request.FromWalletAddress, request.ToWalletAddress);
+        return Results.Problem("An error occurred during USDC transfer");
+    }
+})
+.RequireAuthorization()
+.WithName("TransferUSDC")
+.WithTags("Wallet")
+.WithSummary("Transfer USDC")
+.WithDescription("Initiates a USDC transfer from one wallet to another");
+
+// GET: Get transaction status
+app.MapGet("/api/wallet/transaction/{transactionId}", async (string transactionId, IWalletService walletService) =>
+{
+    try
+    {
+        var result = await walletService.GetTransactionStatusAsync(transactionId);
+        return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error getting transaction status for {TransactionId}", transactionId);
+        return Results.Problem("An error occurred while fetching transaction status");
+    }
+})
+.RequireAuthorization()
+.WithName("GetTransactionStatus")
+.WithTags("Wallet")
+.WithSummary("Get transaction status")
+.WithDescription("Retrieves the status of a blockchain transaction");
+
+// GET: Get transaction history
+app.MapGet("/api/wallet/history/{walletAddress}", async (string walletAddress, IWalletService walletService, int? limit) =>
+{
+    try
+    {
+        var result = await walletService.GetTransactionHistoryAsync(walletAddress, limit ?? 20);
+        return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error getting transaction history for {WalletAddress}", walletAddress);
+        return Results.Problem("An error occurred while fetching transaction history");
+    }
+})
+.RequireAuthorization()
+.WithName("GetTransactionHistory")
+.WithTags("Wallet")
+.WithSummary("Get transaction history")
+.WithDescription("Retrieves the transaction history for a wallet address");
 
     Log.Information("CoinPay API started successfully");
     app.Run();

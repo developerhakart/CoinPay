@@ -14,15 +14,18 @@ public class AuthService : IAuthService
     private readonly ICircleService _circleService;
     private readonly AppDbContext _dbContext;
     private readonly ILogger<AuthService> _logger;
+    private readonly JwtTokenService _jwtTokenService;
 
     public AuthService(
         ICircleService circleService,
         AppDbContext dbContext,
-        ILogger<AuthService> logger)
+        ILogger<AuthService> logger,
+        JwtTokenService jwtTokenService)
     {
         _circleService = circleService;
         _dbContext = dbContext;
         _logger = logger;
+        _jwtTokenService = jwtTokenService;
     }
 
     /// <inheritdoc/>
@@ -168,9 +171,9 @@ public class AuthService : IAuthService
         user.LastLoginAt = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync();
 
-        // Generate JWT token (simplified - in production, use proper JWT generation)
-        var token = GenerateSimpleToken(user);
-        var expiresAt = DateTime.UtcNow.AddHours(24);
+        // Generate proper JWT token
+        var token = _jwtTokenService.GenerateToken(user);
+        var expiresAt = DateTime.UtcNow.AddMinutes(1440); // 24 hours
 
         _logger.LogInformation(
             "User logged in successfully. UserId: {UserId}, Username: {Username}",
@@ -190,17 +193,5 @@ public class AuthService : IAuthService
     public async Task<bool> UsernameExistsAsync(string username)
     {
         return await _dbContext.Users.AnyAsync(u => u.Username == username);
-    }
-
-    /// <summary>
-    /// Generates a simple token for authentication
-    /// NOTE: In production, use proper JWT with signing and claims
-    /// </summary>
-    private string GenerateSimpleToken(User user)
-    {
-        // Simplified token generation - in production, use System.IdentityModel.Tokens.Jwt
-        var tokenData = $"{user.Id}:{user.Username}:{DateTime.UtcNow.Ticks}";
-        var tokenBytes = System.Text.Encoding.UTF8.GetBytes(tokenData);
-        return Convert.ToBase64String(tokenBytes);
     }
 }

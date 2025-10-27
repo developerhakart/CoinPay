@@ -32,7 +32,7 @@ public class CircleService : ICircleService
         var restOptions = new RestClientOptions(_options.ApiUrl)
         {
             ThrowOnAnyError = false,
-            MaxTimeout = 30000 // 30 seconds
+            Timeout = TimeSpan.FromSeconds(30)
         };
         _client = new RestClient(restOptions);
 
