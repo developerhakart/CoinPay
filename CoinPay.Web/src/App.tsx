@@ -1,19 +1,20 @@
-import { useAuth } from './contexts/AuthContext';
-import { AuthForm } from './components/AuthForm';
-import { Dashboard } from './components/Dashboard';
+import { RouterProvider } from 'react-router-dom';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { router } from '@/routes/router';
+import { validateEnv } from '@/config';
+
+// Validate environment configuration on app start
+validateEnv();
 
 function App() {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-        <div className="text-white text-2xl font-semibold">Loading...</div>
-      </div>
-    );
-  }
-
-  return isAuthenticated ? <Dashboard /> : <AuthForm />;
+  return (
+    <ErrorBoundary>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </ErrorBoundary>
+  );
 }
 
 export default App;

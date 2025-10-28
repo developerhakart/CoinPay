@@ -12,12 +12,10 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<CreateTransactionRequest>({
+    fromAddress: '',
+    toAddress: '',
     amount: 0,
-    currency: 'USD',
-    type: 'Payment',
-    status: 'Pending',
-    senderName: '',
-    receiverName: '',
+    currency: 'USDC',
     description: '',
   });
 
@@ -31,12 +29,10 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
 
       // Reset form
       setFormData({
+        fromAddress: '',
+        toAddress: '',
         amount: 0,
-        currency: 'USD',
-        type: 'Payment',
-        status: 'Pending',
-        senderName: '',
-        receiverName: '',
+        currency: 'USDC',
         description: '',
       });
 
@@ -116,61 +112,31 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Type
+              From Address
             </label>
-            <select
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+            <input
+              type="text"
+              required
+              value={formData.fromAddress}
+              onChange={(e) => setFormData({ ...formData, fromAddress: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="Payment">Payment</option>
-              <option value="Transfer">Transfer</option>
-              <option value="Refund">Refund</option>
-            </select>
+              placeholder="Enter sender wallet address"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Status
+              To Address
             </label>
-            <select
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+            <input
+              type="text"
+              required
+              value={formData.toAddress}
+              onChange={(e) => setFormData({ ...formData, toAddress: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="Pending">Pending</option>
-              <option value="Completed">Completed</option>
-              <option value="Failed">Failed</option>
-            </select>
+              placeholder="Enter receiver wallet address"
+            />
           </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Sender Name
-          </label>
-          <input
-            type="text"
-            required
-            value={formData.senderName}
-            onChange={(e) => setFormData({ ...formData, senderName: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter sender name"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Receiver Name
-          </label>
-          <input
-            type="text"
-            required
-            value={formData.receiverName}
-            onChange={(e) => setFormData({ ...formData, receiverName: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter receiver name"
-          />
         </div>
 
         <div>
@@ -178,8 +144,7 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
             Description
           </label>
           <textarea
-            required
-            value={formData.description}
+            value={formData.description || ''}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             rows={3}

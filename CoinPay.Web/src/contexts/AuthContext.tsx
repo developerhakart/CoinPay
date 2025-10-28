@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(error.error || 'Registration failed');
       }
 
-      const result = await completeResponse.json();
+      await completeResponse.json();
 
       // Auto-login after registration
       await login(username, password);
@@ -107,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (username: string, password: string) => {
+  const login = async (username: string, _password?: string) => {
     setIsLoading(true);
     try {
       // Step 1: Initiate login (get challenge)
