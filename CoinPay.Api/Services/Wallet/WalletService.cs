@@ -123,7 +123,7 @@ public class WalletService : IWalletService
         };
     }
 
-    public Task<TransferResponse> TransferUSDCAsync(TransferRequest request)
+    public Task<TransferResponse> TransferUSDCAsync(WalletTransferRequest request)
     {
         _logger.LogInformation(
             "Initiating transfer from {From} to {To}, Amount: {Amount}",

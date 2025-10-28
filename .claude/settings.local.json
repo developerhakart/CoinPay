@@ -5,7 +5,8 @@
       "Bash(findstr:*)",
       "Bash(dotnet:*)",
       "Bash(mkdir:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

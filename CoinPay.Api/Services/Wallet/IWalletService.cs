@@ -1,10 +1,12 @@
+using CoinPay.Api.DTOs;
+
 namespace CoinPay.Api.Services.Wallet;
 
 public interface IWalletService
 {
     Task<WalletCreationResponse> CreateWalletAsync(int userId);
     Task<WalletBalanceResponse> GetWalletBalanceAsync(string walletAddress);
-    Task<TransferResponse> TransferUSDCAsync(TransferRequest request);
+    Task<TransferResponse> TransferUSDCAsync(WalletTransferRequest request);
     Task<TransactionStatusResponse> GetTransactionStatusAsync(string transactionId);
     Task<List<TransactionHistoryItem>> GetTransactionHistoryAsync(string walletAddress, int limit = 20);
 }
@@ -24,7 +26,7 @@ public class WalletBalanceResponse
     public string Blockchain { get; set; } = string.Empty;
 }
 
-public class TransferRequest
+public class WalletTransferRequest
 {
     public string FromWalletAddress { get; set; } = string.Empty;
     public string ToWalletAddress { get; set; } = string.Empty;

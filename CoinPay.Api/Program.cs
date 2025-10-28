@@ -654,7 +654,7 @@ app.MapGet("/api/wallet/balance/{walletAddress}", async (string walletAddress, I
 .WithDescription("Retrieves the USDC balance for a wallet address");
 
 // POST: Transfer USDC
-app.MapPost("/api/wallet/transfer", async (TransferRequest request, IWalletService walletService) =>
+app.MapPost("/api/wallet/transfer", async (WalletTransferRequest request, IWalletService walletService) =>
 {
     try
     {
