@@ -1,5 +1,7 @@
 using CoinPay.Api.Data;
 using CoinPay.Api.Services.Circle;
+using CoinPay.Api.Services.Blockchain;
+using CoinPay.Api.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace CoinPay.Api.Services.Wallet;
@@ -7,16 +9,22 @@ namespace CoinPay.Api.Services.Wallet;
 public class WalletService : IWalletService
 {
     private readonly ICircleService _circleService;
+    private readonly IBlockchainRpcService _blockchainRpc;
     private readonly AppDbContext _dbContext;
+    private readonly IWalletRepository _walletRepository;
     private readonly ILogger<WalletService> _logger;
 
     public WalletService(
         ICircleService circleService,
+        IBlockchainRpcService blockchainRpc,
         AppDbContext dbContext,
+        IWalletRepository walletRepository,
         ILogger<WalletService> logger)
     {
         _circleService = circleService;
+        _blockchainRpc = blockchainRpc;
         _dbContext = dbContext;
+        _walletRepository = walletRepository;
         _logger = logger;
     }
 
@@ -28,14 +36,36 @@ public class WalletService : IWalletService
         if (user == null)
             throw new InvalidOperationException($"User {userId} not found");
 
-        if (!string.IsNullOrEmpty(user.WalletAddress))
-            throw new InvalidOperationException($"User already has a wallet: {user.WalletAddress}");
+        // Check if user already has a wallet
+        var existingWallet = await _walletRepository.GetByUserIdAsync(userId);
+        if (existingWallet != null)
+            throw new InvalidOperationException($"User already has a wallet: {existingWallet.Address}");
 
         if (string.IsNullOrEmpty(user.CircleUserId))
             throw new InvalidOperationException("User must complete registration first");
 
-        var wallet = await _circleService.CreateWalletAsync(user.CircleUserId);
+        // Create wallet via Circle
+        var circleWallet = await _circleService.CreateWalletAsync(user.CircleUserId);
 
+        // Create wallet entity
+        var wallet = new Models.Wallet
+        {
+            UserId = userId,
+            Address = circleWallet.Address,
+            CircleWalletId = circleWallet.WalletId,
+            Blockchain = circleWallet.Blockchain,
+            WalletType = circleWallet.WalletType,
+            Balance = circleWallet.Balance ?? 0m,
+            BalanceCurrency = circleWallet.BalanceCurrency ?? "USDC",
+            BalanceUpdatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow,
+            LastActivityAt = DateTime.UtcNow
+        };
+
+        // Save wallet to database
+        await _walletRepository.CreateAsync(wallet);
+
+        // Update user's wallet address for quick reference
         user.WalletAddress = wallet.Address;
         await _dbContext.SaveChangesAsync();
 
@@ -44,25 +74,53 @@ public class WalletService : IWalletService
         return new WalletCreationResponse
         {
             WalletAddress = wallet.Address,
-            WalletId = wallet.WalletId,
+            WalletId = wallet.CircleWalletId,
             Blockchain = wallet.Blockchain,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = wallet.CreatedAt
         };
     }
 
-    public Task<WalletBalanceResponse> GetWalletBalanceAsync(string walletAddress)
+    public async Task<WalletBalanceResponse> GetWalletBalanceAsync(string walletAddress)
     {
         _logger.LogInformation("Getting balance for wallet {WalletAddress}", walletAddress);
 
-        // For MVP, return mock data
-        // In production, query Circle API or blockchain
+        // Get wallet from database
+        var wallet = await _walletRepository.GetByAddressAsync(walletAddress);
+        if (wallet == null)
+        {
+            _logger.LogWarning("Wallet not found: {WalletAddress}", walletAddress);
+            throw new InvalidOperationException($"Wallet {walletAddress} not found");
+        }
 
-        return Task.FromResult(new WalletBalanceResponse
+        // Check if balance is cached (within last 30 seconds)
+        if (wallet.BalanceUpdatedAt.HasValue &&
+            (DateTime.UtcNow - wallet.BalanceUpdatedAt.Value).TotalSeconds < 30)
+        {
+            _logger.LogDebug("Returning cached balance for {WalletAddress}: {Balance}", walletAddress, wallet.Balance);
+            return new WalletBalanceResponse
+            {
+                WalletAddress = walletAddress,
+                USDCBalance = wallet.Balance,
+                Blockchain = wallet.Blockchain
+            };
+        }
+
+        // Fetch fresh balance from blockchain
+        var balance = await _blockchainRpc.GetUSDCBalanceAsync(walletAddress);
+
+        // Update cached balance in database
+        wallet.Balance = balance;
+        wallet.BalanceUpdatedAt = DateTime.UtcNow;
+        await _walletRepository.UpdateAsync(wallet);
+
+        _logger.LogInformation("Balance updated for {WalletAddress}: {Balance} USDC", walletAddress, balance);
+
+        return new WalletBalanceResponse
         {
             WalletAddress = walletAddress,
-            USDCBalance = 100.00m, // Mock balance
-            Blockchain = "MATIC-AMOY"
-        });
+            USDCBalance = balance,
+            Blockchain = wallet.Blockchain
+        };
     }
 
     public Task<TransferResponse> TransferUSDCAsync(TransferRequest request)

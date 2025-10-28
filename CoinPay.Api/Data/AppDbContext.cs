@@ -11,10 +11,34 @@ public class AppDbContext : DbContext
 
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Wallet> Wallets { get; set; }
+    public DbSet<BlockchainTransaction> BlockchainTransactions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Configure BlockchainTransaction indexes
+        modelBuilder.Entity<BlockchainTransaction>()
+            .HasIndex(t => t.UserOpHash)
+            .IsUnique();
+
+        modelBuilder.Entity<BlockchainTransaction>()
+            .HasIndex(t => t.TransactionHash);
+
+        modelBuilder.Entity<BlockchainTransaction>()
+            .HasIndex(t => t.WalletId);
+
+        modelBuilder.Entity<BlockchainTransaction>()
+            .HasIndex(t => t.Status);
+
+        // Configure Wallet indexes
+        modelBuilder.Entity<Wallet>()
+            .HasIndex(w => w.Address)
+            .IsUnique();
+
+        modelBuilder.Entity<Wallet>()
+            .HasIndex(w => w.UserId);
 
         // Seed some initial data with static timestamps
         modelBuilder.Entity<Transaction>().HasData(

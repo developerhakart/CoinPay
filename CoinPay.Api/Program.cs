@@ -6,6 +6,8 @@ using CoinPay.Api.HealthChecks;
 using CoinPay.Api.Services.Auth;
 using CoinPay.Api.Services.Circle;
 using CoinPay.Api.Services.Wallet;
+using CoinPay.Api.Services.Blockchain;
+using CoinPay.Api.Repositories;
 using Serilog;
 using Serilog.Events;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -117,10 +119,48 @@ builder.Services.AddAuthentication("Bearer")
 builder.Services.AddAuthorization();
 
 // Register services
-builder.Services.AddScoped<ICircleService, CircleService>();
+// Use MockCircleService for MVP testing (no real Circle API calls)
+builder.Services.AddScoped<ICircleService, MockCircleService>();
+// For production with real Circle API:
+// builder.Services.AddScoped<ICircleService, CircleService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
+
+// Use MockBlockchainRpcService for MVP testing
+builder.Services.AddScoped<IBlockchainRpcService, MockBlockchainRpcService>();
+// For production with real blockchain RPC:
+// builder.Services.AddScoped<IBlockchainRpcService, BlockchainRpcService>();
+
+// Register repositories
+builder.Services.AddScoped<IWalletRepository, WalletRepository>();
+builder.Services.AddScoped<ITransactionRepository, CoinPay.Api.Repositories.TransactionRepository>();
+
+// Register UserOperation and Paymaster services
+builder.Services.AddScoped<CoinPay.Api.Services.UserOperation.IUserOperationService, CoinPay.Api.Services.UserOperation.UserOperationService>();
+
+// Use MockPaymasterService for MVP testing (no real paymaster calls)
+builder.Services.AddScoped<CoinPay.Api.Services.Paymaster.IPaymasterService, CoinPay.Api.Services.Paymaster.MockPaymasterService>();
+// For production with real Circle Paymaster:
+// builder.Services.AddScoped<CoinPay.Api.Services.Paymaster.IPaymasterService, CoinPay.Api.Services.Paymaster.PaymasterService>();
+
+// Configure HTTP clients for Circle services
+builder.Services.AddHttpClient("CircleBundler", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Circle:BundlerUrl"] ?? "https://bundler.circle.com");
+    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {builder.Configuration["Circle:ApiKey"]}");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddHttpClient("CirclePaymaster", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Circle:PaymasterUrl"] ?? "https://paymaster.circle.com");
+    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {builder.Configuration["Circle:ApiKey"]}");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+// Add MVC Controllers for new endpoints
+builder.Services.AddControllers();
 
     var app = builder.Build();
 
@@ -187,6 +227,9 @@ app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthC
 {
     Predicate = _ => false // No checks, just responds if app is running
 });
+
+// Map controllers for transaction endpoints
+app.MapControllers();
 
 // API Endpoints
 

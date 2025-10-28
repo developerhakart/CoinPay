@@ -69,3 +69,4 @@ docfx/_site/
 docfx/api/
 docfx/obj/
 *.xml
+nul
