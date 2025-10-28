@@ -71,6 +71,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                 "http://localhost:3000",      // React default
+                "http://localhost:3001",      // Vite alternate port
                 "http://localhost:5173",      // Vite default
                 "http://localhost:5100",      // Custom frontend port
                 "http://localhost:5174",      // Additional Vite port

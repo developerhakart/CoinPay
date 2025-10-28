@@ -39,10 +39,13 @@ export function DashboardPage() {
             <p className="text-gray-600">Send cryptocurrency to other users</p>
           </Link>
 
-          <div className="bg-white p-6 rounded-lg shadow">
+          <Link
+            to="/transactions"
+            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
+          >
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Transactions</h3>
             <p className="text-gray-600">View your transaction history</p>
-          </div>
+          </Link>
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">

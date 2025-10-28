@@ -147,12 +147,12 @@ export function TransactionList() {
             >
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl">{getTypeIcon('Transfer')}</span>
+                  <span className="text-2xl">{getTypeIcon(transaction.type)}</span>
                   <div>
                     <p className="font-semibold text-gray-800">
                       {transaction.transactionId || `TX-${transaction.id}`}
                     </p>
-                    <p className="text-xs text-gray-500">Transfer</p>
+                    <p className="text-xs text-gray-500">{transaction.type}</p>
                   </div>
                 </div>
                 <StatusBadge status={transaction.status} />
@@ -161,14 +161,14 @@ export function TransactionList() {
               <div className="grid grid-cols-2 gap-4 mb-3">
                 <div>
                   <p className="text-xs text-gray-500">From</p>
-                  <p className="text-sm font-medium text-gray-700 font-mono text-xs">
-                    {transaction.fromAddress.slice(0, 6)}...{transaction.fromAddress.slice(-4)}
+                  <p className="text-sm font-medium text-gray-700">
+                    {transaction.senderName || 'N/A'}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">To</p>
-                  <p className="text-sm font-medium text-gray-700 font-mono text-xs">
-                    {transaction.toAddress.slice(0, 6)}...{transaction.toAddress.slice(-4)}
+                  <p className="text-sm font-medium text-gray-700">
+                    {transaction.receiverName || 'N/A'}
                   </p>
                 </div>
               </div>

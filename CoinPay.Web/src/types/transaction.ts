@@ -1,16 +1,14 @@
 export interface Transaction {
   id: number;
   transactionId?: string;
-  fromAddress: string;
-  toAddress: string;
   amount: number;
   currency: string;
-  status: TransactionStatus;
-  transactionHash?: string;
-  circleTransferId?: string;
+  type: string; // Payment, Refund, Transfer
+  status: string; // Pending, Completed, Failed
+  senderName?: string;
+  receiverName?: string;
   description?: string;
   createdAt: string;
-  updatedAt?: string;
   completedAt?: string;
 }
 
@@ -23,10 +21,12 @@ export enum TransactionStatus {
 }
 
 export interface CreateTransactionRequest {
-  fromAddress: string;
-  toAddress: string;
   amount: number;
   currency?: string;
+  type?: string; // Payment, Refund, Transfer
+  status?: string; // Pending, Completed, Failed
+  senderName?: string;
+  receiverName?: string;
   description?: string;
 }
 

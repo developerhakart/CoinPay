@@ -6,6 +6,7 @@ import { RegisterPage } from '@/pages/RegisterPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { WalletPage } from '@/pages/WalletPage';
 import { TransferPage } from '@/pages/TransferPage';
+import { TransactionsPage } from '@/pages/TransactionsPage';
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +35,10 @@ export const router = createBrowserRouter([
       {
         path: '/transfer',
         element: <TransferPage />,
+      },
+      {
+        path: '/transactions',
+        element: <TransactionsPage />,
       },
     ],
   },
