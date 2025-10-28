@@ -155,7 +155,7 @@ export function TransactionList() {
                     <p className="text-xs text-gray-500">{transaction.type}</p>
                   </div>
                 </div>
-                <StatusBadge status={transaction.status} />
+                <StatusBadge status={transaction.status as any} />
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-3">

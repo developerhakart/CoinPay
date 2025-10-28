@@ -12,10 +12,11 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<CreateTransactionRequest>({
-    fromAddress: '',
-    toAddress: '',
+    senderName: '',
+    receiverName: '',
     amount: 0,
-    currency: 'USDC',
+    currency: 'USD',
+    type: 'Payment',
     description: '',
   });
 
@@ -29,10 +30,11 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
 
       // Reset form
       setFormData({
-        fromAddress: '',
-        toAddress: '',
+        senderName: '',
+        receiverName: '',
         amount: 0,
-        currency: 'USDC',
+        currency: 'USD',
+        type: 'Payment',
         description: '',
       });
 
@@ -112,31 +114,44 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              From Address
+              Sender Name
             </label>
             <input
               type="text"
-              required
-              value={formData.fromAddress}
-              onChange={(e) => setFormData({ ...formData, fromAddress: e.target.value })}
+              value={formData.senderName || ''}
+              onChange={(e) => setFormData({ ...formData, senderName: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter sender wallet address"
+              placeholder="Enter sender name"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              To Address
+              Receiver Name
             </label>
             <input
               type="text"
-              required
-              value={formData.toAddress}
-              onChange={(e) => setFormData({ ...formData, toAddress: e.target.value })}
+              value={formData.receiverName || ''}
+              onChange={(e) => setFormData({ ...formData, receiverName: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter receiver wallet address"
+              placeholder="Enter receiver name"
             />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Transaction Type
+          </label>
+          <select
+            value={formData.type}
+            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="Payment">Payment</option>
+            <option value="Transfer">Transfer</option>
+            <option value="Refund">Refund</option>
+          </select>
         </div>
 
         <div>

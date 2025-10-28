@@ -19,6 +19,75 @@ services:
       retries: 5
     networks:
       - coinpay-network
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: CoinPay.Api/Dockerfile
+    container_name: coinpay-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=coinpay;Username=postgres;Password=root
+      - Circle__ApiKey=test_api_key_2_abc123xyz789def456ghi012
+      - Circle__EntitySecret=test_entity_secret_xyz789abc123def456ghi012jkl345mno678
+      - Circle__WebhookSecret=test_webhook_secret_def456ghi012jkl345mno678pqr901stu234
+      - Circle__ApiBaseUrl=https://api.circle.com
+      - Jwt__SecretKey=DevelopmentSecretKey_ChangeInProduction_MinimumLength32Characters
+      - Jwt__Issuer=CoinPay
+      - Jwt__Audience=CoinPay
+      - Jwt__ExpirationMinutes=1440
+    ports:
+      - "7777:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - coinpay-network
+    restart: unless-stopped
+
+  gateway:
+    build:
+      context: .
+      dockerfile: CoinPay.Gateway/Dockerfile
+    container_name: coinpay-gateway
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    ports:
+      - "5000:8080"
+    depends_on:
+      - api
+    networks:
+      - coinpay-network
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./CoinPay.Web
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=http://localhost:5000
+    container_name: coinpay-web
+    ports:
+      - "3000:80"
+    depends_on:
+      - gateway
+    networks:
+      - coinpay-network
+    restart: unless-stopped
+
+  docfx:
+    build:
+      context: .
+      dockerfile: docfx/Dockerfile
+    container_name: coinpay-docs
+    ports:
+      - "8080:80"
+    networks:
+      - coinpay-network
+    restart: unless-stopped
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -32,6 +101,7 @@ services:
       - postgres
     networks:
       - coinpay-network
+    restart: unless-stopped
 
 volumes:
   postgres-data:
