@@ -1,10 +1,10 @@
 import { useState, useRef } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '@/store';
 import { TransactionList } from './TransactionList';
 import { TransactionForm } from './TransactionForm';
 
 export function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthStore();
   const [refreshKey, setRefreshKey] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
 

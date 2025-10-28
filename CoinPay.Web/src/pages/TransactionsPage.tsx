@@ -1,9 +1,9 @@
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/store';
 import { Link } from 'react-router-dom';
 import { TransactionList } from '@/components/TransactionList';
 
 export function TransactionsPage() {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthStore();
 
   return (
     <div className="min-h-screen bg-gray-50">

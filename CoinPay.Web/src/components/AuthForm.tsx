@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '@/store';
 
 export function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -8,7 +8,7 @@ export function AuthForm() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login, register } = useAuth();
+  const { loginWithPasskey, registerWithPasskey } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,9 +17,9 @@ export function AuthForm() {
 
     try {
       if (isLogin) {
-        await login(username, password);
+        await loginWithPasskey(username, password);
       } else {
-        await register(username, password);
+        await registerWithPasskey(username, password);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed');

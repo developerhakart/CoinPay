@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/store';
 
 export function RegisterPage() {
   const [username, setUsername] = useState('');
@@ -9,7 +9,7 @@ export function RegisterPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const { register } = useAuth();
+  const { registerWithPasskey } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,7 +29,7 @@ export function RegisterPage() {
     setIsLoading(true);
 
     try {
-      await register(username, password);
+      await registerWithPasskey(username, password);
       navigate('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');

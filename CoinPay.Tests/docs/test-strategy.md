@@ -360,7 +360,7 @@ New → Assigned → In Progress → Fixed → Testing → Closed
      /      \  Integration (30%)
     /________\
    /          \  Unit (60%)
-  /__________\
+  /____________\
 ```
 
 ### 10.2 Automation Principles

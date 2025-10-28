@@ -1,8 +1,8 @@
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/store';
 import { Link } from 'react-router-dom';
 
 export function WalletPage() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return (
     <div className="min-h-screen bg-gray-50">

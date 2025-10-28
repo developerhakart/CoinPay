@@ -1,12 +1,12 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/store';
 
 interface ProtectedRouteProps {
   redirectTo?: string;
 }
 
 export function ProtectedRoute({ redirectTo = '/login' }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuthStore();
 
   if (isLoading) {
     return (
