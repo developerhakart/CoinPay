@@ -51,6 +51,12 @@ export const authService = {
     return response.data;
   },
 
+  // Development Login (bypasses passkey for testing)
+  async loginDev(username: string): Promise<AuthResponse> {
+    const response = await apiClient.post('/auth/login/dev', { username });
+    return response.data;
+  },
+
   // Get current user profile
   async getProfile(): Promise<User> {
     const response = await apiClient.get('/me');
