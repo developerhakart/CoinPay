@@ -566,6 +566,42 @@ app.MapPost("/api/auth/login/complete", async (CompleteLoginRequest request, IAu
 .WithSummary("Complete user login")
 .WithDescription("Completes the passkey-based login process after passkey verification");
 
+// POST: Development/Test login (bypasses passkey for testing)
+// WARNING: This endpoint should be disabled in production!
+app.MapPost("/api/auth/login/dev", async (DevLoginRequest request, AppDbContext db, JwtTokenService jwtService) =>
+{
+    Log.Warning("Development login endpoint used for username: {Username}", request.Username);
+
+    var user = await db.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
+
+    if (user == null)
+    {
+        return Results.NotFound(new { error = "User not found" });
+    }
+
+    // Update last login
+    user.LastLoginAt = DateTime.UtcNow;
+    await db.SaveChangesAsync();
+
+    // Generate JWT token
+    var token = jwtService.GenerateToken(user);
+    var expiresAt = DateTime.UtcNow.AddMinutes(1440); // 24 hours
+
+    Log.Information("Development login successful for user {UserId} ({Username})", user.Id, user.Username);
+
+    return Results.Ok(new
+    {
+        token,
+        username = user.Username,
+        walletAddress = user.WalletAddress,
+        expiresAt
+    });
+})
+.WithName("DevLogin")
+.WithTags("Authentication - Development")
+.WithSummary("Development login (bypasses passkey)")
+.WithDescription("⚠️ FOR TESTING ONLY - Logs in with just username, no passkey required. Should be disabled in production!");
+
 // ============================================================================
 // PROTECTED ENDPOINTS (Require Authentication)
 // ============================================================================
@@ -736,3 +772,4 @@ finally
 public record UsernameCheckRequest(string Username);
 public record InitiateRegistrationRequest(string Username);
 public record InitiateLoginRequest(string Username);
+public record DevLoginRequest(string Username);
