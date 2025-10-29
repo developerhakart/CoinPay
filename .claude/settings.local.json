@@ -14,7 +14,8 @@
       "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" add CoinPay.Api/CoinPay.Api.csproj CoinPay.Api/Controllers/TransactionController.cs CoinPay.Api/DTOs/TransactionDTOs.cs CoinPay.Api/Program.cs CoinPay.Api/Repositories/ITransactionRepository.cs CoinPay.Api/Repositories/TransactionRepository.cs CoinPay.Api/Services/Wallet/IWalletService.cs CoinPay.Api/Services/Wallet/WalletService.cs CoinPay.Api/appsettings.Development.json CoinPay.Api/appsettings.json CoinPay.Api/appsettings.Production.json CoinPay.Api/Migrations/ CoinPay.Api/Services/BackgroundWorkers/ CoinPay.Api/Services/Caching/ CoinPay.Api/Services/Transaction/ CoinPay.Web/src/store/authStore.ts \"CoinPay.Web/.env.development\" \"CoinPay.Web/.env.production\" \"Planning/Sprints/N02/\")",
       "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" status)",
       "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" diff CoinPay.Web/src/pages/WalletPage.tsx)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
