@@ -3,67 +3,60 @@ using CoinPay.Api.Services.Encryption;
 namespace CoinPay.Api.Services.BankAccount;
 
 /// <summary>
-/// Helper class for encrypting/decrypting bank account sensitive data
+/// Static helper class for encrypting/decrypting bank account sensitive data
 /// </summary>
-public class BankAccountEncryptionHelper
+public static class BankAccountEncryptionHelper
 {
-    private readonly IEncryptionService _encryptionService;
-
-    public BankAccountEncryptionHelper(IEncryptionService encryptionService)
-    {
-        _encryptionService = encryptionService;
-    }
-
     /// <summary>
     /// Encrypt routing number
     /// </summary>
-    public byte[] EncryptRoutingNumber(string routingNumber)
+    public static byte[] EncryptRoutingNumber(string routingNumber, IEncryptionService encryptionService)
     {
         if (string.IsNullOrWhiteSpace(routingNumber))
         {
             throw new ArgumentException("Routing number cannot be empty", nameof(routingNumber));
         }
 
-        return _encryptionService.Encrypt(routingNumber);
+        return encryptionService.Encrypt(routingNumber);
     }
 
     /// <summary>
     /// Decrypt routing number
     /// </summary>
-    public string DecryptRoutingNumber(byte[] encryptedRoutingNumber)
+    public static string DecryptRoutingNumber(byte[] encryptedRoutingNumber, IEncryptionService encryptionService)
     {
         if (encryptedRoutingNumber == null || encryptedRoutingNumber.Length == 0)
         {
             throw new ArgumentException("Encrypted routing number cannot be empty", nameof(encryptedRoutingNumber));
         }
 
-        return _encryptionService.Decrypt(encryptedRoutingNumber);
+        return encryptionService.Decrypt(encryptedRoutingNumber);
     }
 
     /// <summary>
     /// Encrypt account number
     /// </summary>
-    public byte[] EncryptAccountNumber(string accountNumber)
+    public static byte[] EncryptAccountNumber(string accountNumber, IEncryptionService encryptionService)
     {
         if (string.IsNullOrWhiteSpace(accountNumber))
         {
             throw new ArgumentException("Account number cannot be empty", nameof(accountNumber));
         }
 
-        return _encryptionService.Encrypt(accountNumber);
+        return encryptionService.Encrypt(accountNumber);
     }
 
     /// <summary>
     /// Decrypt account number
     /// </summary>
-    public string DecryptAccountNumber(byte[] encryptedAccountNumber)
+    public static string DecryptAccountNumber(byte[] encryptedAccountNumber, IEncryptionService encryptionService)
     {
         if (encryptedAccountNumber == null || encryptedAccountNumber.Length == 0)
         {
             throw new ArgumentException("Encrypted account number cannot be empty", nameof(encryptedAccountNumber));
         }
 
-        return _encryptionService.Decrypt(encryptedAccountNumber);
+        return encryptionService.Decrypt(encryptedAccountNumber);
     }
 
     /// <summary>

@@ -30,7 +30,7 @@ export function validateRoutingNumber(routing: string): ValidationResult {
   let sum = 0;
 
   for (let i = 0; i < 9; i++) {
-    sum += parseInt(digitsOnly[i]) * weights[i];
+    sum += parseInt(digitsOnly[i]!) * weights[i]!;
   }
 
   // Sum must be divisible by 10

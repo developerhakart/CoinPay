@@ -11,6 +11,8 @@ using CoinPay.Api.Repositories;
 using CoinPay.Api.Services.Caching;
 using CoinPay.Api.Services.BackgroundWorkers;
 using CoinPay.Api.Services.Transaction;
+using CoinPay.Api.Services.Encryption;
+using CoinPay.Api.Services.BankAccount;
 using StackExchange.Redis;
 using Serilog;
 using Serilog.Events;
@@ -195,6 +197,13 @@ builder.Services.AddScoped<IBlockchainRpcService, MockBlockchainRpcService>();
 builder.Services.AddScoped<IWalletRepository, WalletRepository>();
 builder.Services.AddScoped<ITransactionRepository, CoinPay.Api.Repositories.TransactionRepository>();
 builder.Services.AddScoped<CoinPay.Api.Repositories.IWebhookRepository, CoinPay.Api.Repositories.WebhookRepository>();
+builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
+
+// Register encryption service (Phase 3)
+builder.Services.AddSingleton<IEncryptionService, AesEncryptionService>();
+
+// Register bank account validation service (Phase 3)
+builder.Services.AddScoped<IBankAccountValidationService, BankAccountValidationService>();
 
 // Register transaction services
 builder.Services.AddScoped<ITransactionStatusService, TransactionStatusService>();
