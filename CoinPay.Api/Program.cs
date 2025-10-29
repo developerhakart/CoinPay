@@ -13,6 +13,7 @@ using CoinPay.Api.Services.BackgroundWorkers;
 using CoinPay.Api.Services.Transaction;
 using CoinPay.Api.Services.Encryption;
 using CoinPay.Api.Services.BankAccount;
+using CoinPay.Api.Services.FiatGateway;
 using StackExchange.Redis;
 using Serilog;
 using Serilog.Events;
@@ -204,6 +205,15 @@ builder.Services.AddSingleton<IEncryptionService, AesEncryptionService>();
 
 // Register bank account validation service (Phase 3)
 builder.Services.AddScoped<IBankAccountValidationService, BankAccountValidationService>();
+
+// Register fiat gateway services (Phase 3)
+// Use MockFiatGatewayService for MVP testing
+builder.Services.AddScoped<IFiatGatewayService, MockFiatGatewayService>();
+// For production with real gateway:
+// builder.Services.AddScoped<IFiatGatewayService, FiatGatewayService>();
+
+// Register exchange rate service with caching (Phase 3)
+builder.Services.AddScoped<IExchangeRateService, ExchangeRateService>();
 
 // Register transaction services
 builder.Services.AddScoped<ITransactionStatusService, TransactionStatusService>();

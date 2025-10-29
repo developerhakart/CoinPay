@@ -203,6 +203,136 @@ public class BankAccountController : ControllerBase
     }
 
     /// <summary>
+    /// Update existing bank account (metadata only)
+    /// </summary>
+    /// <param name="id">Bank account ID</param>
+    /// <param name="request">Updated bank account details</param>
+    /// <returns>Updated bank account</returns>
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof(BankAccountResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<BankAccountResponse>> UpdateBankAccount(
+        Guid id,
+        [FromBody] UpdateBankAccountRequest request)
+    {
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            _logger.LogWarning("UpdateBankAccount: User ID not found in token");
+            return Unauthorized(new { error = new { code = "UNAUTHORIZED", message = "User not authenticated" } });
+        }
+
+        // Validate account holder name
+        var nameValidation = _validationService.ValidateAccountHolderName(request.AccountHolderName);
+        if (!nameValidation.IsValid)
+        {
+            _logger.LogWarning("UpdateBankAccount: Invalid account holder name for user {UserId}", userId);
+            return BadRequest(new { error = new { code = "INVALID_ACCOUNT_HOLDER_NAME", message = nameValidation.ErrorMessage } });
+        }
+
+        try
+        {
+            // Get existing bank account
+            var existingAccount = await _bankAccountRepository.GetByIdAsync(id);
+
+            if (existingAccount == null)
+            {
+                _logger.LogWarning("UpdateBankAccount: Bank account {BankAccountId} not found", id);
+                return NotFound(new { error = new { code = "NOT_FOUND", message = "Bank account not found" } });
+            }
+
+            // Verify ownership
+            if (existingAccount.UserId != userId.Value)
+            {
+                _logger.LogWarning("UpdateBankAccount: User {UserId} attempted to update bank account {BankAccountId} owned by {OwnerId}",
+                    userId, id, existingAccount.UserId);
+                return NotFound(new { error = new { code = "NOT_FOUND", message = "Bank account not found" } });
+            }
+
+            // Update metadata only (cannot change routing/account numbers for security)
+            existingAccount.AccountHolderName = request.AccountHolderName.Trim();
+            existingAccount.BankName = request.BankName?.Trim();
+            existingAccount.IsPrimary = request.IsPrimary;
+            existingAccount.UpdatedAt = DateTime.UtcNow;
+
+            // Save changes (repository handles primary account logic)
+            var updated = await _bankAccountRepository.UpdateAsync(existingAccount);
+
+            _logger.LogInformation("UpdateBankAccount: Updated bank account {BankAccountId} for user {UserId}", id, userId);
+
+            return Ok(MapToResponse(updated));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "UpdateBankAccount: Error updating bank account {BankAccountId}", id);
+            return StatusCode(500, new { error = new { code = "INTERNAL_ERROR", message = "Failed to update bank account" } });
+        }
+    }
+
+    /// <summary>
+    /// Delete bank account (soft delete)
+    /// </summary>
+    /// <param name="id">Bank account ID</param>
+    /// <returns>No content on success</returns>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> DeleteBankAccount(Guid id)
+    {
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            _logger.LogWarning("DeleteBankAccount: User ID not found in token");
+            return Unauthorized(new { error = new { code = "UNAUTHORIZED", message = "User not authenticated" } });
+        }
+
+        try
+        {
+            // Verify ownership before deletion
+            var existingAccount = await _bankAccountRepository.GetByIdAsync(id);
+
+            if (existingAccount == null)
+            {
+                _logger.LogWarning("DeleteBankAccount: Bank account {BankAccountId} not found", id);
+                return NotFound(new { error = new { code = "NOT_FOUND", message = "Bank account not found" } });
+            }
+
+            if (existingAccount.UserId != userId.Value)
+            {
+                _logger.LogWarning("DeleteBankAccount: User {UserId} attempted to delete bank account {BankAccountId} owned by {OwnerId}",
+                    userId, id, existingAccount.UserId);
+                return NotFound(new { error = new { code = "NOT_FOUND", message = "Bank account not found" } });
+            }
+
+            // TODO: Check if bank account has pending payouts
+            // This will be implemented when payout endpoints are created
+            // For now, allow deletion
+
+            // Soft delete
+            var deleted = await _bankAccountRepository.DeleteAsync(id);
+
+            if (!deleted)
+            {
+                _logger.LogError("DeleteBankAccount: Failed to delete bank account {BankAccountId}", id);
+                return StatusCode(500, new { error = new { code = "INTERNAL_ERROR", message = "Failed to delete bank account" } });
+            }
+
+            _logger.LogInformation("DeleteBankAccount: Deleted bank account {BankAccountId} for user {UserId}", id, userId);
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "DeleteBankAccount: Error deleting bank account {BankAccountId}", id);
+            return StatusCode(500, new { error = new { code = "INTERNAL_ERROR", message = "Failed to delete bank account" } });
+        }
+    }
+
+    /// <summary>
     /// Get authenticated user ID from JWT token
     /// </summary>
     private int? GetUserId()
