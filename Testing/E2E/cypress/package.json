@@ -1,0 +1,37 @@
+{
+  "name": "coinpay-cypress-e2e",
+  "version": "1.0.0",
+  "description": "Cypress E2E tests for CoinPay Phase 2 features",
+  "private": true,
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "cy:run:chrome": "cypress run --browser chrome",
+    "cy:run:firefox": "cypress run --browser firefox",
+    "cy:run:edge": "cypress run --browser edge",
+    "cy:run:merchant": "cypress run --spec 'cypress/e2e/merchant-dashboard.cy.ts'",
+    "cy:run:customer": "cypress run --spec 'cypress/e2e/customer-dashboard.cy.ts'",
+    "cy:run:currency": "cypress run --spec 'cypress/e2e/multi-currency.cy.ts'",
+    "cy:run:headless": "cypress run --headless",
+    "cy:run:record": "cypress run --record --key <YOUR_RECORD_KEY>",
+    "report": "cypress run --reporter mochawesome",
+    "clean": "rm -rf cypress/screenshots cypress/videos cypress/reports"
+  },
+  "keywords": [
+    "cypress",
+    "e2e",
+    "testing",
+    "coinpay",
+    "phase2"
+  ],
+  "author": "CoinPay Team",
+  "license": "MIT",
+  "devDependencies": {
+    "cypress": "^13.6.0",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0",
+    "mochawesome": "^7.1.3",
+    "mochawesome-merge": "^4.3.0",
+    "mochawesome-report-generator": "^6.2.0"
+  }
+}
