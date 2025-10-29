@@ -43,4 +43,16 @@ export const transactionService = {
     const response = await apiClient.get(`/transactions/user/${userId}`);
     return response.data;
   },
+
+  // Get transaction status
+  async getStatus(id: number): Promise<any> {
+    const response = await apiClient.get(`/transactions/${id}/status`);
+    return response.data;
+  },
+
+  // Get transaction details (including blockchain info)
+  async getDetails(id: number): Promise<any> {
+    const response = await apiClient.get(`/transactions/${id}/details`);
+    return response.data;
+  },
 };
