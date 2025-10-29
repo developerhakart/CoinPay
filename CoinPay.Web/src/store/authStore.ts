@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { User } from '@/types';
+import { env } from '@/config/env';
 
 interface AuthState {
   user: User | null;
@@ -67,7 +68,7 @@ export const useAuthStore = create<AuthStore>()(
           set({ isLoading: true, error: null }, false, 'auth/loginWithPasskey/start');
           try {
             // Step 1: Initiate login (get challenge)
-            const initiateResponse = await fetch('http://localhost:5000/api/auth/login/initiate', {
+            const initiateResponse = await fetch(`${env.apiBaseUrl}/api/auth/login/initiate`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ username }),
@@ -87,7 +88,7 @@ export const useAuthStore = create<AuthStore>()(
             };
 
             // Step 2: Complete login
-            const completeResponse = await fetch('http://localhost:5000/api/auth/login/complete', {
+            const completeResponse = await fetch(`${env.apiBaseUrl}/api/auth/login/complete`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -107,7 +108,7 @@ export const useAuthStore = create<AuthStore>()(
             const { token: authToken, username: returnedUsername, walletAddress } = await completeResponse.json();
 
             // Fetch full user profile
-            const profileResponse = await fetch('http://localhost:5000/api/me', {
+            const profileResponse = await fetch(`${env.apiBaseUrl}/api/me`, {
               headers: {
                 'Authorization': `Bearer ${authToken}`,
               },
@@ -139,7 +140,7 @@ export const useAuthStore = create<AuthStore>()(
           set({ isLoading: true, error: null }, false, 'auth/registerWithPasskey/start');
           try {
             // Step 1: Check if username exists
-            const checkResponse = await fetch('http://localhost:5000/api/auth/check-username', {
+            const checkResponse = await fetch(`${env.apiBaseUrl}/api/auth/check-username`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ username }),
@@ -155,7 +156,7 @@ export const useAuthStore = create<AuthStore>()(
             }
 
             // Step 2: Initiate registration (get challenge)
-            const initiateResponse = await fetch('http://localhost:5000/api/auth/register/initiate', {
+            const initiateResponse = await fetch(`${env.apiBaseUrl}/api/auth/register/initiate`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ username }),
@@ -175,7 +176,7 @@ export const useAuthStore = create<AuthStore>()(
             };
 
             // Step 3: Complete registration
-            const completeResponse = await fetch('http://localhost:5000/api/auth/register/complete', {
+            const completeResponse = await fetch(`${env.apiBaseUrl}/api/auth/register/complete`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

@@ -1,8 +1,10 @@
 using CoinPay.Api.Data;
 using CoinPay.Api.Services.Circle;
 using CoinPay.Api.Services.Blockchain;
+using CoinPay.Api.Services.Caching;
 using CoinPay.Api.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace CoinPay.Api.Services.Wallet;
 
@@ -12,19 +14,23 @@ public class WalletService : IWalletService
     private readonly IBlockchainRpcService _blockchainRpc;
     private readonly AppDbContext _dbContext;
     private readonly IWalletRepository _walletRepository;
+    private readonly ICachingService? _cachingService;
     private readonly ILogger<WalletService> _logger;
+    private const int CacheTTLSeconds = 30;
 
     public WalletService(
         ICircleService circleService,
         IBlockchainRpcService blockchainRpc,
         AppDbContext dbContext,
         IWalletRepository walletRepository,
-        ILogger<WalletService> logger)
+        ILogger<WalletService> logger,
+        ICachingService? cachingService = null)
     {
         _circleService = circleService;
         _blockchainRpc = blockchainRpc;
         _dbContext = dbContext;
         _walletRepository = walletRepository;
+        _cachingService = cachingService;
         _logger = logger;
     }
 
@@ -80,9 +86,10 @@ public class WalletService : IWalletService
         };
     }
 
-    public async Task<WalletBalanceResponse> GetWalletBalanceAsync(string walletAddress)
+    public async Task<WalletBalanceResponse> GetWalletBalanceAsync(string walletAddress, bool forceRefresh = false)
     {
-        _logger.LogInformation("Getting balance for wallet {WalletAddress}", walletAddress);
+        _logger.LogInformation("Getting balance for wallet {WalletAddress}, ForceRefresh={ForceRefresh}",
+            walletAddress, forceRefresh);
 
         // Get wallet from database
         var wallet = await _walletRepository.GetByAddressAsync(walletAddress);
@@ -92,26 +99,54 @@ public class WalletService : IWalletService
             throw new InvalidOperationException($"Wallet {walletAddress} not found");
         }
 
-        // Check if balance is cached (within last 30 seconds)
-        if (wallet.BalanceUpdatedAt.HasValue &&
-            (DateTime.UtcNow - wallet.BalanceUpdatedAt.Value).TotalSeconds < 30)
+        var cacheKey = $"wallet:balance:{walletAddress}";
+
+        // Try to get from Redis cache first (if not forcing refresh)
+        if (!forceRefresh && _cachingService != null)
         {
-            _logger.LogDebug("Returning cached balance for {WalletAddress}: {Balance}", walletAddress, wallet.Balance);
-            return new WalletBalanceResponse
+            var cachedBalance = await _cachingService.GetAsync(cacheKey);
+            if (cachedBalance != null)
             {
-                WalletAddress = walletAddress,
-                USDCBalance = wallet.Balance,
-                Blockchain = wallet.Blockchain
-            };
+                try
+                {
+                    var balanceData = JsonSerializer.Deserialize<CachedBalanceData>(cachedBalance);
+                    if (balanceData != null)
+                    {
+                        _logger.LogDebug("Returning cached balance from Redis for {WalletAddress}: {Balance}",
+                            walletAddress, balanceData.Balance);
+
+                        return new WalletBalanceResponse
+                        {
+                            WalletAddress = walletAddress,
+                            USDCBalance = balanceData.Balance,
+                            Blockchain = wallet.Blockchain
+                        };
+                    }
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogWarning(ex, "Failed to deserialize cached balance for {WalletAddress}", walletAddress);
+                }
+            }
         }
 
         // Fetch fresh balance from blockchain
         var balance = await _blockchainRpc.GetUSDCBalanceAsync(walletAddress);
 
-        // Update cached balance in database
+        // Update database
         wallet.Balance = balance;
         wallet.BalanceUpdatedAt = DateTime.UtcNow;
         await _walletRepository.UpdateAsync(wallet);
+
+        // Update Redis cache
+        if (_cachingService != null)
+        {
+            var cacheData = new CachedBalanceData { Balance = balance, UpdatedAt = DateTime.UtcNow };
+            var serialized = JsonSerializer.Serialize(cacheData);
+            await _cachingService.SetAsync(cacheKey, serialized, TimeSpan.FromSeconds(CacheTTLSeconds));
+            _logger.LogDebug("Balance cached in Redis for {WalletAddress}: {Balance}, TTL={TTL}s",
+                walletAddress, balance, CacheTTLSeconds);
+        }
 
         _logger.LogInformation("Balance updated for {WalletAddress}: {Balance} USDC", walletAddress, balance);
 
@@ -123,7 +158,27 @@ public class WalletService : IWalletService
         };
     }
 
-    public Task<TransferResponse> TransferUSDCAsync(WalletTransferRequest request)
+    /// <summary>
+    /// Invalidates the balance cache for a wallet address
+    /// </summary>
+    public async Task InvalidateBalanceCacheAsync(string walletAddress)
+    {
+        if (_cachingService != null)
+        {
+            var cacheKey = $"wallet:balance:{walletAddress}";
+            await _cachingService.RemoveAsync(cacheKey);
+            _logger.LogInformation("Balance cache invalidated for {WalletAddress}", walletAddress);
+        }
+    }
+
+    // Internal class for caching balance data
+    private class CachedBalanceData
+    {
+        public decimal Balance { get; set; }
+        public DateTime UpdatedAt { get; set; }
+    }
+
+    public async Task<TransferResponse> TransferUSDCAsync(WalletTransferRequest request)
     {
         _logger.LogInformation(
             "Initiating transfer from {From} to {To}, Amount: {Amount}",
@@ -136,7 +191,14 @@ public class WalletService : IWalletService
 
         var transactionId = $"TXN{DateTime.UtcNow.Ticks}";
 
-        return Task.FromResult(new TransferResponse
+        // Invalidate balance cache for both sender and receiver
+        // Since the transfer is initiated, balances will change
+        await InvalidateBalanceCacheAsync(request.FromWalletAddress);
+        await InvalidateBalanceCacheAsync(request.ToWalletAddress);
+
+        _logger.LogInformation("Balance caches invalidated for sender and receiver");
+
+        return new TransferResponse
         {
             TransactionId = transactionId,
             Status = "Pending",
@@ -144,7 +206,7 @@ public class WalletService : IWalletService
             FromAddress = request.FromWalletAddress,
             ToAddress = request.ToWalletAddress,
             InitiatedAt = DateTime.UtcNow
-        });
+        };
     }
 
     public Task<TransactionStatusResponse> GetTransactionStatusAsync(string transactionId)

@@ -25,6 +25,7 @@ public class TransactionController : ControllerBase
     // Default USDC token address on Polygon Amoy testnet
     private const string DEFAULT_USDC_ADDRESS = "0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582";
     private const int POLYGON_AMOY_CHAIN_ID = 80002;
+    private const string POLYGON_AMOY_EXPLORER_URL = "https://amoy.polygonscan.com";
 
     public TransactionController(
         ITransactionRepository transactionRepository,
@@ -197,6 +198,23 @@ public class TransactionController : ControllerBase
             }
         }
 
+        // Generate block explorer URLs
+        string? explorerUrl = null;
+        string? userOpExplorerUrl = null;
+
+        if (transaction != null)
+        {
+            if (!string.IsNullOrEmpty(transaction.TransactionHash))
+            {
+                explorerUrl = GetBlockExplorerUrl(transaction.ChainId, transaction.TransactionHash, "tx");
+            }
+
+            if (!string.IsNullOrEmpty(transaction.UserOpHash))
+            {
+                userOpExplorerUrl = GetJiffyScanUrl(transaction.ChainId, transaction.UserOpHash);
+            }
+        }
+
         var response = new TransactionStatusResponse
         {
             TransactionId = transaction!.Id,
@@ -213,28 +231,80 @@ public class TransactionController : ControllerBase
             Confirmations = transaction.Confirmations,
             SubmittedAt = transaction.SubmittedAt ?? transaction.CreatedAt,
             ConfirmedAt = transaction.ConfirmedAt,
-            ErrorMessage = transaction.ErrorMessage
+            ErrorMessage = transaction.ErrorMessage,
+            ExplorerUrl = explorerUrl,
+            UserOpExplorerUrl = userOpExplorerUrl
         };
 
         return Ok(response);
     }
 
     /// <summary>
-    /// Get transaction history for authenticated user's wallet
+    /// Generate block explorer URL for a transaction
+    /// </summary>
+    private string GetBlockExplorerUrl(int chainId, string hash, string type = "tx")
+    {
+        var baseUrl = chainId switch
+        {
+            80002 => POLYGON_AMOY_EXPLORER_URL, // Polygon Amoy testnet
+            137 => "https://polygonscan.com", // Polygon mainnet
+            1 => "https://etherscan.io", // Ethereum mainnet
+            11155111 => "https://sepolia.etherscan.io", // Sepolia testnet
+            _ => POLYGON_AMOY_EXPLORER_URL // Default to Amoy
+        };
+
+        return $"{baseUrl}/{type}/{hash}";
+    }
+
+    /// <summary>
+    /// Generate JiffyScan URL for a UserOperation
+    /// </summary>
+    private string GetJiffyScanUrl(int chainId, string userOpHash)
+    {
+        var chainName = chainId switch
+        {
+            80002 => "amoy",
+            137 => "polygon",
+            1 => "mainnet",
+            11155111 => "sepolia",
+            _ => "amoy"
+        };
+
+        return $"https://jiffyscan.xyz/userOpHash/{userOpHash}?network={chainName}";
+    }
+
+    /// <summary>
+    /// Get transaction history for authenticated user's wallet with advanced filtering
     /// </summary>
     /// <param name="page">Page number (default: 1)</param>
     /// <param name="pageSize">Page size (default: 20, max: 100)</param>
+    /// <param name="status">Filter by status (Pending, Confirmed, Failed)</param>
+    /// <param name="startDate">Filter by start date</param>
+    /// <param name="endDate">Filter by end date</param>
+    /// <param name="minAmount">Filter by minimum amount</param>
+    /// <param name="maxAmount">Filter by maximum amount</param>
+    /// <param name="sortBy">Sort by field (CreatedAt, Amount, Status, ConfirmedAt)</param>
+    /// <param name="sortDescending">Sort descending (default: true)</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Transaction history</returns>
+    /// <returns>Transaction history with pagination</returns>
     [HttpGet("history")]
     [ProducesResponseType(typeof(TransactionHistoryResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TransactionHistoryResponse>> GetTransactionHistory(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
+        [FromQuery] string? status = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] decimal? minAmount = null,
+        [FromQuery] decimal? maxAmount = null,
+        [FromQuery] string sortBy = "CreatedAt",
+        [FromQuery] bool sortDescending = true,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Fetching transaction history - Page: {Page}, PageSize: {PageSize}", page, pageSize);
+        _logger.LogInformation(
+            "Fetching transaction history - Page: {Page}, PageSize: {PageSize}, Status: {Status}, SortBy: {SortBy}",
+            page, pageSize, status, sortBy);
 
         // Validate pagination parameters
         if (page < 1) page = 1;
@@ -251,29 +321,60 @@ public class TransactionController : ControllerBase
             return NotFound(new { error = "Wallet not found" });
         }
 
-        var transactions = await _transactionRepository.GetByWalletIdAsync(wallet.Id, pageSize, cancellationToken);
+        // Use the enhanced GetHistoryAsync method with filtering
+        var (transactions, totalCount) = await _transactionRepository.GetHistoryAsync(
+            wallet.Id,
+            page,
+            pageSize,
+            status,
+            startDate,
+            endDate,
+            minAmount,
+            maxAmount,
+            sortBy,
+            sortDescending,
+            cancellationToken);
 
         var response = new TransactionHistoryResponse
         {
-            Transactions = transactions.Select(t => new TransactionStatusResponse
+            Transactions = transactions.Select(t =>
             {
-                TransactionId = t.Id,
-                UserOpHash = t.UserOpHash,
-                TransactionHash = t.TransactionHash,
-                Status = t.Status.ToString(),
-                FromAddress = t.FromAddress,
-                ToAddress = t.ToAddress,
-                Amount = t.AmountDecimal,
-                TokenAddress = t.TokenAddress,
-                IsGasless = t.IsGasless,
-                GasUsed = t.GasUsed,
-                BlockNumber = t.BlockNumber,
-                Confirmations = t.Confirmations,
-                SubmittedAt = t.SubmittedAt ?? t.CreatedAt,
-                ConfirmedAt = t.ConfirmedAt,
-                ErrorMessage = t.ErrorMessage
+                // Generate explorer URLs
+                string? explorerUrl = null;
+                string? userOpExplorerUrl = null;
+
+                if (!string.IsNullOrEmpty(t.TransactionHash))
+                {
+                    explorerUrl = GetBlockExplorerUrl(t.ChainId, t.TransactionHash, "tx");
+                }
+
+                if (!string.IsNullOrEmpty(t.UserOpHash))
+                {
+                    userOpExplorerUrl = GetJiffyScanUrl(t.ChainId, t.UserOpHash);
+                }
+
+                return new TransactionStatusResponse
+                {
+                    TransactionId = t.Id,
+                    UserOpHash = t.UserOpHash,
+                    TransactionHash = t.TransactionHash,
+                    Status = t.Status.ToString(),
+                    FromAddress = t.FromAddress,
+                    ToAddress = t.ToAddress,
+                    Amount = t.AmountDecimal,
+                    TokenAddress = t.TokenAddress,
+                    IsGasless = t.IsGasless,
+                    GasUsed = t.GasUsed,
+                    BlockNumber = t.BlockNumber,
+                    Confirmations = t.Confirmations,
+                    SubmittedAt = t.SubmittedAt ?? t.CreatedAt,
+                    ConfirmedAt = t.ConfirmedAt,
+                    ErrorMessage = t.ErrorMessage,
+                    ExplorerUrl = explorerUrl,
+                    UserOpExplorerUrl = userOpExplorerUrl
+                };
             }).ToList(),
-            TotalCount = transactions.Count,
+            TotalCount = totalCount,
             Page = page,
             PageSize = pageSize
         };

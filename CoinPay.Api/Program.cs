@@ -8,6 +8,10 @@ using CoinPay.Api.Services.Circle;
 using CoinPay.Api.Services.Wallet;
 using CoinPay.Api.Services.Blockchain;
 using CoinPay.Api.Repositories;
+using CoinPay.Api.Services.Caching;
+using CoinPay.Api.Services.BackgroundWorkers;
+using CoinPay.Api.Services.Transaction;
+using StackExchange.Redis;
 using Serilog;
 using Serilog.Events;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -38,6 +42,17 @@ try
     // Use Serilog for logging
     builder.Host.UseSerilog();
 
+    // Load configuration settings
+    var apiSettings = builder.Configuration.GetSection("ApiSettings").Get<ApiSettings>() ?? new ApiSettings();
+    var corsSettings = builder.Configuration.GetSection("CorsSettings").Get<CorsSettings>() ?? new CorsSettings();
+
+    Log.Information("API Settings: BaseUrl={BaseUrl}, Port={Port}", apiSettings.BaseUrl, apiSettings.Port);
+    Log.Information("CORS Settings: AllowedOrigins Count={Count}", corsSettings.AllowedOrigins.Length);
+    if (corsSettings.AllowedOrigins.Length > 0)
+    {
+        Log.Information("CORS Allowed Origins: {Origins}", string.Join(", ", corsSettings.AllowedOrigins));
+    }
+
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -59,39 +74,82 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Add Redis caching
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrEmpty(redisConnectionString))
+{
+    try
+    {
+        builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+        {
+            var configuration = ConfigurationOptions.Parse(redisConnectionString);
+            configuration.AbortOnConnectFail = false; // Don't throw if Redis is unavailable
+            configuration.ConnectTimeout = 5000; // 5 second timeout
+            return ConnectionMultiplexer.Connect(configuration);
+        });
+        builder.Services.AddScoped<ICachingService, RedisCachingService>();
+        Log.Information("Redis caching configured: {RedisConnection}", redisConnectionString);
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Failed to configure Redis. Caching will be disabled.");
+    }
+}
+else
+{
+    Log.Warning("Redis connection string not found. Caching will be disabled.");
+}
+
 // Add Health Checks
 builder.Services.AddHealthChecks()
     .AddCheck<DatabaseHealthCheck>("database", tags: new[] { "db", "ready" });
 
-// Add CORS with environment-specific policies
+// Add CORS with environment-specific policies (read from configuration)
 builder.Services.AddCors(options =>
 {
-    // Development policy - allows local development servers
+    // Development policy - read from configuration
     options.AddPolicy("DevelopmentPolicy", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:3000",      // React default
-                "http://localhost:3001",      // Vite alternate port
-                "http://localhost:5173",      // Vite default
-                "http://localhost:5100",      // Custom frontend port
-                "http://localhost:5174",      // Additional Vite port
-                "http://localhost:4200")      // Angular default
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials()
-              .WithExposedHeaders("X-Correlation-ID");
+        var origins = corsSettings.AllowedOrigins;
+        if (origins.Length > 0)
+        {
+            policy.WithOrigins(origins)
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials()
+                  .WithExposedHeaders("X-Correlation-ID");
+            Log.Information("CORS DevelopmentPolicy configured with {Count} allowed origins", origins.Length);
+        }
+        else
+        {
+            // Fallback: Allow all origins in development if not configured
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .WithExposedHeaders("X-Correlation-ID");
+            Log.Warning("CORS DevelopmentPolicy configured to allow ANY origin (no origins specified in configuration)");
+        }
     });
 
-    // Production policy - restrict to specific domains
+    // Production policy - read from configuration
     options.AddPolicy("ProductionPolicy", policy =>
     {
-        policy.WithOrigins(
-                "https://app.coinpay.com",
-                "https://www.coinpay.com")
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials()
-              .WithExposedHeaders("X-Correlation-ID");
+        var origins = corsSettings.AllowedOrigins;
+        if (origins.Length > 0)
+        {
+            policy.WithOrigins(origins)
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials()
+                  .WithExposedHeaders("X-Correlation-ID");
+            Log.Information("CORS ProductionPolicy configured with {Count} allowed origins", origins.Length);
+        }
+        else
+        {
+            // Production MUST have origins configured
+            Log.Error("CORS AllowedOrigins must be configured in Production environment");
+            throw new InvalidOperationException("CORS AllowedOrigins must be configured in Production. Please update appsettings.Production.json.");
+        }
     });
 });
 
@@ -137,6 +195,9 @@ builder.Services.AddScoped<IBlockchainRpcService, MockBlockchainRpcService>();
 builder.Services.AddScoped<IWalletRepository, WalletRepository>();
 builder.Services.AddScoped<ITransactionRepository, CoinPay.Api.Repositories.TransactionRepository>();
 
+// Register transaction services
+builder.Services.AddScoped<ITransactionStatusService, TransactionStatusService>();
+
 // Register UserOperation and Paymaster services
 builder.Services.AddScoped<CoinPay.Api.Services.UserOperation.IUserOperationService, CoinPay.Api.Services.UserOperation.UserOperationService>();
 
@@ -162,6 +223,10 @@ builder.Services.AddHttpClient("CirclePaymaster", client =>
 
 // Add MVC Controllers for new endpoints
 builder.Services.AddControllers();
+
+// Register background services
+builder.Services.AddHostedService<TransactionMonitoringService>();
+Log.Information("Transaction Monitoring background service registered");
 
     var app = builder.Build();
 
@@ -671,11 +736,14 @@ app.MapPost("/api/wallet/create", async (HttpContext context, IWalletService wal
 .WithDescription("Creates a new Circle Web3 Services wallet for the authenticated user");
 
 // GET: Get wallet balance
-app.MapGet("/api/wallet/balance/{walletAddress}", async (string walletAddress, IWalletService walletService) =>
+app.MapGet("/api/wallet/balance/{walletAddress}", async (
+    string walletAddress,
+    IWalletService walletService,
+    bool refresh = false) =>
 {
     try
     {
-        var result = await walletService.GetWalletBalanceAsync(walletAddress);
+        var result = await walletService.GetWalletBalanceAsync(walletAddress, refresh);
         return Results.Ok(result);
     }
     catch (Exception ex)
@@ -688,7 +756,7 @@ app.MapGet("/api/wallet/balance/{walletAddress}", async (string walletAddress, I
 .WithName("GetWalletBalance")
 .WithTags("Wallet")
 .WithSummary("Get wallet balance")
-.WithDescription("Retrieves the USDC balance for a wallet address");
+.WithDescription("Retrieves the USDC balance for a wallet address. Use refresh=true to bypass cache and get fresh balance.");
 
 // POST: Transfer USDC
 app.MapPost("/api/wallet/transfer", async (WalletTransferRequest request, IWalletService walletService) =>
@@ -774,3 +842,18 @@ public record UsernameCheckRequest(string Username);
 public record InitiateRegistrationRequest(string Username);
 public record InitiateLoginRequest(string Username);
 public record DevLoginRequest(string Username);
+
+// ============================================================================
+// CONFIGURATION MODELS
+// ============================================================================
+
+public class ApiSettings
+{
+    public string BaseUrl { get; set; } = "http://localhost:5100";
+    public int Port { get; set; } = 5100;
+}
+
+public class CorsSettings
+{
+    public string[] AllowedOrigins { get; set; } = Array.Empty<string>();
+}

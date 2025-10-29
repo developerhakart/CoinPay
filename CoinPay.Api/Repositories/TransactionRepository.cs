@@ -136,4 +136,87 @@ public class TransactionRepository : ITransactionRepository
             .OrderBy(t => t.CreatedAt)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<(List<BlockchainTransaction> transactions, int totalCount)> GetHistoryAsync(
+        int walletId,
+        int page = 1,
+        int pageSize = 20,
+        string? status = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        decimal? minAmount = null,
+        decimal? maxAmount = null,
+        string sortBy = "CreatedAt",
+        bool sortDescending = true,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "Fetching transaction history for wallet {WalletId}: Page={Page}, PageSize={PageSize}, Status={Status}, SortBy={SortBy}",
+            walletId, page, pageSize, status, sortBy);
+
+        // Start with base query
+        var query = _context.BlockchainTransactions
+            .Include(t => t.Wallet)
+            .Where(t => t.WalletId == walletId);
+
+        // Apply status filter
+        if (!string.IsNullOrEmpty(status) && Enum.TryParse<TransactionStatus>(status, true, out var statusEnum))
+        {
+            query = query.Where(t => t.Status == statusEnum);
+        }
+
+        // Apply date range filter
+        if (startDate.HasValue)
+        {
+            query = query.Where(t => t.CreatedAt >= startDate.Value);
+        }
+
+        if (endDate.HasValue)
+        {
+            query = query.Where(t => t.CreatedAt <= endDate.Value);
+        }
+
+        // Apply amount range filter
+        if (minAmount.HasValue)
+        {
+            query = query.Where(t => t.AmountDecimal >= minAmount.Value);
+        }
+
+        if (maxAmount.HasValue)
+        {
+            query = query.Where(t => t.AmountDecimal <= maxAmount.Value);
+        }
+
+        // Get total count before pagination
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // Apply sorting
+        query = sortBy.ToLower() switch
+        {
+            "amount" => sortDescending
+                ? query.OrderByDescending(t => t.AmountDecimal)
+                : query.OrderBy(t => t.AmountDecimal),
+            "status" => sortDescending
+                ? query.OrderByDescending(t => t.Status)
+                : query.OrderBy(t => t.Status),
+            "confirmedat" => sortDescending
+                ? query.OrderByDescending(t => t.ConfirmedAt)
+                : query.OrderBy(t => t.ConfirmedAt),
+            _ => sortDescending
+                ? query.OrderByDescending(t => t.CreatedAt)
+                : query.OrderBy(t => t.CreatedAt)
+        };
+
+        // Apply pagination
+        var transactions = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Retrieved {Count} transactions out of {Total} total for wallet {WalletId}",
+            transactions.Count, totalCount, walletId);
+
+        return (transactions, totalCount);
+    }
 }

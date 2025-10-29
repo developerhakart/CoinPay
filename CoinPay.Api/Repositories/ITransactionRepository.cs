@@ -56,4 +56,20 @@ public interface ITransactionRepository
     /// Get pending transactions for a wallet
     /// </summary>
     Task<List<BlockchainTransaction>> GetPendingByWalletIdAsync(int walletId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get transaction history with pagination, sorting, and filtering
+    /// </summary>
+    Task<(List<BlockchainTransaction> transactions, int totalCount)> GetHistoryAsync(
+        int walletId,
+        int page = 1,
+        int pageSize = 20,
+        string? status = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        decimal? minAmount = null,
+        decimal? maxAmount = null,
+        string sortBy = "CreatedAt",
+        bool sortDescending = true,
+        CancellationToken cancellationToken = default);
 }

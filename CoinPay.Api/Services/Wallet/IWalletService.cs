@@ -5,10 +5,11 @@ namespace CoinPay.Api.Services.Wallet;
 public interface IWalletService
 {
     Task<WalletCreationResponse> CreateWalletAsync(int userId);
-    Task<WalletBalanceResponse> GetWalletBalanceAsync(string walletAddress);
+    Task<WalletBalanceResponse> GetWalletBalanceAsync(string walletAddress, bool forceRefresh = false);
     Task<TransferResponse> TransferUSDCAsync(WalletTransferRequest request);
     Task<TransactionStatusResponse> GetTransactionStatusAsync(string transactionId);
     Task<List<TransactionHistoryItem>> GetTransactionHistoryAsync(string walletAddress, int limit = 20);
+    Task InvalidateBalanceCacheAsync(string walletAddress);
 }
 
 public class WalletCreationResponse

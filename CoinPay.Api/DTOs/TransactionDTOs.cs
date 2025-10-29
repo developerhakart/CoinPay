@@ -69,6 +69,8 @@ public class TransactionStatusResponse
     public DateTime SubmittedAt { get; set; }
     public DateTime? ConfirmedAt { get; set; }
     public string? ErrorMessage { get; set; }
+    public string? ExplorerUrl { get; set; }
+    public string? UserOpExplorerUrl { get; set; }
 }
 
 /// <summary>
