@@ -240,6 +240,115 @@ public class TransactionController : ControllerBase
     }
 
     /// <summary>
+    /// Get detailed transaction information by ID
+    /// </summary>
+    /// <param name="id">Transaction ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Detailed transaction information</returns>
+    [HttpGet("{id}/details")]
+    [ProducesResponseType(typeof(TransactionDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<TransactionDetailResponse>> GetTransactionDetails(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Fetching details for transaction {Id}", id);
+
+        var transaction = await _transactionRepository.GetByIdAsync(id, cancellationToken);
+
+        if (transaction == null)
+        {
+            _logger.LogWarning("Transaction {Id} not found", id);
+            return NotFound(new { error = "Transaction not found" });
+        }
+
+        // If transaction is pending, check for receipt to get latest status
+        if (transaction.Status == TransactionStatus.Pending && !string.IsNullOrEmpty(transaction.UserOpHash))
+        {
+            try
+            {
+                var receipt = await _userOperationService.GetReceiptAsync(transaction.UserOpHash, cancellationToken);
+
+                if (receipt != null)
+                {
+                    // Update transaction with receipt information
+                    await _transactionRepository.UpdateWithReceiptAsync(
+                        transaction.Id,
+                        receipt.TransactionHash,
+                        receipt.BlockNumber,
+                        receipt.ActualGasUsed,
+                        cancellationToken);
+
+                    // Reload transaction to get updated data
+                    transaction = await _transactionRepository.GetByIdAsync(id, cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to fetch receipt for transaction {Id}", id);
+            }
+        }
+
+        // Generate block explorer URLs
+        string? explorerUrl = null;
+        string? userOpExplorerUrl = null;
+
+        if (transaction != null)
+        {
+            if (!string.IsNullOrEmpty(transaction.TransactionHash))
+            {
+                explorerUrl = GetBlockExplorerUrl(transaction.ChainId, transaction.TransactionHash, "tx");
+            }
+
+            if (!string.IsNullOrEmpty(transaction.UserOpHash))
+            {
+                userOpExplorerUrl = GetJiffyScanUrl(transaction.ChainId, transaction.UserOpHash);
+            }
+        }
+
+        // Get chain name
+        var chainName = GetChainName(transaction!.ChainId);
+
+        // Format amount for display
+        var formattedAmount = $"{transaction.AmountDecimal:N6} USDC";
+
+        var response = new TransactionDetailResponse
+        {
+            Id = transaction.Id,
+            UserOpHash = transaction.UserOpHash ?? string.Empty,
+            TransactionHash = transaction.TransactionHash,
+            FromAddress = transaction.FromAddress,
+            ToAddress = transaction.ToAddress,
+            Amount = transaction.Amount,
+            AmountDecimal = transaction.AmountDecimal,
+            FormattedAmount = formattedAmount,
+            TokenAddress = transaction.TokenAddress,
+            TokenSymbol = "USDC",
+            Status = transaction.Status.ToString(),
+            CreatedAt = transaction.CreatedAt,
+            SubmittedAt = transaction.SubmittedAt ?? transaction.CreatedAt,
+            ConfirmedAt = transaction.ConfirmedAt,
+            ErrorMessage = transaction.ErrorMessage,
+            ChainId = transaction.ChainId,
+            ChainName = chainName,
+            BlockNumber = transaction.BlockNumber,
+            Confirmations = transaction.Confirmations,
+            GasUsed = transaction.GasUsed,
+            GasPaidByUser = 0, // Gasless transactions
+            IsGasless = transaction.IsGasless,
+            ExplorerUrl = explorerUrl,
+            UserOpExplorerUrl = userOpExplorerUrl,
+            Nonce = null, // UserOperation nonce - not currently stored
+            Signature = null, // UserOperation signature - not currently stored
+            TransactionType = transaction.TransactionType ?? "Transfer"
+        };
+
+        _logger.LogInformation("Transaction {Id} details retrieved successfully", id);
+
+        return Ok(response);
+    }
+
+    /// <summary>
     /// Generate block explorer URL for a transaction
     /// </summary>
     private string GetBlockExplorerUrl(int chainId, string hash, string type = "tx")
@@ -271,6 +380,21 @@ public class TransactionController : ControllerBase
         };
 
         return $"https://jiffyscan.xyz/userOpHash/{userOpHash}?network={chainName}";
+    }
+
+    /// <summary>
+    /// Get human-readable chain name
+    /// </summary>
+    private string GetChainName(int chainId)
+    {
+        return chainId switch
+        {
+            80002 => "Polygon Amoy Testnet",
+            137 => "Polygon Mainnet",
+            1 => "Ethereum Mainnet",
+            11155111 => "Sepolia Testnet",
+            _ => $"Chain {chainId}"
+        };
     }
 
     /// <summary>

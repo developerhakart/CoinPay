@@ -1,8 +1,8 @@
 # Sprint N02 Progress Report
 
 **Sprint Duration**: 2 weeks (January 20-31, 2025)
-**Current Day**: Day 1 (Complete) - Day 2 (Starting)
-**Last Updated**: 2025-10-29 (Backend Phase 1 & 2 COMPLETED - 7 tasks)
+**Current Day**: Day 1 (Complete) - Day 2 (In Progress)
+**Last Updated**: 2025-10-29 (Backend Phase 1 & 2 COMPLETED - 11 tasks)
 **Sprint Status**: AHEAD OF SCHEDULE ⚡
 
 ---
@@ -21,10 +21,10 @@ Complete Phase 1 (Core Wallet Foundation) and implement Phase 2 (Transaction His
 | Phase 1 Completion (Backend) | 3 | 3 | 100% ✅ |
 | Phase 1 Completion (Frontend) | 3 | 0 | 0% ⏳ |
 | Phase 2 Backend (Core) | 5 | 5 | 100% ✅ |
-| Phase 2 Backend (Remaining) | 3 | 0 | 0% ⏳ |
+| Phase 2 Backend (Remaining) | 3 | 2 | 67% 🚀 |
 | Phase 2 Frontend | 9 | 0 | 0% ⏳ |
 | Phase 1 & 2 QA | 9 | 0 | 0% ⏳ |
-| **TOTAL** | **33** | **9** | **27%** ⚡ |
+| **TOTAL** | **33** | **11** | **33%** ⚡ |
 
 ---
 
@@ -242,30 +242,48 @@ Complete Phase 1 (Core Wallet Foundation) and implement Phase 2 (Transaction His
 
 **Note**: This functionality was implemented as part of BE-203 and the repository GetHistoryAsync method with proper database indexes for performance.
 
-#### BE-206: GET /api/transactions/{id}/details Endpoint (⏳ NOT STARTED)
-**Status**: Not Started
+#### BE-206: GET /api/transactions/{id}/details Endpoint (✅ COMPLETED)
+**Status**: COMPLETED
 **Owner**: Backend Engineer
 **Effort**: 1.00 day
+**Completed**: 2025-10-29
 
 **Implementation**:
-- [ ] Endpoint created
-- [ ] Blockchain info fetching
-- [ ] Response DTOs
-- [ ] Swagger documentation
-- [ ] Integration tests written
+- [x] Endpoint created (GET /api/transactions/{id}/details)
+- [x] TransactionDetailResponse DTO with comprehensive fields
+- [x] Blockchain info included (chain, block number, confirmations, gas)
+- [x] Block explorer URLs (Polygonscan, Etherscan, JiffyScan)
+- [x] Multi-chain support
+- [x] Auto-checks for pending transaction receipts
+- [x] Formatted amount display
+- [x] UserOperation details placeholders
+- [x] Swagger documentation with proper attributes
 
-#### BE-207: Webhook Endpoint for Transaction Status (⏳ NOT STARTED)
-**Status**: Not Started
+#### BE-207: Webhook Endpoint for Transaction Status (✅ COMPLETED)
+**Status**: COMPLETED
 **Owner**: Senior Backend Engineer
 **Effort**: 2.00 days
+**Completed**: 2025-10-29
 
 **Implementation**:
-- [ ] Webhook registration endpoint
-- [ ] Webhook delivery service
-- [ ] HMAC signature
-- [ ] Retry logic
-- [ ] Delivery logging
-- [ ] Integration tests written
+- [x] Webhook registration endpoint (POST /api/webhook)
+- [x] WebhookController with full CRUD operations
+  - POST /api/webhook - Register webhook
+  - GET /api/webhook/{id} - Get webhook by ID
+  - GET /api/webhook - Get all user webhooks
+  - PUT /api/webhook/{id} - Update webhook
+  - DELETE /api/webhook/{id} - Delete webhook
+  - GET /api/webhook/{id}/logs - Get delivery logs
+- [x] Webhook delivery service with retry logic (Polly)
+- [x] HMAC-SHA256 signature generation and verification
+- [x] 3-attempt retry with exponential backoff
+- [x] Delivery logging (WebhookDeliveryLog model)
+- [x] Database models and migration (20251029065739_AddWebhookSupport)
+- [x] WebhookRegistration and WebhookDeliveryLog tables with indexes
+- [x] Integration with TransactionStatusService
+- [x] Webhook notifications for transaction.confirmed and transaction.failed events
+- [x] WebhookService registered in DI container
+- [x] Swagger documentation with DTOs
 
 #### BE-208: Blockchain Event Listener (STRETCH GOAL) (⏳ NOT STARTED)
 **Status**: Not Started (Stretch Goal)

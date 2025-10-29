@@ -85,6 +85,50 @@ public class TransactionHistoryResponse
 }
 
 /// <summary>
+/// Response DTO for detailed transaction information
+/// </summary>
+public class TransactionDetailResponse
+{
+    public int Id { get; set; }
+    public string UserOpHash { get; set; } = string.Empty;
+    public string? TransactionHash { get; set; }
+
+    // Addresses
+    public string FromAddress { get; set; } = string.Empty;
+    public string ToAddress { get; set; } = string.Empty;
+
+    // Amount
+    public string Amount { get; set; } = string.Empty;
+    public decimal AmountDecimal { get; set; }
+    public string FormattedAmount { get; set; } = string.Empty;
+    public string TokenAddress { get; set; } = string.Empty;
+    public string TokenSymbol { get; set; } = "USDC";
+
+    // Status
+    public string Status { get; set; } = "Pending";
+    public DateTime CreatedAt { get; set; }
+    public DateTime SubmittedAt { get; set; }
+    public DateTime? ConfirmedAt { get; set; }
+    public string? ErrorMessage { get; set; }
+
+    // Blockchain info
+    public int ChainId { get; set; }
+    public string ChainName { get; set; } = string.Empty;
+    public long? BlockNumber { get; set; }
+    public int Confirmations { get; set; }
+    public decimal GasUsed { get; set; }
+    public decimal GasPaidByUser { get; set; } = 0; // Gasless transactions
+    public bool IsGasless { get; set; }
+    public string? ExplorerUrl { get; set; }
+    public string? UserOpExplorerUrl { get; set; }
+
+    // User Operation details
+    public string? Nonce { get; set; }
+    public string? Signature { get; set; }
+    public string TransactionType { get; set; } = string.Empty;
+}
+
+/// <summary>
 /// Response DTO for wallet balance
 /// </summary>
 public class BalanceResponse

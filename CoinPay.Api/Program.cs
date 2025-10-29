@@ -194,9 +194,13 @@ builder.Services.AddScoped<IBlockchainRpcService, MockBlockchainRpcService>();
 // Register repositories
 builder.Services.AddScoped<IWalletRepository, WalletRepository>();
 builder.Services.AddScoped<ITransactionRepository, CoinPay.Api.Repositories.TransactionRepository>();
+builder.Services.AddScoped<CoinPay.Api.Repositories.IWebhookRepository, CoinPay.Api.Repositories.WebhookRepository>();
 
 // Register transaction services
 builder.Services.AddScoped<ITransactionStatusService, TransactionStatusService>();
+
+// Register webhook service
+builder.Services.AddScoped<CoinPay.Api.Services.Webhook.IWebhookService, CoinPay.Api.Services.Webhook.WebhookService>();
 
 // Register UserOperation and Paymaster services
 builder.Services.AddScoped<CoinPay.Api.Services.UserOperation.IUserOperationService, CoinPay.Api.Services.UserOperation.UserOperationService>();

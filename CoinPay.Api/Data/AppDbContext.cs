@@ -13,6 +13,8 @@ public class AppDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Wallet> Wallets { get; set; }
     public DbSet<BlockchainTransaction> BlockchainTransactions { get; set; }
+    public DbSet<WebhookRegistration> WebhookRegistrations { get; set; }
+    public DbSet<WebhookDeliveryLog> WebhookDeliveryLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -39,6 +41,36 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<Wallet>()
             .HasIndex(w => w.UserId);
+
+        // Configure WebhookRegistration indexes
+        modelBuilder.Entity<WebhookRegistration>()
+            .HasIndex(w => w.UserId);
+
+        modelBuilder.Entity<WebhookRegistration>()
+            .HasIndex(w => w.IsActive);
+
+        // Configure WebhookDeliveryLog indexes
+        modelBuilder.Entity<WebhookDeliveryLog>()
+            .HasIndex(l => l.WebhookId);
+
+        modelBuilder.Entity<WebhookDeliveryLog>()
+            .HasIndex(l => l.TransactionId);
+
+        modelBuilder.Entity<WebhookDeliveryLog>()
+            .HasIndex(l => l.Timestamp);
+
+        // Configure relationships
+        modelBuilder.Entity<WebhookDeliveryLog>()
+            .HasOne(l => l.Webhook)
+            .WithMany(w => w.DeliveryLogs)
+            .HasForeignKey(l => l.WebhookId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<WebhookDeliveryLog>()
+            .HasOne(l => l.Transaction)
+            .WithMany()
+            .HasForeignKey(l => l.TransactionId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Seed some initial data with static timestamps
         modelBuilder.Entity<Transaction>().HasData(

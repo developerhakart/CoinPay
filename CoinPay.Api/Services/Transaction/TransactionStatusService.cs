@@ -1,6 +1,7 @@
 using CoinPay.Api.Models;
 using CoinPay.Api.Repositories;
 using CoinPay.Api.Services.Caching;
+using CoinPay.Api.Services.Webhook;
 using CoinPay.Api.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,7 @@ public class TransactionStatusService : ITransactionStatusService
 {
     private readonly ITransactionRepository _transactionRepository;
     private readonly ICachingService? _cachingService;
+    private readonly IWebhookService? _webhookService;
     private readonly AppDbContext _dbContext;
     private readonly ILogger<TransactionStatusService> _logger;
 
@@ -20,11 +22,13 @@ public class TransactionStatusService : ITransactionStatusService
         ITransactionRepository transactionRepository,
         AppDbContext dbContext,
         ILogger<TransactionStatusService> logger,
-        ICachingService? cachingService = null)
+        ICachingService? cachingService = null,
+        IWebhookService? webhookService = null)
     {
         _transactionRepository = transactionRepository;
         _dbContext = dbContext;
         _cachingService = cachingService;
+        _webhookService = webhookService;
         _logger = logger;
     }
 
@@ -51,6 +55,16 @@ public class TransactionStatusService : ITransactionStatusService
 
         // Invalidate balance cache for affected addresses
         await InvalidateBalanceCachesAsync(transaction.FromAddress, transaction.ToAddress);
+
+        // Send webhook notification
+        if (_webhookService != null)
+        {
+            await _webhookService.NotifyTransactionStatusChangeAsync(
+                transaction,
+                transaction.Status == status ? TransactionStatus.Pending : transaction.Status,
+                status,
+                cancellationToken);
+        }
 
         _logger.LogInformation("Transaction {TransactionId} status updated successfully", transactionId);
     }
@@ -84,8 +98,15 @@ public class TransactionStatusService : ITransactionStatusService
 
         _logger.LogInformation("Transaction {TransactionId} updated with receipt successfully", transactionId);
 
-        // TODO: Send webhook notification if configured
-        // await SendWebhookNotificationAsync(transaction, txHash);
+        // Send webhook notification
+        if (_webhookService != null)
+        {
+            await _webhookService.NotifyTransactionStatusChangeAsync(
+                transaction,
+                TransactionStatus.Pending,
+                TransactionStatus.Confirmed,
+                cancellationToken);
+        }
     }
 
     public async Task MarkAsFailedAsync(
