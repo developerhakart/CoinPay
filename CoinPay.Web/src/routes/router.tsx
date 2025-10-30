@@ -7,6 +7,12 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { WalletPage } from '@/pages/WalletPage';
 import { TransferPage } from '@/pages/TransferPage';
 import { TransactionsPage } from '@/pages/TransactionsPage';
+// Phase 3: Bank Account Management
+import { BankAccountsPage } from '@/pages/BankAccountsPage';
+// Phase 3: Fiat Off-Ramp
+import { WithdrawPage } from '@/pages/WithdrawPage';
+import { PayoutHistoryPage } from '@/pages/PayoutHistoryPage';
+import { PayoutStatusPage } from '@/pages/PayoutStatusPage';
 
 export const router = createBrowserRouter([
   {
@@ -39,6 +45,24 @@ export const router = createBrowserRouter([
       {
         path: '/transactions',
         element: <TransactionsPage />,
+      },
+      // Phase 3: Bank Account Management Routes
+      {
+        path: '/bank-accounts',
+        element: <BankAccountsPage />,
+      },
+      // Phase 3: Fiat Off-Ramp Routes
+      {
+        path: '/withdraw',
+        element: <WithdrawPage />,
+      },
+      {
+        path: '/payout/history',
+        element: <PayoutHistoryPage />,
+      },
+      {
+        path: '/payout/:id/status',
+        element: <PayoutStatusPage />,
       },
     ],
   },

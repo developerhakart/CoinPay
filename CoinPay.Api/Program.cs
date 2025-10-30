@@ -14,6 +14,8 @@ using CoinPay.Api.Services.Transaction;
 using CoinPay.Api.Services.Encryption;
 using CoinPay.Api.Services.BankAccount;
 using CoinPay.Api.Services.FiatGateway;
+using CoinPay.Api.Services.ExchangeRate;
+using CoinPay.Api.Services.Fees;
 using StackExchange.Redis;
 using Serilog;
 using Serilog.Events;
@@ -213,8 +215,18 @@ builder.Services.AddScoped<IFiatGatewayService, MockFiatGatewayService>();
 // For production with real gateway:
 // builder.Services.AddScoped<IFiatGatewayService, FiatGatewayService>();
 
-// Register exchange rate service with caching (Phase 3)
-builder.Services.AddScoped<IExchangeRateService, ExchangeRateService>();
+// Register memory cache for exchange rate service (Phase 3)
+builder.Services.AddMemoryCache();
+
+// Register new exchange rate service with memory cache (Phase 3)
+builder.Services.AddScoped<CoinPay.Api.Services.ExchangeRate.IExchangeRateService, CoinPay.Api.Services.ExchangeRate.ExchangeRateService>();
+
+// Register legacy exchange rate service for fiat gateway (Phase 3)
+// This uses Redis caching and delegates to IFiatGatewayService
+builder.Services.AddScoped<CoinPay.Api.Services.FiatGateway.IExchangeRateService, CoinPay.Api.Services.FiatGateway.ExchangeRateService>();
+
+// Register conversion fee calculator (Phase 3)
+builder.Services.AddScoped<CoinPay.Api.Services.Fees.IConversionFeeCalculator, CoinPay.Api.Services.Fees.ConversionFeeCalculator>();
 
 // Register transaction services
 builder.Services.AddScoped<ITransactionStatusService, TransactionStatusService>();
