@@ -271,4 +271,9 @@ public class WalletService : IWalletService
 
         return await Task.FromResult(mockHistory.Take(limit).ToList());
     }
+
+    public async Task<Models.User?> GetUserByIdAsync(int userId)
+    {
+        return await _dbContext.Users.FindAsync(userId);
+    }
 }

@@ -1,4 +1,5 @@
 using CoinPay.Api.DTOs;
+using CoinPay.Api.Models;
 
 namespace CoinPay.Api.Services.Wallet;
 
@@ -10,6 +11,7 @@ public interface IWalletService
     Task<TransactionStatusResponse> GetTransactionStatusAsync(string transactionId);
     Task<List<TransactionHistoryItem>> GetTransactionHistoryAsync(string walletAddress, int limit = 20);
     Task InvalidateBalanceCacheAsync(string walletAddress);
+    Task<User?> GetUserByIdAsync(int userId);
 }
 
 public class WalletCreationResponse

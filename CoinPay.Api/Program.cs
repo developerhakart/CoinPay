@@ -199,6 +199,7 @@ builder.Services.AddScoped<IWalletRepository, WalletRepository>();
 builder.Services.AddScoped<ITransactionRepository, CoinPay.Api.Repositories.TransactionRepository>();
 builder.Services.AddScoped<CoinPay.Api.Repositories.IWebhookRepository, CoinPay.Api.Repositories.WebhookRepository>();
 builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
+builder.Services.AddScoped<IPayoutRepository, PayoutRepository>();
 
 // Register encryption service (Phase 3)
 builder.Services.AddSingleton<IEncryptionService, AesEncryptionService>();
