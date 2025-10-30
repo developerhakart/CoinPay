@@ -228,6 +228,12 @@ builder.Services.AddScoped<CoinPay.Api.Services.FiatGateway.IExchangeRateService
 // Register conversion fee calculator (Phase 3)
 builder.Services.AddScoped<CoinPay.Api.Services.Fees.IConversionFeeCalculator, CoinPay.Api.Services.Fees.ConversionFeeCalculator>();
 
+// Register payout status service (Phase 3)
+builder.Services.AddScoped<CoinPay.Api.Services.Payout.IPayoutStatusService, CoinPay.Api.Services.Payout.PayoutStatusService>();
+
+// Register payout audit service (Phase 3)
+builder.Services.AddSingleton<CoinPay.Api.Services.Payout.IPayoutAuditService, CoinPay.Api.Services.Payout.PayoutAuditService>();
+
 // Register transaction services
 builder.Services.AddScoped<ITransactionStatusService, TransactionStatusService>();
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { payoutApi, type ConversionPreviewResponse } from '../../api/payoutApi';
 import { bankAccountApi, type BankAccount } from '../../api/bankAccountApi';
+import { FeeBreakdown } from '../Fees/FeeBreakdown';
 
 interface WithdrawalWizardProps {
   userBalance: number; // USDC balance
@@ -23,6 +24,7 @@ export const WithdrawalWizard: React.FC<WithdrawalWizardProps> = ({
   const [usdcAmount, setUsdcAmount] = useState<string>('');
   const [selectedBankAccount, setSelectedBankAccount] = useState<BankAccount | null>(null);
   const [conversionPreview, setConversionPreview] = useState<ConversionPreviewResponse | null>(null);
+  const [payoutId, setPayoutId] = useState<string | null>(null);
 
   // Bank accounts
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
@@ -120,8 +122,8 @@ export const WithdrawalWizard: React.FC<WithdrawalWizardProps> = ({
         usdcAmount: parseFloat(usdcAmount),
       });
 
+      setPayoutId(payout.id);
       setCurrentStep('confirm');
-      setTimeout(() => onComplete(payout.id), 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to initiate payout');
       setIsSubmitting(false);
@@ -330,17 +332,125 @@ export const WithdrawalWizard: React.FC<WithdrawalWizardProps> = ({
       )}
 
       {/* Step 4: Confirmation */}
-      {currentStep === 'confirm' && (
-        <div className="text-center py-8 space-y-4">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-            <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+      {currentStep === 'confirm' && conversionPreview && selectedBankAccount && payoutId && (
+        <div className="space-y-6">
+          {/* Success Header */}
+          <div className="text-center py-4">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-10 h-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Withdrawal Initiated!</h2>
+            <p className="text-gray-600">
+              Your payout has been successfully submitted and is being processed.
+            </p>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Withdrawal Initiated!</h2>
-          <p className="text-gray-600">
-            Your payout has been successfully initiated. You'll receive a notification when it's completed.
-          </p>
+
+          {/* Payout ID */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-900">Payout ID</p>
+                <p className="font-mono text-sm text-blue-700 mt-1">{payoutId.slice(0, 8)}...{payoutId.slice(-8)}</p>
+              </div>
+              <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
+                Pending
+              </span>
+            </div>
+          </div>
+
+          {/* Fee Breakdown */}
+          <FeeBreakdown
+            usdcAmount={parseFloat(usdcAmount)}
+            usdAmountBeforeFees={conversionPreview.usdAmountBeforeFees}
+            exchangeRate={conversionPreview.exchangeRate}
+            conversionFeePercent={conversionPreview.conversionFeePercent}
+            conversionFeeAmount={conversionPreview.conversionFeeAmount}
+            payoutFeeAmount={conversionPreview.payoutFeeAmount}
+            totalFees={conversionPreview.totalFees}
+            netAmount={conversionPreview.netUsdAmount}
+            variant="detailed"
+            showEffectiveRate={true}
+          />
+
+          {/* Bank Account Details */}
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h3 className="text-sm font-medium text-gray-900 mb-3">Destination Bank Account</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Account Holder:</span>
+                <span className="font-medium">{selectedBankAccount.accountHolderName}</span>
+              </div>
+              {selectedBankAccount.bankName && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Bank:</span>
+                  <span className="font-medium">{selectedBankAccount.bankName}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Account:</span>
+                <span className="font-medium font-mono">
+                  {selectedBankAccount.accountType} •••• {selectedBankAccount.lastFourDigits}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Next Steps */}
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <h3 className="text-sm font-medium text-green-900 mb-3">What happens next?</h3>
+            <ul className="space-y-2 text-sm text-green-800">
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Your payout will be processed within 1-2 business days</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Funds should arrive in your bank account within 3-5 business days</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>You'll receive email notifications for status updates</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>You can track your payout status in the Payout History page</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4">
+            <button
+              onClick={() => onComplete(payoutId)}
+              className="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors"
+            >
+              View Payout History
+            </button>
+            <button
+              onClick={() => {
+                // Reset wizard for new withdrawal
+                setCurrentStep('amount');
+                setUsdcAmount('');
+                setSelectedBankAccount(null);
+                setConversionPreview(null);
+                setPayoutId(null);
+                setError(null);
+              }}
+              className="flex-1 px-6 py-3 bg-white text-blue-600 font-semibold border-2 border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
+            >
+              New Withdrawal
+            </button>
+          </div>
         </div>
       )}
 
