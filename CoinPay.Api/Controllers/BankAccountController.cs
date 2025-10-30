@@ -154,6 +154,18 @@ public class BankAccountController : ControllerBase
             return BadRequest(new { error = new { code = "INVALID_ACCOUNT_HOLDER_NAME", message = nameValidation.ErrorMessage } });
         }
 
+        // Check for duplicate account
+        var isDuplicate = await _validationService.IsDuplicateAccountAsync(
+            userId.Value,
+            request.RoutingNumber,
+            request.AccountNumber);
+
+        if (isDuplicate)
+        {
+            _logger.LogWarning("AddBankAccount: Duplicate bank account detected for user {UserId}", userId);
+            return BadRequest(new { error = new { code = "DUPLICATE_ACCOUNT", message = "This bank account is already registered" } });
+        }
+
         try
         {
             // Encrypt sensitive data
@@ -330,6 +342,61 @@ public class BankAccountController : ControllerBase
             _logger.LogError(ex, "DeleteBankAccount: Error deleting bank account {BankAccountId}", id);
             return StatusCode(500, new { error = new { code = "INTERNAL_ERROR", message = "Failed to delete bank account" } });
         }
+    }
+
+    /// <summary>
+    /// Validate bank account and lookup bank name from routing number
+    /// </summary>
+    /// <param name="request">Validation request with routing number</param>
+    /// <returns>Validation result with suggested bank name</returns>
+    [HttpPost("validate")]
+    [ProducesResponseType(typeof(BankValidationResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public ActionResult<BankValidationResponse> ValidateBankAccount([FromBody] BankAccountValidationRequest request)
+    {
+        var validationResult = _validationService.ValidateComplete(request);
+
+        var response = new BankValidationResponse
+        {
+            IsValid = validationResult.IsValid,
+            Errors = validationResult.Errors,
+            Warnings = validationResult.Warnings,
+            SuggestedBankName = validationResult.SuggestedBankName
+        };
+
+        _logger.LogInformation("ValidateBankAccount: Validation result - IsValid: {IsValid}, Errors: {ErrorCount}, Warnings: {WarningCount}",
+            validationResult.IsValid, validationResult.Errors.Count, validationResult.Warnings.Count);
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Lookup bank name from routing number
+    /// </summary>
+    /// <param name="routingNumber">9-digit routing number</param>
+    /// <returns>Bank name if found</returns>
+    [HttpGet("lookup/{routingNumber}")]
+    [ProducesResponseType(typeof(BankLookupResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<BankLookupResponse> LookupBankName(string routingNumber)
+    {
+        var bankName = _validationService.LookupBankName(routingNumber);
+
+        if (bankName == null)
+        {
+            _logger.LogInformation("LookupBankName: No bank found for routing number {RoutingNumber}", routingNumber);
+            return NotFound(new { error = new { code = "BANK_NOT_FOUND", message = "Bank not found for this routing number" } });
+        }
+
+        var response = new BankLookupResponse
+        {
+            RoutingNumber = routingNumber,
+            BankName = bankName
+        };
+
+        _logger.LogInformation("LookupBankName: Found bank {BankName} for routing number {RoutingNumber}", bankName, routingNumber);
+
+        return Ok(response);
     }
 
     /// <summary>

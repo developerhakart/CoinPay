@@ -116,6 +116,41 @@ class BankAccountApi {
       method: 'DELETE',
     });
   }
+
+  /**
+   * Validate bank account with detailed result
+   */
+  async validate(data: {
+    accountHolderName: string;
+    routingNumber: string;
+    accountNumber: string;
+    accountType: string;
+    bankName?: string;
+  }): Promise<BankValidationResponse> {
+    return this.request('/api/bank-account/validate', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Lookup bank name from routing number
+   */
+  async lookupBankName(routingNumber: string): Promise<BankLookupResponse> {
+    return this.request(`/api/bank-account/lookup/${routingNumber}`);
+  }
+}
+
+export interface BankValidationResponse {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  suggestedBankName?: string;
+}
+
+export interface BankLookupResponse {
+  routingNumber: string;
+  bankName: string;
 }
 
 export const bankAccountApi = new BankAccountApi();

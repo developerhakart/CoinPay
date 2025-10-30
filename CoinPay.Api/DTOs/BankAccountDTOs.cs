@@ -76,3 +76,23 @@ public class BankAccountListResponse
     public List<BankAccountResponse> BankAccounts { get; set; } = new();
     public int Total { get; set; }
 }
+
+/// <summary>
+/// Response DTO for bank account validation
+/// </summary>
+public class BankValidationResponse
+{
+    public bool IsValid { get; set; }
+    public List<string> Errors { get; set; } = new();
+    public List<string> Warnings { get; set; } = new();
+    public string? SuggestedBankName { get; set; }
+}
+
+/// <summary>
+/// Response DTO for bank name lookup
+/// </summary>
+public class BankLookupResponse
+{
+    public string RoutingNumber { get; set; } = string.Empty;
+    public string BankName { get; set; } = string.Empty;
+}

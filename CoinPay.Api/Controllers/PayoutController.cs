@@ -302,6 +302,149 @@ public class PayoutController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Get detailed payout information including bank account details
+    /// </summary>
+    [HttpGet("{id}/details")]
+    [ProducesResponseType(typeof(PayoutDetailsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<PayoutDetailsResponse>> GetPayoutDetails(Guid id)
+    {
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized(new { error = new { code = "UNAUTHORIZED", message = "User not authenticated" } });
+        }
+
+        try
+        {
+            var payout = await _payoutRepository.GetByIdAsync(id);
+
+            if (payout == null)
+            {
+                _logger.LogWarning("GetPayoutDetails: Payout {PayoutId} not found", id);
+                return NotFound(new { error = new { code = "NOT_FOUND", message = "Payout not found" } });
+            }
+
+            // Verify ownership
+            if (payout.UserId != userId.Value)
+            {
+                _logger.LogWarning("GetPayoutDetails: User {UserId} attempted to access payout {PayoutId} owned by {OwnerId}",
+                    userId, id, payout.UserId);
+                return NotFound(new { error = new { code = "NOT_FOUND", message = "Payout not found" } });
+            }
+
+            var response = new PayoutDetailsResponse
+            {
+                Id = payout.Id,
+                BankAccountId = payout.BankAccountId,
+                GatewayTransactionId = payout.GatewayTransactionId,
+                UsdcAmount = payout.UsdcAmount,
+                UsdAmount = payout.UsdAmount,
+                ExchangeRate = payout.ExchangeRate,
+                ConversionFee = payout.ConversionFee,
+                PayoutFee = payout.PayoutFee,
+                TotalFees = payout.TotalFees,
+                NetAmount = payout.NetAmount,
+                Status = payout.Status,
+                InitiatedAt = payout.InitiatedAt,
+                CompletedAt = payout.CompletedAt,
+                EstimatedArrival = payout.EstimatedArrival,
+                FailureReason = payout.FailureReason,
+                BankAccount = payout.BankAccount != null ? new BankAccountSummary
+                {
+                    Id = payout.BankAccount.Id,
+                    AccountHolderName = payout.BankAccount.AccountHolderName,
+                    LastFourDigits = payout.BankAccount.LastFourDigits,
+                    AccountType = payout.BankAccount.AccountType,
+                    BankName = payout.BankAccount.BankName
+                } : null
+            };
+
+            _logger.LogInformation("GetPayoutDetails: Retrieved details for payout {PayoutId}", id);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetPayoutDetails: Error retrieving details for payout {PayoutId}", id);
+            return StatusCode(500, new { error = new { code = "INTERNAL_ERROR", message = "Failed to retrieve payout details" } });
+        }
+    }
+
+    /// <summary>
+    /// Cancel a pending payout
+    /// </summary>
+    [HttpPost("{id}/cancel")]
+    [ProducesResponseType(typeof(PayoutResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<PayoutResponse>> CancelPayout(Guid id)
+    {
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized(new { error = new { code = "UNAUTHORIZED", message = "User not authenticated" } });
+        }
+
+        try
+        {
+            var payout = await _payoutRepository.GetByIdAsync(id);
+
+            if (payout == null)
+            {
+                _logger.LogWarning("CancelPayout: Payout {PayoutId} not found", id);
+                return NotFound(new { error = new { code = "NOT_FOUND", message = "Payout not found" } });
+            }
+
+            // Verify ownership
+            if (payout.UserId != userId.Value)
+            {
+                _logger.LogWarning("CancelPayout: User {UserId} attempted to cancel payout {PayoutId} owned by {OwnerId}",
+                    userId, id, payout.UserId);
+                return NotFound(new { error = new { code = "NOT_FOUND", message = "Payout not found" } });
+            }
+
+            // Only pending payouts can be cancelled
+            if (payout.Status != "pending")
+            {
+                _logger.LogWarning("CancelPayout: Payout {PayoutId} has status {Status}, cannot cancel", id, payout.Status);
+                return BadRequest(new { error = new { code = "INVALID_STATUS", message = $"Cannot cancel payout with status '{payout.Status}'. Only pending payouts can be cancelled." } });
+            }
+
+            // Update status to cancelled
+            payout.Status = "cancelled";
+            payout.CompletedAt = DateTime.UtcNow;
+            payout.FailureReason = "Cancelled by user";
+
+            await _payoutRepository.UpdateAsync(payout);
+
+            _logger.LogInformation("CancelPayout: Cancelled payout {PayoutId} for user {UserId}", id, userId);
+
+            var bankAccount = payout.BankAccount;
+            if (bankAccount == null)
+            {
+                bankAccount = await _bankAccountRepository.GetByIdAsync(payout.BankAccountId);
+            }
+
+            var response = bankAccount != null ? MapToPayoutResponse(payout, bankAccount) : new PayoutResponse
+            {
+                Id = payout.Id,
+                Status = payout.Status,
+                UsdcAmount = payout.UsdcAmount,
+                NetAmount = payout.NetAmount
+            };
+
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "CancelPayout: Error cancelling payout {PayoutId}", id);
+            return StatusCode(500, new { error = new { code = "INTERNAL_ERROR", message = "Failed to cancel payout" } });
+        }
+    }
+
     private int? GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

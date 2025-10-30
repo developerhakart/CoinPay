@@ -114,3 +114,26 @@ public class ConversionPreviewResponse
     public decimal NetUsdAmount { get; set; }
     public DateTime ExpiresAt { get; set; }
 }
+
+/// <summary>
+/// Detailed payout information response
+/// </summary>
+public class PayoutDetailsResponse
+{
+    public Guid Id { get; set; }
+    public Guid BankAccountId { get; set; }
+    public string? GatewayTransactionId { get; set; }
+    public decimal UsdcAmount { get; set; }
+    public decimal UsdAmount { get; set; }
+    public decimal ExchangeRate { get; set; }
+    public decimal ConversionFee { get; set; }
+    public decimal PayoutFee { get; set; }
+    public decimal TotalFees { get; set; }
+    public decimal NetAmount { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public DateTime InitiatedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
+    public DateTime? EstimatedArrival { get; set; }
+    public string? FailureReason { get; set; }
+    public BankAccountSummary? BankAccount { get; set; }
+}
