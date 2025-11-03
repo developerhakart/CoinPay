@@ -15,15 +15,18 @@ public class PayoutWebhookController : ControllerBase
 {
     private readonly IPayoutRepository _payoutRepository;
     private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
     private readonly ILogger<PayoutWebhookController> _logger;
 
     public PayoutWebhookController(
         IPayoutRepository payoutRepository,
         IConfiguration configuration,
+        IWebHostEnvironment environment,
         ILogger<PayoutWebhookController> logger)
     {
         _payoutRepository = payoutRepository;
         _configuration = configuration;
+        _environment = environment;
         _logger = logger;
     }
 
@@ -121,19 +124,32 @@ public class PayoutWebhookController : ControllerBase
     /// </summary>
     private bool ValidateSignature(PayoutWebhookRequest request, string? providedSignature)
     {
-        if (string.IsNullOrEmpty(providedSignature))
+        // Get webhook secret from configuration
+        var webhookSecret = _configuration["Gateway:WebhookSecret"];
+
+        // SECURITY: In production, webhook secret must be configured
+        if (string.IsNullOrEmpty(webhookSecret))
         {
-            _logger.LogWarning("ValidateSignature: No signature provided");
+            // Only allow unsigned webhooks in Development environment with explicit configuration
+            if (_environment.IsDevelopment() && _configuration.GetValue<bool>("Gateway:AllowUnsignedWebhooks", false))
+            {
+                _logger.LogWarning("SECURITY: Webhook signature validation skipped (Development mode with AllowUnsignedWebhooks=true). GatewayTxId: {GatewayTxId}",
+                    request.GatewayTransactionId);
+                return true;
+            }
+
+            // Production or Development without explicit flag: FAIL
+            _logger.LogError("SECURITY: Webhook secret not configured. Signature validation failed. Environment: {Environment}, GatewayTxId: {GatewayTxId}",
+                _environment.EnvironmentName, request.GatewayTransactionId);
             return false;
         }
 
-        // Get webhook secret from configuration
-        var webhookSecret = _configuration["Gateway:WebhookSecret"];
-        if (string.IsNullOrEmpty(webhookSecret))
+        // Signature must be provided
+        if (string.IsNullOrEmpty(providedSignature))
         {
-            _logger.LogWarning("ValidateSignature: Webhook secret not configured");
-            // In development, allow unsigned webhooks
-            return _configuration.GetValue<bool>("Gateway:AllowUnsignedWebhooks", false);
+            _logger.LogWarning("SECURITY: No signature provided in webhook request. GatewayTxId: {GatewayTxId}",
+                request.GatewayTransactionId);
+            return false;
         }
 
         // Calculate expected signature
@@ -141,10 +157,18 @@ public class PayoutWebhookController : ControllerBase
         var expectedSignature = ComputeHmacSha256(payload, webhookSecret);
 
         // Compare signatures (constant-time comparison to prevent timing attacks)
-        return CryptographicOperations.FixedTimeEquals(
+        var isValid = CryptographicOperations.FixedTimeEquals(
             Encoding.UTF8.GetBytes(expectedSignature),
             Encoding.UTF8.GetBytes(providedSignature)
         );
+
+        if (!isValid)
+        {
+            _logger.LogWarning("SECURITY: Webhook signature validation failed. Expected: {Expected}, Provided: {Provided}, GatewayTxId: {GatewayTxId}",
+                expectedSignature, providedSignature, request.GatewayTransactionId);
+        }
+
+        return isValid;
     }
 
     /// <summary>

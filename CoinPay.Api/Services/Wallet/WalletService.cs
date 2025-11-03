@@ -276,4 +276,84 @@ public class WalletService : IWalletService
     {
         return await _dbContext.Users.FindAsync(userId);
     }
+
+    /// <summary>
+    /// Deduct USDC balance from wallet (for payouts, etc.)
+    /// This method checks balance first and throws if insufficient
+    /// </summary>
+    public async Task<decimal> DeductBalanceAsync(string walletAddress, decimal amount)
+    {
+        _logger.LogInformation("Deducting {Amount} USDC from wallet {WalletAddress}", amount, walletAddress);
+
+        if (amount <= 0)
+        {
+            throw new ArgumentException("Deduction amount must be greater than zero", nameof(amount));
+        }
+
+        // Get wallet from database
+        var wallet = await _walletRepository.GetByAddressAsync(walletAddress);
+        if (wallet == null)
+        {
+            _logger.LogError("Wallet not found: {WalletAddress}", walletAddress);
+            throw new InvalidOperationException($"Wallet {walletAddress} not found");
+        }
+
+        // Get current balance (force refresh to ensure accuracy)
+        var balanceResult = await GetWalletBalanceAsync(walletAddress, forceRefresh: true);
+
+        // Check if sufficient balance
+        if (balanceResult.USDCBalance < amount)
+        {
+            _logger.LogWarning("Insufficient balance for wallet {WalletAddress}. Required: {Required}, Available: {Available}",
+                walletAddress, amount, balanceResult.USDCBalance);
+            throw new InvalidOperationException(
+                $"Insufficient USDC balance. Required: {amount} USDC, Available: {balanceResult.USDCBalance} USDC");
+        }
+
+        // Deduct balance in database
+        var newBalance = balanceResult.USDCBalance - amount;
+        wallet.Balance = newBalance;
+        wallet.BalanceUpdatedAt = DateTime.UtcNow;
+        await _walletRepository.UpdateAsync(wallet);
+
+        // Invalidate cache to ensure fresh data on next query
+        await InvalidateBalanceCacheAsync(walletAddress);
+
+        _logger.LogInformation("Successfully deducted {Amount} USDC from wallet {WalletAddress}. New balance: {NewBalance}",
+            amount, walletAddress, newBalance);
+
+        return newBalance;
+    }
+
+    /// <summary>
+    /// Refund USDC balance to wallet (for failed payouts, cancellations, etc.)
+    /// </summary>
+    public async Task RefundBalanceAsync(string walletAddress, decimal amount)
+    {
+        _logger.LogInformation("Refunding {Amount} USDC to wallet {WalletAddress}", amount, walletAddress);
+
+        if (amount <= 0)
+        {
+            throw new ArgumentException("Refund amount must be greater than zero", nameof(amount));
+        }
+
+        // Get wallet from database
+        var wallet = await _walletRepository.GetByAddressAsync(walletAddress);
+        if (wallet == null)
+        {
+            _logger.LogError("Wallet not found: {WalletAddress}", walletAddress);
+            throw new InvalidOperationException($"Wallet {walletAddress} not found");
+        }
+
+        // Add balance in database
+        wallet.Balance += amount;
+        wallet.BalanceUpdatedAt = DateTime.UtcNow;
+        await _walletRepository.UpdateAsync(wallet);
+
+        // Invalidate cache to ensure fresh data on next query
+        await InvalidateBalanceCacheAsync(walletAddress);
+
+        _logger.LogInformation("Successfully refunded {Amount} USDC to wallet {WalletAddress}. New balance: {NewBalance}",
+            amount, walletAddress, wallet.Balance);
+    }
 }

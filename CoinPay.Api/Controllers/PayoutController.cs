@@ -6,6 +6,7 @@ using CoinPay.Api.Repositories;
 using CoinPay.Api.Services.FiatGateway;
 using CoinPay.Api.Services.BankAccount;
 using CoinPay.Api.Services.Wallet;
+using CoinPay.Api.Data;
 using System.Security.Claims;
 
 namespace CoinPay.Api.Controllers;
@@ -22,6 +23,7 @@ public class PayoutController : ControllerBase
     private readonly IBankAccountRepository _bankAccountRepository;
     private readonly IFiatGatewayService _fiatGatewayService;
     private readonly IWalletService _walletService;
+    private readonly AppDbContext _context;
     private readonly ILogger<PayoutController> _logger;
 
     public PayoutController(
@@ -29,12 +31,14 @@ public class PayoutController : ControllerBase
         IBankAccountRepository bankAccountRepository,
         IFiatGatewayService fiatGatewayService,
         IWalletService walletService,
+        AppDbContext context,
         ILogger<PayoutController> logger)
     {
         _payoutRepository = payoutRepository;
         _bankAccountRepository = bankAccountRepository;
         _fiatGatewayService = fiatGatewayService;
         _walletService = walletService;
+        _context = context;
         _logger = logger;
     }
 
@@ -54,9 +58,12 @@ public class PayoutController : ControllerBase
             return Unauthorized(new { error = new { code = "UNAUTHORIZED", message = "User not authenticated" } });
         }
 
+        // Start database transaction to ensure atomicity
+        using var transaction = await _context.Database.BeginTransactionAsync();
+
         try
         {
-            // Verify bank account exists and belongs to user
+            // 1. Verify bank account exists and belongs to user
             var bankAccount = await _bankAccountRepository.GetByIdAsync(request.BankAccountId);
             if (bankAccount == null || bankAccount.UserId != userId.Value)
             {
@@ -65,7 +72,7 @@ public class PayoutController : ControllerBase
                 return BadRequest(new { error = new { code = "INVALID_BANK_ACCOUNT", message = "Bank account not found" } });
             }
 
-            // Get user's wallet address
+            // 2. Get user's wallet address
             var user = await _walletService.GetUserByIdAsync(userId.Value);
             if (user == null || string.IsNullOrEmpty(user.WalletAddress))
             {
@@ -73,17 +80,23 @@ public class PayoutController : ControllerBase
                 return BadRequest(new { error = new { code = "NO_WALLET", message = "User does not have a wallet" } });
             }
 
-            // Check USDC balance
-            var balanceResult = await _walletService.GetWalletBalanceAsync(user.WalletAddress);
-            if (balanceResult.USDCBalance < request.UsdcAmount)
+            // 3. Deduct USDC from wallet (includes balance check)
+            // This will throw InvalidOperationException if insufficient balance
+            decimal newBalance;
+            try
             {
-                _logger.LogWarning("InitiatePayout: Insufficient balance for user {UserId}. Required: {Required}, Available: {Available}",
-                    userId, request.UsdcAmount, balanceResult.USDCBalance);
-                return BadRequest(new { error = new { code = "INSUFFICIENT_BALANCE",
-                    message = $"Insufficient USDC balance. Available: {balanceResult.USDCBalance} USDC" } });
+                newBalance = await _walletService.DeductBalanceAsync(user.WalletAddress, request.UsdcAmount);
+                _logger.LogInformation("InitiatePayout: Deducted {Amount} USDC from wallet {WalletAddress}. New balance: {NewBalance}",
+                    request.UsdcAmount, user.WalletAddress, newBalance);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "InitiatePayout: Failed to deduct balance for user {UserId}", userId);
+                await transaction.RollbackAsync();
+                return BadRequest(new { error = new { code = "INSUFFICIENT_BALANCE", message = ex.Message } });
             }
 
-            // Decrypt bank account details
+            // 4. Decrypt bank account details
             var routingNumber = BankAccountEncryptionHelper.DecryptRoutingNumber(
                 bankAccount.RoutingNumberEncrypted,
                 HttpContext.RequestServices.GetRequiredService<Services.Encryption.IEncryptionService>());
@@ -92,7 +105,7 @@ public class PayoutController : ControllerBase
                 bankAccount.AccountNumberEncrypted,
                 HttpContext.RequestServices.GetRequiredService<Services.Encryption.IEncryptionService>());
 
-            // Initiate payout via gateway
+            // 5. Initiate payout via gateway
             var gatewayRequest = new Services.FiatGateway.PayoutInitiationRequest
             {
                 UserId = userId.Value,
@@ -109,13 +122,20 @@ public class PayoutController : ControllerBase
 
             if (!gatewayResponse.Success)
             {
-                _logger.LogError("InitiatePayout: Gateway failed for user {UserId}. Error: {Error}",
+                _logger.LogError("InitiatePayout: Gateway failed for user {UserId}. Error: {Error}. Rolling back transaction and refunding wallet.",
                     userId, gatewayResponse.ErrorMessage);
+
+                // Rollback database transaction
+                await transaction.RollbackAsync();
+
+                // Refund the deducted amount back to wallet
+                await _walletService.RefundBalanceAsync(user.WalletAddress, request.UsdcAmount);
+
                 return BadRequest(new { error = new { code = gatewayResponse.ErrorCode ?? "GATEWAY_ERROR",
                     message = gatewayResponse.ErrorMessage ?? "Failed to initiate payout" } });
             }
 
-            // Create payout record
+            // 6. Create payout record
             var payout = new PayoutTransaction
             {
                 Id = Guid.NewGuid(),
@@ -136,18 +156,21 @@ public class PayoutController : ControllerBase
 
             var created = await _payoutRepository.AddAsync(payout);
 
-            _logger.LogInformation("InitiatePayout: Payout {PayoutId} created for user {UserId}, amount {Amount} USDC",
-                created.Id, userId, request.UsdcAmount);
+            // 7. Commit transaction - all operations succeeded
+            await transaction.CommitAsync();
 
-            // TODO: Deduct USDC from wallet (implement in future sprint)
-            // await _walletService.DeductBalanceAsync(user.WalletAddress, request.UsdcAmount);
+            _logger.LogInformation("InitiatePayout: Payout {PayoutId} created successfully for user {UserId}. Amount: {Amount} USDC, Gateway TxId: {GatewayTxId}",
+                created.Id, userId, request.UsdcAmount, gatewayResponse.GatewayTransactionId);
 
             var response = MapToPayoutResponse(created, bankAccount);
             return CreatedAtAction(nameof(GetPayoutStatus), new { id = created.Id }, response);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "InitiatePayout: Error initiating payout for user {UserId}", userId);
+            // Rollback transaction on any unexpected error
+            await transaction.RollbackAsync();
+
+            _logger.LogError(ex, "InitiatePayout: Unexpected error initiating payout for user {UserId}. Transaction rolled back.", userId);
             return StatusCode(500, new { error = new { code = "INTERNAL_ERROR", message = "Failed to initiate payout" } });
         }
     }

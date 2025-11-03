@@ -183,10 +183,10 @@ builder.Services.AddAuthentication("Bearer")
 builder.Services.AddAuthorization();
 
 // Register services
-// Use MockCircleService for MVP testing (no real Circle API calls)
-builder.Services.AddScoped<ICircleService, MockCircleService>();
-// For production with real Circle API:
-// builder.Services.AddScoped<ICircleService, CircleService>();
+// Use real CircleService for testnet testing
+builder.Services.AddScoped<ICircleService, CircleService>();
+// Use MockCircleService for MVP testing (no real Circle API calls):
+// builder.Services.AddScoped<ICircleService, MockCircleService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IWalletService, WalletService>();

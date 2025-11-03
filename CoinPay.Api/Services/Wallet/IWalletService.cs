@@ -12,6 +12,8 @@ public interface IWalletService
     Task<List<TransactionHistoryItem>> GetTransactionHistoryAsync(string walletAddress, int limit = 20);
     Task InvalidateBalanceCacheAsync(string walletAddress);
     Task<User?> GetUserByIdAsync(int userId);
+    Task<decimal> DeductBalanceAsync(string walletAddress, decimal amount);
+    Task RefundBalanceAsync(string walletAddress, decimal amount);
 }
 
 public class WalletCreationResponse
