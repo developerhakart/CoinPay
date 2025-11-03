@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 interface BalanceCardProps {
   balance: number;
+  nativeBalance?: number;
   currency?: string;
   isLoading: boolean;
   onRefresh: () => void;
@@ -10,6 +11,7 @@ interface BalanceCardProps {
 
 export const BalanceCard: React.FC<BalanceCardProps> = ({
   balance,
+  nativeBalance = 0,
   currency = 'USDC',
   isLoading,
   onRefresh,
@@ -45,13 +47,20 @@ export const BalanceCard: React.FC<BalanceCardProps> = ({
     <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg p-6 mb-6 text-white">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <p className="text-indigo-100 text-sm font-medium mb-1">Total Balance</p>
+          <p className="text-indigo-100 text-sm font-medium mb-1">Available Balance</p>
           {isLoading ? (
             <div className="h-10 w-48 bg-white/20 rounded animate-pulse"></div>
           ) : (
-            <h3 className="text-4xl font-bold">
-              {formatBalance(balance)} <span className="text-2xl font-normal">{currency}</span>
-            </h3>
+            <>
+              <h3 className="text-4xl font-bold">
+                {formatBalance(balance)} <span className="text-2xl font-normal">{currency}</span>
+              </h3>
+              {nativeBalance > 0 && (
+                <p className="text-indigo-100 text-lg mt-2">
+                  {formatBalance(nativeBalance)} <span className="text-sm font-normal">POL</span>
+                </p>
+              )}
+            </>
           )}
           {lastUpdated && (
             <p className="text-indigo-100 text-xs mt-1">

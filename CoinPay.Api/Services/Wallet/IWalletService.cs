@@ -28,6 +28,7 @@ public class WalletBalanceResponse
 {
     public string WalletAddress { get; set; } = string.Empty;
     public decimal USDCBalance { get; set; }
+    public decimal NativeBalance { get; set; } // POL/MATIC balance
     public string Blockchain { get; set; } = string.Empty;
 }
 

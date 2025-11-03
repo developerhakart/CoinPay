@@ -95,8 +95,38 @@ public class WalletService : IWalletService
         var wallet = await _walletRepository.GetByAddressAsync(walletAddress);
         if (wallet == null)
         {
-            _logger.LogWarning("Wallet not found: {WalletAddress}", walletAddress);
-            throw new InvalidOperationException($"Wallet {walletAddress} not found");
+            _logger.LogInformation("Wallet not found in database: {WalletAddress}, fetching balance from blockchain", walletAddress);
+
+            // Wallet not in our database - fetch real balance directly from blockchain
+            try
+            {
+                var usdcBalance = await _blockchainRpc.GetUSDCBalanceAsync(walletAddress);
+                var nativeBalance = await _blockchainRpc.GetNativeBalanceAsync(walletAddress);
+
+                _logger.LogInformation("Blockchain balance for {WalletAddress}: {USDCBalance} USDC, {NativeBalance} POL",
+                    walletAddress, usdcBalance, nativeBalance);
+
+                return new WalletBalanceResponse
+                {
+                    WalletAddress = walletAddress,
+                    USDCBalance = usdcBalance,
+                    NativeBalance = nativeBalance,
+                    Blockchain = "PolygonAmoy"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to fetch blockchain balance for {WalletAddress}, returning 0", walletAddress);
+
+                // Return 0 if blockchain query fails
+                return new WalletBalanceResponse
+                {
+                    WalletAddress = walletAddress,
+                    USDCBalance = 0,
+                    NativeBalance = 0,
+                    Blockchain = "PolygonAmoy"
+                };
+            }
         }
 
         var cacheKey = $"wallet:balance:{walletAddress}";
@@ -112,13 +142,17 @@ public class WalletService : IWalletService
                     var balanceData = JsonSerializer.Deserialize<CachedBalanceData>(cachedBalance);
                     if (balanceData != null)
                     {
-                        _logger.LogDebug("Returning cached balance from Redis for {WalletAddress}: {Balance}",
-                            walletAddress, balanceData.Balance);
+                        // Fetch native balance from blockchain (not cached to always show real-time POL)
+                        var cachedNativeBalance = await _blockchainRpc.GetNativeBalanceAsync(walletAddress);
+
+                        _logger.LogDebug("Returning cached USDC balance from Redis for {WalletAddress}: {USDCBalance} USDC, {NativeBalance} POL",
+                            walletAddress, balanceData.Balance, cachedNativeBalance);
 
                         return new WalletBalanceResponse
                         {
                             WalletAddress = walletAddress,
                             USDCBalance = balanceData.Balance,
+                            NativeBalance = cachedNativeBalance,
                             Blockchain = wallet.Blockchain
                         };
                     }
@@ -130,30 +164,33 @@ public class WalletService : IWalletService
             }
         }
 
-        // Fetch fresh balance from blockchain
-        var balance = await _blockchainRpc.GetUSDCBalanceAsync(walletAddress);
+        // Fetch fresh balances from blockchain
+        var freshUsdcBalance = await _blockchainRpc.GetUSDCBalanceAsync(walletAddress);
+        var freshNativeBalance = await _blockchainRpc.GetNativeBalanceAsync(walletAddress);
 
         // Update database
-        wallet.Balance = balance;
+        wallet.Balance = freshUsdcBalance;
         wallet.BalanceUpdatedAt = DateTime.UtcNow;
         await _walletRepository.UpdateAsync(wallet);
 
         // Update Redis cache
         if (_cachingService != null)
         {
-            var cacheData = new CachedBalanceData { Balance = balance, UpdatedAt = DateTime.UtcNow };
+            var cacheData = new CachedBalanceData { Balance = freshUsdcBalance, UpdatedAt = DateTime.UtcNow };
             var serialized = JsonSerializer.Serialize(cacheData);
             await _cachingService.SetAsync(cacheKey, serialized, TimeSpan.FromSeconds(CacheTTLSeconds));
-            _logger.LogDebug("Balance cached in Redis for {WalletAddress}: {Balance}, TTL={TTL}s",
-                walletAddress, balance, CacheTTLSeconds);
+            _logger.LogDebug("Balance cached in Redis for {WalletAddress}: {USDCBalance} USDC, {NativeBalance} POL, TTL={TTL}s",
+                walletAddress, freshUsdcBalance, freshNativeBalance, CacheTTLSeconds);
         }
 
-        _logger.LogInformation("Balance updated for {WalletAddress}: {Balance} USDC", walletAddress, balance);
+        _logger.LogInformation("Balance updated for {WalletAddress}: {USDCBalance} USDC, {NativeBalance} POL",
+            walletAddress, freshUsdcBalance, freshNativeBalance);
 
         return new WalletBalanceResponse
         {
             WalletAddress = walletAddress,
-            USDCBalance = balance,
+            USDCBalance = freshUsdcBalance,
+            NativeBalance = freshNativeBalance,
             Blockchain = wallet.Blockchain
         };
     }

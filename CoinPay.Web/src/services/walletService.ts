@@ -16,8 +16,14 @@ export const walletService = {
 
   // Get wallet balance
   async getBalance(walletAddress: string): Promise<WalletBalance> {
-    const response = await apiClient.get(`/wallet/${walletAddress}/balance`);
-    return response.data;
+    const response = await apiClient.get(`/wallet/balance/${walletAddress}`);
+    // Map API response to frontend type
+    return {
+      walletAddress: response.data.walletAddress,
+      balance: response.data.usdcBalance || 0,
+      nativeBalance: response.data.nativeBalance || 0,
+      currency: 'USDC'
+    };
   },
 
   // Get wallet by address

@@ -13,6 +13,7 @@ import type { Transaction } from '@/types/transaction';
 export function WalletPage() {
   const { user } = useAuthStore();
   const [balance, setBalance] = useState(0);
+  const [nativeBalance, setNativeBalance] = useState(0);
   const [isLoadingBalance, setIsLoadingBalance] = useState(true);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -29,11 +30,13 @@ export function WalletPage() {
       setError(null);
       const response = await walletService.getBalance(user.walletAddress);
       setBalance(response.balance || 0);
+      setNativeBalance(response.nativeBalance || 0);
       setLastUpdated(new Date());
     } catch (err) {
       console.error('Failed to fetch balance:', err);
       setError('Failed to load balance');
       setBalance(0);
+      setNativeBalance(0);
     } finally {
       setIsLoadingBalance(false);
     }
@@ -148,6 +151,7 @@ export function WalletPage() {
 
         <BalanceCard
           balance={balance}
+          nativeBalance={nativeBalance}
           currency="USDC"
           isLoading={isLoadingBalance}
           onRefresh={fetchBalance}

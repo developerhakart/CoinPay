@@ -15,7 +15,12 @@
       "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" status)",
       "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" diff CoinPay.Web/src/pages/WalletPage.tsx)",
       "Bash(git add:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker logs:*)",
+      "Bash(docker stop:*)",
+      "Bash(docker rm:*)"
     ],
     "deny": [],
     "ask": []

@@ -191,10 +191,10 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 
-// Use MockBlockchainRpcService for MVP testing
-builder.Services.AddScoped<IBlockchainRpcService, MockBlockchainRpcService>();
-// For production with real blockchain RPC:
-// builder.Services.AddScoped<IBlockchainRpcService, BlockchainRpcService>();
+// Use PolygonAmoyRpcService for real blockchain balance queries
+builder.Services.AddScoped<IBlockchainRpcService, PolygonAmoyRpcService>();
+// For testing with mock data:
+// builder.Services.AddScoped<IBlockchainRpcService, MockBlockchainRpcService>();
 
 // Register repositories
 builder.Services.AddScoped<IWalletRepository, WalletRepository>();
@@ -794,7 +794,7 @@ app.MapGet("/api/wallet/balance/{walletAddress}", async (
         return Results.Problem("An error occurred while fetching wallet balance");
     }
 })
-.RequireAuthorization()
+.AllowAnonymous() // Balance checking is public - anyone can check any wallet balance
 .WithName("GetWalletBalance")
 .WithTags("Wallet")
 .WithSummary("Get wallet balance")
