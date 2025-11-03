@@ -39,4 +39,9 @@ public class User
     /// User's wallet address (if created)
     /// </summary>
     public string? WalletAddress { get; set; }
+
+    /// <summary>
+    /// Circle wallet ID for developer-controlled transfers
+    /// </summary>
+    public string? CircleWalletId { get; set; }
 }

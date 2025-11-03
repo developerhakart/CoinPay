@@ -63,4 +63,37 @@ public interface ICircleService
     /// <param name="cancellationToken">Cancellation token for the async operation</param>
     /// <returns>Wallet details including address and balance</returns>
     Task<CircleWalletResponse> GetWalletAsync(string walletId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Initiates a transaction challenge for user authorization via passkey.
+    /// </summary>
+    /// <param name="request">Transaction challenge request with amount and recipient</param>
+    /// <param name="cancellationToken">Cancellation token for the async operation</param>
+    /// <returns>Challenge response with passkey signature data</returns>
+    Task<CircleTransactionChallengeResponse> InitiateTransactionAsync(CircleTransactionChallengeRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Executes a transaction after passkey authorization.
+    /// </summary>
+    /// <param name="request">Transaction execution request with signed challenge</param>
+    /// <param name="cancellationToken">Cancellation token for the async operation</param>
+    /// <returns>Transaction response with transaction ID and status</returns>
+    Task<CircleTransactionResponse> ExecuteTransactionAsync(CircleTransactionExecuteRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the status of a transaction by transaction ID.
+    /// </summary>
+    /// <param name="transactionId">The transaction ID to query</param>
+    /// <param name="cancellationToken">Cancellation token for the async operation</param>
+    /// <returns>Transaction status and details</returns>
+    Task<CircleTransactionResponse> GetTransactionStatusAsync(string transactionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Executes a developer-controlled transfer without passkey (simpler flow).
+    /// Uses Circle's Developer-Controlled Wallets API.
+    /// </summary>
+    /// <param name="request">Developer transfer request with wallet ID, destination, and amount</param>
+    /// <param name="cancellationToken">Cancellation token for the async operation</param>
+    /// <returns>Transaction response with transaction ID and status</returns>
+    Task<CircleTransactionResponse> ExecuteDeveloperTransferAsync(CircleDeveloperTransferRequest request, CancellationToken cancellationToken = default);
 }

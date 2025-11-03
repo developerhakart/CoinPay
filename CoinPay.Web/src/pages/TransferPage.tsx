@@ -240,7 +240,7 @@ export function TransferPage() {
         type: 'Transfer',
         status: 'Pending',
         senderName: user?.username || 'Unknown',
-        receiverName: formData.toAddress.slice(0, 8) + '...',
+        receiverName: formData.toAddress, // Send full address for Circle API
         description: formData.description || `Transfer ${formData.amount} ${formData.currency} to ${formData.toAddress.slice(0, 8)}...`
       });
 

@@ -37,6 +37,7 @@ public class WalletTransferRequest
     public string FromWalletAddress { get; set; } = string.Empty;
     public string ToWalletAddress { get; set; } = string.Empty;
     public decimal Amount { get; set; }
+    public string Currency { get; set; } = "USDC"; // USDC or POL
     public string? Memo { get; set; }
 }
 

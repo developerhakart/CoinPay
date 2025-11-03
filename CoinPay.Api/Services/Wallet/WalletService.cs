@@ -1,5 +1,6 @@
 using CoinPay.Api.Data;
 using CoinPay.Api.Services.Circle;
+using CoinPay.Api.Services.Circle.Models;
 using CoinPay.Api.Services.Blockchain;
 using CoinPay.Api.Services.Caching;
 using CoinPay.Api.Repositories;
@@ -12,6 +13,7 @@ public class WalletService : IWalletService
 {
     private readonly ICircleService _circleService;
     private readonly IBlockchainRpcService _blockchainRpc;
+    private readonly IDirectTransferService? _directTransferService;
     private readonly AppDbContext _dbContext;
     private readonly IWalletRepository _walletRepository;
     private readonly ICachingService? _cachingService;
@@ -24,13 +26,15 @@ public class WalletService : IWalletService
         AppDbContext dbContext,
         IWalletRepository walletRepository,
         ILogger<WalletService> logger,
-        ICachingService? cachingService = null)
+        ICachingService? cachingService = null,
+        IDirectTransferService? directTransferService = null)
     {
         _circleService = circleService;
         _blockchainRpc = blockchainRpc;
         _dbContext = dbContext;
         _walletRepository = walletRepository;
         _cachingService = cachingService;
+        _directTransferService = directTransferService;
         _logger = logger;
     }
 
@@ -218,22 +222,121 @@ public class WalletService : IWalletService
     public async Task<TransferResponse> TransferUSDCAsync(WalletTransferRequest request)
     {
         _logger.LogInformation(
-            "Initiating transfer from {From} to {To}, Amount: {Amount}",
+            "Initiating {Currency} transfer from {From} to {To}, Amount: {Amount}",
+            request.Currency,
             request.FromWalletAddress,
             request.ToWalletAddress,
             request.Amount);
 
-        // For MVP, return mock response
-        // In production, call Circle API to initiate transfer
+        // Try Circle Developer-Controlled Transfer first
+        try
+        {
+            // Get user's Circle wallet ID from database
+            var user = await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.WalletAddress == request.FromWalletAddress);
 
+            if (user?.CircleWalletId != null)
+            {
+                _logger.LogInformation("Using Circle developer-controlled transfer for wallet {WalletId}", user.CircleWalletId);
+
+                // Prepare Circle developer transfer request
+                var circleRequest = new CircleDeveloperTransferRequest
+                {
+                    WalletId = user.CircleWalletId,
+                    DestinationAddress = request.ToWalletAddress,
+                    Blockchain = "MATIC-AMOY",
+                    Amounts = new List<string> { request.Amount.ToString("F6") },
+                    FeeLevel = "MEDIUM"
+                };
+
+                // Set token address for USDC transfers (null for POL)
+                if (request.Currency.ToUpper() == "USDC")
+                {
+                    circleRequest.TokenAddress = "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582"; // USDC on Polygon Amoy
+                }
+
+                var result = await _circleService.ExecuteDeveloperTransferAsync(circleRequest);
+
+                // Invalidate balance cache
+                await InvalidateBalanceCacheAsync(request.FromWalletAddress);
+                await InvalidateBalanceCacheAsync(request.ToWalletAddress);
+
+                _logger.LogInformation("Circle transfer executed. TransactionId: {TransactionId}, Status: {Status}",
+                    result.TransactionId, result.Status);
+
+                return new TransferResponse
+                {
+                    TransactionId = result.TxHash ?? result.TransactionId,
+                    Status = result.Status,
+                    Amount = request.Amount,
+                    FromAddress = result.From,
+                    ToAddress = result.To,
+                    InitiatedAt = result.CreatedAt
+                };
+            }
+            else
+            {
+                _logger.LogWarning("User does not have CircleWalletId. Wallet address: {Address}", request.FromWalletAddress);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Circle developer transfer failed. Falling back to DirectTransferService or mock.");
+        }
+
+        // Fallback 1: DirectTransferService (if configured)
+        if (_directTransferService != null)
+        {
+            try
+            {
+                DirectTransferResult result;
+
+                if (request.Currency.ToUpper() == "POL" || request.Currency.ToUpper() == "MATIC")
+                {
+                    _logger.LogInformation("Sending POL via DirectTransferService");
+                    result = await _directTransferService.SendNativeAsync(
+                        request.ToWalletAddress,
+                        request.Amount);
+                }
+                else if (request.Currency.ToUpper() == "USDC")
+                {
+                    _logger.LogInformation("Sending USDC via DirectTransferService");
+                    result = await _directTransferService.SendUsdcAsync(
+                        request.ToWalletAddress,
+                        request.Amount);
+                }
+                else
+                {
+                    throw new ArgumentException($"Unsupported currency: {request.Currency}");
+                }
+
+                await InvalidateBalanceCacheAsync(request.FromWalletAddress);
+                await InvalidateBalanceCacheAsync(request.ToWalletAddress);
+
+                _logger.LogInformation("DirectTransferService transfer completed. TxHash: {TxHash}", result.TxHash);
+
+                return new TransferResponse
+                {
+                    TransactionId = result.TxHash,
+                    Status = result.Status,
+                    Amount = request.Amount,
+                    FromAddress = result.FromAddress,
+                    ToAddress = result.ToAddress,
+                    InitiatedAt = result.Timestamp
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DirectTransferService failed. Returning mock response.");
+            }
+        }
+
+        // Fallback 2: Mock response
         var transactionId = $"TXN{DateTime.UtcNow.Ticks}";
-
-        // Invalidate balance cache for both sender and receiver
-        // Since the transfer is initiated, balances will change
         await InvalidateBalanceCacheAsync(request.FromWalletAddress);
         await InvalidateBalanceCacheAsync(request.ToWalletAddress);
 
-        _logger.LogInformation("Balance caches invalidated for sender and receiver");
+        _logger.LogWarning("Using mock transfer response. No Circle wallet or DirectTransferService configured.");
 
         return new TransferResponse
         {

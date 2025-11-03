@@ -11,9 +11,12 @@ public class MockCircleService : ICircleService
     private readonly ILogger<MockCircleService> _logger;
     private readonly Dictionary<string, string> _mockUsers = new();
 
-    public MockCircleService(ILogger<MockCircleService> logger)
+    public MockCircleService(
+        ILogger<MockCircleService> logger,
+        IEntitySecretEncryptionService? encryptionService = null)
     {
         _logger = logger;
+        // Mock service doesn't need encryption service - it's optional
     }
 
     public Task<CircleRegistrationChallengeResponse> InitiateUserRegistrationAsync(string username, CancellationToken cancellationToken = default)
@@ -128,6 +131,87 @@ public class MockCircleService : ICircleService
             CreatedAt = DateTime.UtcNow.AddDays(-1),
             Balance = 100.00m,
             BalanceCurrency = "USDC"
+        });
+    }
+
+    public Task<CircleTransactionChallengeResponse> InitiateTransactionAsync(
+        CircleTransactionChallengeRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("[MockCircle] Initiating transaction to {ToAddress}", request.DestinationAddress);
+
+        var challenge = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+
+        return Task.FromResult(new CircleTransactionChallengeResponse
+        {
+            ChallengeId = $"mock_challenge_{Guid.NewGuid()}",
+            Challenge = challenge,
+            RpId = "localhost",
+            UserVerification = "required"
+        });
+    }
+
+    public Task<CircleTransactionResponse> ExecuteTransactionAsync(
+        CircleTransactionExecuteRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("[MockCircle] Executing transaction for challenge {ChallengeId}", request.ChallengeId);
+
+        return Task.FromResult(new CircleTransactionResponse
+        {
+            TransactionId = $"mock_tx_{Guid.NewGuid()}",
+            TxHash = $"0x{Guid.NewGuid():N}",
+            Status = "PENDING",
+            Blockchain = "MATIC-AMOY",
+            From = $"0x{Guid.NewGuid():N}".Substring(0, 42),
+            To = $"0x{Guid.NewGuid():N}".Substring(0, 42),
+            Amount = "0",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        });
+    }
+
+    public Task<CircleTransactionResponse> GetTransactionStatusAsync(
+        string transactionId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("[MockCircle] Getting transaction status for {TransactionId}", transactionId);
+
+        return Task.FromResult(new CircleTransactionResponse
+        {
+            TransactionId = transactionId,
+            TxHash = $"0x{Guid.NewGuid():N}",
+            Status = "CONFIRMED",
+            Blockchain = "MATIC-AMOY",
+            From = $"0x{Guid.NewGuid():N}".Substring(0, 42),
+            To = $"0x{Guid.NewGuid():N}".Substring(0, 42),
+            Amount = "0",
+            CreatedAt = DateTime.UtcNow.AddMinutes(-5),
+            UpdatedAt = DateTime.UtcNow
+        });
+    }
+
+    public Task<CircleTransactionResponse> ExecuteDeveloperTransferAsync(
+        CircleDeveloperTransferRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "[MockCircle] Executing developer transfer from wallet {WalletId} to {Destination}, Amount: {Amount}",
+            request.WalletId,
+            request.DestinationAddress,
+            string.Join(",", request.Amounts));
+
+        return Task.FromResult(new CircleTransactionResponse
+        {
+            TransactionId = Guid.NewGuid().ToString(),
+            TxHash = $"0x{Guid.NewGuid():N}",
+            Status = "PENDING",
+            Blockchain = request.Blockchain,
+            From = $"0x{Guid.NewGuid():N}".Substring(0, 42),
+            To = request.DestinationAddress,
+            Amount = request.Amounts.FirstOrDefault() ?? "0",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         });
     }
 }

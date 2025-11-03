@@ -30,14 +30,18 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=coinpay;Username=postgres;Password=root
-      - Circle__ApiKey=test_api_key_2_abc123xyz789def456ghi012
-      - Circle__EntitySecret=test_entity_secret_xyz789abc123def456ghi012jkl345mno678
+      - Circle__ApiKey=TEST_API_KEY:d93edad9d7011eae471468f01252bafa:8cc4aae56a478a0a313914a062be0445
+      - Circle__EntitySecret=dc1ff0c795a9701035d45927a8cfc3dd54255f19e1ceebb8e50bafeaf2493d26
       - Circle__WebhookSecret=test_webhook_secret_def456ghi012jkl345mno678pqr901stu234
-      - Circle__ApiBaseUrl=https://api.circle.com
+      - Circle__ApiBaseUrl=https://api.circle.com/v1/w3s
       - Jwt__SecretKey=DevelopmentSecretKey_ChangeInProduction_MinimumLength32Characters
       - Jwt__Issuer=CoinPay
       - Jwt__Audience=CoinPay
       - Jwt__ExpirationMinutes=1440
+      # Blockchain Test Wallet Configuration (for real POL/USDC transfers)
+      # IMPORTANT: Replace YOUR_PRIVATE_KEY_HERE with actual private key from MetaMask
+      # Get free testnet POL: https://faucet.polygon.technology/
+      - TEST_WALLET_PRIVATE_KEY=YOUR_TEST_WALLET_PRIVATE_KEY_HERE
     ports:
       - "7777:8080"
     # depends_on:

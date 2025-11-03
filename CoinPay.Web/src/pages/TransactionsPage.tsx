@@ -35,13 +35,19 @@ export function TransactionsPage() {
   }, [location]);
 
   const fetchTransactions = async () => {
-    if (!user?.id) return;
+    if (!user?.username) return;
 
     try {
       setLoading(true);
       setError(null);
-      const data = await transactionService.getUserTransactions(user.id);
-      setTransactions(data);
+      // Get all transactions and filter by current user's username
+      const allTransactions = await transactionService.getAll();
+      // Filter transactions where user is sender or receiver
+      const userTransactions = allTransactions.filter(t =>
+        t.senderName?.toLowerCase() === user.username.toLowerCase() ||
+        t.receiverName?.toLowerCase() === user.username.toLowerCase()
+      );
+      setTransactions(userTransactions);
     } catch (err: any) {
       console.error('Failed to fetch transactions:', err);
       setError(err.response?.data?.message || 'Failed to load transactions');
@@ -90,7 +96,7 @@ export function TransactionsPage() {
 
   useEffect(() => {
     fetchTransactions();
-  }, [user?.id]);
+  }, [user?.username]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
