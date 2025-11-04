@@ -21,6 +21,10 @@ CoinPay/
 
 ## Technologies Used
 
+### Secret Management
+- **HashiCorp Vault 1.15** - Secure secret storage and management
+- **VaultSharp** - .NET client library for Vault integration
+
 ### Gateway (CoinPay.Gateway)
 - **.NET 9.0** - Latest .NET framework
 - **YARP** - Yet Another Reverse Proxy for routing
@@ -33,94 +37,152 @@ CoinPay/
 - **PostgreSQL** - Production-grade relational database
 - **Swagger/OpenAPI** - API documentation and testing interface
 - **CORS** - Cross-Origin Resource Sharing enabled
+- **Circle API** - Web3 Services integration
 
 ### Frontend (CoinPay.Web)
 - **React 18** - Modern React framework
 - **TypeScript** - Type-safe JavaScript
 - **Vite** - Fast build tool and dev server
 - **Tailwind CSS** - Utility-first CSS framework
+- **Zustand** - State management
+- **React Router** - Client-side routing
 
 ### Documentation
 - **DocFX** - Static documentation site generator
 
+### Infrastructure
+- **Docker** - Containerization
+- **Docker Compose** - Multi-container orchestration
+
 ## Getting Started
 
 ### Prerequisites
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop) (for running PostgreSQL)
-- [DocFX](https://dotnet.github.io/docfx/) (for documentation)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) (required for all services)
+- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) (optional, for local development)
+- [Node.js](https://nodejs.org/) (v18 or higher) (optional, for local development)
 - Git
 
-### Quick Start (Using Gateway - Recommended)
+## Quick Reference
 
-The gateway provides a single entry point for all services.
-
-#### Step 1: Start Database Services
-
-Start PostgreSQL and pgAdmin using Docker Compose:
+### Most Common Commands
 
 ```bash
+# START APPLICATION
+.\start-coinpay.ps1              # Windows - Start all services with Vault
+./start-coinpay.sh               # Linux/Mac - Start all services with Vault
+
+# STOP APPLICATION
+docker-compose down              # Stop all services (keeps data)
+docker-compose down -v           # Stop and remove all data
+
+# VIEW LOGS
+docker-compose logs -f           # All services
+docker-compose logs -f api       # API only
+docker-compose logs -f vault     # Vault only
+
+# RESTART SERVICES
+docker-compose restart api       # Restart API
+docker-compose restart           # Restart all
+
+# CHECK STATUS
+docker-compose ps                # Service status
+curl http://localhost:7777/health  # API health
+docker exec coinpay-vault vault status  # Vault status
+
+# VAULT SECRETS
+.\vault\scripts\populate-dev-secrets.ps1  # Re-populate secrets (Windows)
+./vault/scripts/populate-dev-secrets.sh   # Re-populate secrets (Linux/Mac)
+
+# REBUILD
+docker-compose up -d --build     # Rebuild and restart all
+docker-compose build api         # Rebuild API only
+```
+
+### Service URLs
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| Frontend | http://localhost:3000 | React Web Application |
+| API | http://localhost:7777 | Backend REST API |
+| Swagger | http://localhost:7777/swagger | API Documentation |
+| Gateway | http://localhost:5000 | API Gateway |
+| Docs | http://localhost:8080 | DocFX Documentation |
+| Vault UI | http://localhost:8200/ui | Vault Management (Token: `dev-root-token`) |
+
+### Quick Start (Recommended - Using Docker Compose)
+
+The entire application runs in Docker containers with all dependencies included.
+
+#### Start All Services
+
+**Windows (PowerShell):**
+```powershell
+.\start-coinpay.ps1
+```
+
+**Linux/Mac (Bash):**
+```bash
+chmod +x start-coinpay.sh
+./start-coinpay.sh
+```
+
+The startup script will automatically:
+1. Start all docker-compose services (Vault, API, Gateway, Web, Docs)
+2. Initialize HashiCorp Vault with development secrets
+3. Restart the API to load secrets from Vault
+4. Verify system health
+
+**Manual Start (Alternative):**
+```bash
+# Start all services
 docker-compose up -d
+
+# Populate Vault secrets
+.\vault\scripts\populate-dev-secrets.ps1  # Windows
+./vault/scripts/populate-dev-secrets.sh   # Linux/Mac
+
+# Restart API to load secrets
+docker-compose restart api
 ```
 
-This will start:
-- **PostgreSQL**: localhost:5432 (Database: coinpay, User: postgres, Password: root)
-- **pgAdmin**: http://localhost:5050 (Email: admin@coinpay.com, Password: admin)
+#### Stop All Services
 
-To stop the database services:
 ```bash
+# Stop all containers (keeps data)
 docker-compose down
-```
 
-To stop and remove all data:
-```bash
+# Stop and remove all data (including database)
 docker-compose down -v
 ```
 
-#### Step 2: Start Backend Services
+#### View Service Logs
 
-1. **Start the API** (Terminal 1):
 ```bash
-cd CoinPay.Api
-dotnet run --launch-profile http
+# View all logs
+docker-compose logs -f
+
+# View specific service logs
+docker-compose logs -f api
+docker-compose logs -f vault
+docker-compose logs -f gateway
+docker-compose logs -f web
 ```
-API runs on: **http://localhost:7777**
-- Database migrations are applied automatically on startup
 
-2. **Start DocFX** (Terminal 2):
-```bash
-cd docfx
-docfx serve _site --port 8080
-```
-Docs run on: **http://localhost:8080**
+### Access URLs
 
-#### Step 3: Start Gateway and Frontend
-
-3. **Start the Gateway** (Terminal 3):
-```bash
-cd CoinPay.Gateway
-dotnet run --launch-profile http
-```
-Gateway runs on: **http://localhost:5000**
-
-4. **Start the Frontend** (Terminal 4):
-```bash
-cd CoinPay.Web
-npm install
-npm run dev
-```
-Frontend runs on: **http://localhost:3000**
-
-### Access URLs (Through Gateway)
-
-Once all services are running, access everything through the gateway:
+Once all services are running, access the application:
 
 - **Frontend Application**: http://localhost:3000
+- **API**: http://localhost:7777
+- **Swagger UI**: http://localhost:7777/swagger
+- **Gateway**: http://localhost:5000
+- **API Documentation**: http://localhost:8080
+- **Vault UI**: http://localhost:8200/ui (Token: `dev-root-token`)
+
+**Through Gateway (Recommended):**
 - **API Endpoints**: http://localhost:5000/api/transactions
 - **Swagger UI**: http://localhost:5000/swagger/
 - **API Documentation**: http://localhost:5000/docs/
-- **Gateway Info**: http://localhost:5000/
 
 ## API Documentation
 
@@ -215,76 +277,246 @@ curl -X DELETE http://localhost:7777/api/transactions/1
 
 ## Docker Compose Setup
 
-The project includes a `docker-compose.yml` file for easy local development setup.
+The project includes a `docker-compose.yml` file that runs all services in containers.
 
 ### Services Included
 
-1. **PostgreSQL Database**
-   - Image: `postgres:15-alpine`
-   - Port: `5432`
-   - Database: `coinpay`
-   - Username: `postgres`
-   - Password: `root`
-   - Health checks enabled
-   - Persistent volume: `postgres-data`
+1. **HashiCorp Vault** - Secret Management
+   - Image: `hashicorp/vault:1.15`
+   - Port: `8200`
+   - Mode: Development (in-memory storage)
+   - Root Token: `dev-root-token`
+   - UI: http://localhost:8200/ui
+   - Stores: Database credentials, API keys, JWT secrets, Circle API credentials
 
-2. **pgAdmin (Database Management UI)**
-   - Image: `dpage/pgadmin4:latest`
-   - Port: `5050`
-   - URL: http://localhost:5050
-   - Email: `admin@coinpay.com`
-   - Password: `admin`
+2. **CoinPay API** - Backend Service
+   - Built from: `./CoinPay.Api/Dockerfile`
+   - Port: `7777`
+   - Swagger UI: http://localhost:7777/swagger
+   - Depends on: Vault (waits for healthy status)
+   - Loads secrets from Vault on startup
+
+3. **CoinPay Gateway** - API Gateway (YARP)
+   - Built from: `./CoinPay.Gateway/Dockerfile`
+   - Port: `5000`
+   - Routes requests to API and Docs
+   - Depends on: API
+
+4. **CoinPay Web** - React Frontend
+   - Built from: `./CoinPay.Web/Dockerfile`
+   - Port: `3000`
+   - UI: http://localhost:3000
+   - Depends on: Gateway
+
+5. **Documentation** - DocFX Site
+   - Built from: `./docfx/Dockerfile`
+   - Port: `8080`
+   - Docs: http://localhost:8080
 
 ### Docker Compose Commands
 
+#### Starting the Application
+
+**Recommended (with automatic Vault setup):**
+```powershell
+# Windows
+.\start-coinpay.ps1
+
+# Linux/Mac
+./start-coinpay.sh
+```
+
+**Manual start:**
 ```bash
-# Start all services (detached mode)
+# Start all services
 docker-compose up -d
 
-# View logs
-docker-compose logs -f
+# Populate Vault with secrets
+.\vault\scripts\populate-dev-secrets.ps1  # Windows
+./vault/scripts/populate-dev-secrets.sh   # Linux/Mac
 
-# Stop services (keeps data)
-docker-compose stop
+# Restart API to load secrets
+docker-compose restart api
 
-# Stop and remove containers (keeps data)
-docker-compose down
-
-# Stop and remove containers + volumes (removes all data)
-docker-compose down -v
-
-# Restart services
-docker-compose restart
-
-# View running services
+# Verify all services are running
 docker-compose ps
 ```
 
-### Connecting to PostgreSQL via pgAdmin
+#### Stopping the Application
 
-1. Open http://localhost:5050 in your browser
-2. Login with `admin@coinpay.com` / `admin`
-3. Right-click on "Servers" and select "Create" > "Server"
-4. Configure connection:
-   - **General Tab**: Name: `CoinPay Local`
-   - **Connection Tab**:
-     - Host: `postgres` (use container name)
-     - Port: `5432`
-     - Maintenance database: `coinpay`
-     - Username: `postgres`
-     - Password: `root`
-5. Click "Save"
+```bash
+# Stop all containers (keeps volumes/data)
+docker-compose down
+
+# Stop and remove all data (including database)
+docker-compose down -v
+
+# Stop specific service
+docker-compose stop api
+docker-compose stop vault
+```
+
+#### Restarting Services
+
+```bash
+# Restart all services
+docker-compose restart
+
+# Restart specific service
+docker-compose restart api
+docker-compose restart vault
+docker-compose restart gateway
+docker-compose restart web
+```
+
+#### Viewing Logs
+
+```bash
+# View all logs (follow mode)
+docker-compose logs -f
+
+# View logs for specific service
+docker-compose logs -f api
+docker-compose logs -f vault
+docker-compose logs -f gateway
+
+# View last 100 lines of logs
+docker-compose logs --tail=100 api
+
+# View logs since specific time
+docker-compose logs --since 30m api
+```
+
+#### Service Status and Health
+
+```bash
+# View running services and status
+docker-compose ps
+
+# Check Vault status
+docker exec coinpay-vault vault status
+
+# Check API health
+curl http://localhost:7777/health
+
+# View container resource usage
+docker stats
+```
+
+#### Rebuilding Services
+
+```bash
+# Rebuild all services
+docker-compose build
+
+# Rebuild specific service
+docker-compose build api
+docker-compose build web
+
+# Rebuild and restart
+docker-compose up -d --build
+
+# Force rebuild (no cache)
+docker-compose build --no-cache api
+```
+
+#### Cleanup
+
+```bash
+# Remove stopped containers
+docker-compose rm
+
+# Remove all unused images, containers, networks
+docker system prune
+
+# Remove everything including volumes (WARNING: deletes all data)
+docker-compose down -v
+docker system prune -a --volumes
+```
+
+### Troubleshooting Docker Compose
+
+#### Services Not Starting
+
+```bash
+# Check container logs
+docker-compose logs api
+docker-compose logs vault
+
+# Check container status
+docker-compose ps
+
+# Restart specific service
+docker-compose restart api
+```
+
+#### Port Already in Use
+
+```bash
+# Windows - Find process using port
+netstat -ano | findstr :8200
+taskkill /PID <process_id> /F
+
+# Linux/Mac - Find and kill process
+lsof -ti:8200 | xargs kill -9
+```
+
+#### Vault Secrets Not Loading
+
+```bash
+# Re-populate Vault secrets
+.\vault\scripts\populate-dev-secrets.ps1
+
+# Restart API
+docker-compose restart api
+
+# Verify secrets exist
+docker exec -e VAULT_TOKEN=dev-root-token coinpay-vault vault kv list secret/coinpay
+```
+
+#### Database Connection Issues
+
+The application uses Vault to store database credentials. If you see connection errors:
+
+1. Check Vault is running: `docker-compose ps vault`
+2. Verify Vault is healthy: `docker exec coinpay-vault vault status`
+3. Re-populate secrets: `.\vault\scripts\populate-dev-secrets.ps1`
+4. Restart API: `docker-compose restart api`
+
+### Secret Management with Vault
+
+All sensitive configuration is stored in HashiCorp Vault. On first start, you must populate Vault with secrets:
+
+```powershell
+# Windows
+.\vault\scripts\populate-dev-secrets.ps1
+
+# Linux/Mac
+./vault/scripts/populate-dev-secrets.sh
+```
+
+**Important Notes:**
+- Vault runs in **development mode** with in-memory storage
+- Secrets are **lost on restart** and must be re-populated
+- Root token: `dev-root-token`
+- See `vault/README.md` for detailed Vault documentation
 
 ## Features
 
 - **RESTful API** with full CRUD operations
+- **HashiCorp Vault Integration** for secure secret management
 - **PostgreSQL Database** with EF Core migrations
+- **Circle API Integration** for Web3 cryptocurrency operations
 - **Swagger UI** for interactive API documentation
+- **YARP API Gateway** for unified service routing
+- **React Frontend** with TypeScript and Tailwind CSS
 - **CORS Enabled** for frontend integration
 - **Auto-generated Transaction IDs**
 - **Timestamp Tracking** for creation and completion
 - **Status Management** with automatic completion timestamps
-- **Docker Compose** for easy local development setup
+- **Docker Compose** for complete containerized deployment
+- **Comprehensive Logging** with Serilog and observability
+- **Health Checks** for all services
 
 ## Development
 
@@ -295,11 +527,29 @@ The API follows the Minimal API pattern introduced in .NET 6+, providing a light
 The application uses **PostgreSQL** as its database, running in Docker. Entity Framework Core manages the database schema through code-first migrations.
 
 #### Database Configuration
-- **Connection String**: Configured in `appsettings.Development.json`
-- **Host**: localhost:5432
+Database credentials are securely stored in **HashiCorp Vault** and loaded at application startup.
+
+**Vault Path:** `secret/coinpay/database`
+
+**Default Development Values:**
+- **Host**: postgres (container name)
+- **Port**: 5432
 - **Database**: coinpay
 - **User**: postgres
-- **Password**: root
+- **Password**: root (stored in Vault)
+
+To update database credentials:
+```bash
+# Update in Vault
+docker exec -e VAULT_TOKEN=dev-root-token coinpay-vault \
+  vault kv put secret/coinpay/database \
+  host=postgres port=5432 database=coinpay \
+  username=postgres password=newpassword \
+  connection_string='Host=postgres;Port=5432;Database=coinpay;Username=postgres;Password=newpassword'
+
+# Restart API to load new credentials
+docker-compose restart api
+```
 
 #### Database Migrations
 Migrations are applied automatically when the API starts. To manage migrations manually:
