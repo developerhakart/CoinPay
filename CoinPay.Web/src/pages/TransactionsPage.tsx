@@ -109,7 +109,9 @@ export function TransactionsPage() {
   }, []);
 
   const formatAmount = useCallback((amount: number, currency: string) => {
-    return `${amount.toFixed(2)} ${currency}`;
+    // Use more decimals for cryptocurrencies, fewer for fiat
+    const decimals = currency === 'USD' ? 2 : 6;
+    return `${amount.toFixed(decimals)} ${currency}`;
   }, []);
 
   const formatDate = useCallback((dateString: string) => {

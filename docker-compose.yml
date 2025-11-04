@@ -1,25 +1,25 @@
 version: '3.8'
 
 services:
-  # postgres:
-  #   image: postgres:15-alpine
-  #   container_name: coinpay-postgres
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: root
-  #     POSTGRES_DB: coinpay
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - postgres-data:/var/lib/postgresql/data
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #   networks:
-  #     - coinpay-network
-  #   restart: unless-stopped
+  vault:
+    image: hashicorp/vault:1.15
+    container_name: coinpay-vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: dev-root-token
+      VAULT_ADDR: http://0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 15s
+    networks:
+      - coinpay-network
+    restart: unless-stopped
 
   api:
     build:
@@ -29,24 +29,13 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=coinpay;Username=postgres;Password=root
-      - Circle__ApiKey=TEST_API_KEY:d93edad9d7011eae471468f01252bafa:8cc4aae56a478a0a313914a062be0445
-      - Circle__EntitySecret=dc1ff0c795a9701035d45927a8cfc3dd54255f19e1ceebb8e50bafeaf2493d26
-      - Circle__WebhookSecret=test_webhook_secret_def456ghi012jkl345mno678pqr901stu234
-      - Circle__ApiBaseUrl=https://api.circle.com/v1/w3s
-      - Jwt__SecretKey=DevelopmentSecretKey_ChangeInProduction_MinimumLength32Characters
-      - Jwt__Issuer=CoinPay
-      - Jwt__Audience=CoinPay
-      - Jwt__ExpirationMinutes=1440
-      # Blockchain Test Wallet Configuration (for real POL/USDC transfers)
-      # IMPORTANT: Replace YOUR_PRIVATE_KEY_HERE with actual private key from MetaMask
-      # Get free testnet POL: https://faucet.polygon.technology/
-      - TEST_WALLET_PRIVATE_KEY=YOUR_TEST_WALLET_PRIVATE_KEY_HERE
+      - Vault__Address=http://vault:8200
+      - Vault__Token=dev-root-token
     ports:
       - "7777:8080"
-    # depends_on:
-    #   postgres:
-    #     condition: service_healthy
+    depends_on:
+      vault:
+        condition: service_healthy
     networks:
       - coinpay-network
     restart: unless-stopped
@@ -93,22 +82,9 @@ services:
       - coinpay-network
     restart: unless-stopped
 
-  # pgadmin:
-  #   image: dpage/pgadmin4:latest
-  #   container_name: coinpay-pgadmin
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: admin@coinpay.com
-  #     PGADMIN_DEFAULT_PASSWORD: admin
-  #   ports:
-  #     - "5050:80"
-  #   depends_on:
-  #     - postgres
-  #   networks:
-  #     - coinpay-network
-  #   restart: unless-stopped
-
 volumes:
   postgres-data:
+  vault-data:
 
 networks:
   coinpay-network:

@@ -17,6 +17,7 @@ using CoinPay.Api.Services.BankAccount;
 using CoinPay.Api.Services.FiatGateway;
 using CoinPay.Api.Services.ExchangeRate;
 using CoinPay.Api.Services.Fees;
+using CoinPay.Api.Services.Vault;
 using StackExchange.Redis;
 using Serilog;
 using Serilog.Events;
@@ -47,6 +48,14 @@ try
 
     // Use Serilog for logging
     builder.Host.UseSerilog();
+
+    // Load secrets from HashiCorp Vault
+    Log.Information("Loading configuration from HashiCorp Vault...");
+    await builder.LoadSecretsFromVaultAsync();
+    Log.Information("Vault configuration loaded successfully");
+
+    // Add Vault configuration service
+    builder.Services.AddVaultConfiguration(builder.Configuration);
 
     // Load configuration settings
     var apiSettings = builder.Configuration.GetSection("ApiSettings").Get<ApiSettings>() ?? new ApiSettings();
@@ -191,6 +200,7 @@ builder.Services.AddSingleton<IEntitySecretEncryptionService, EntitySecretEncryp
 builder.Services.AddScoped<ICircleService, CircleService>();
 // Use MockCircleService for MVP testing (no real Circle API calls):
 // builder.Services.AddScoped<ICircleService, MockCircleService>();
+builder.Services.AddScoped<ICircleWebhookHandler, CircleWebhookHandler>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
@@ -291,6 +301,8 @@ builder.Services.AddControllers();
 // Register background services
 builder.Services.AddHostedService<TransactionMonitoringService>();
 Log.Information("Transaction Monitoring background service registered");
+builder.Services.AddHostedService<CircleTransactionMonitoringService>();
+Log.Information("Circle Transaction Monitoring background service registered");
 
     var app = builder.Build();
 

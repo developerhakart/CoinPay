@@ -36,7 +36,9 @@ export const TransactionDetailModal = ({ isOpen, onClose, transaction }: Transac
   };
 
   const formatAmount = (amount: number, currency: string) => {
-    return `${amount.toFixed(6)} ${currency}`;
+    // Use more decimals for cryptocurrencies, fewer for fiat
+    const decimals = currency === 'USD' ? 2 : 6;
+    return `${amount.toFixed(decimals)} ${currency}`;
   };
 
   const getTypeIcon = (type: string) => {

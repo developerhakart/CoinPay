@@ -96,4 +96,12 @@ public interface ICircleService
     /// <param name="cancellationToken">Cancellation token for the async operation</param>
     /// <returns>Transaction response with transaction ID and status</returns>
     Task<CircleTransactionResponse> ExecuteDeveloperTransferAsync(CircleDeveloperTransferRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all transactions for a specific wallet.
+    /// </summary>
+    /// <param name="walletId">The wallet ID to query transactions for</param>
+    /// <param name="cancellationToken">Cancellation token for the async operation</param>
+    /// <returns>List of transactions for the wallet</returns>
+    Task<List<CircleTransactionResponse>> GetWalletTransactionsAsync(string walletId, CancellationToken cancellationToken = default);
 }

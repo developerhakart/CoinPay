@@ -214,4 +214,30 @@ public class MockCircleService : ICircleService
             UpdatedAt = DateTime.UtcNow
         });
     }
+
+    public Task<List<CircleTransactionResponse>> GetWalletTransactionsAsync(
+        string walletId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("[MockCircle] Getting transactions for wallet {WalletId}", walletId);
+
+        // Return some mock transactions
+        var transactions = new List<CircleTransactionResponse>
+        {
+            new CircleTransactionResponse
+            {
+                TransactionId = $"mock_tx_{Guid.NewGuid()}",
+                TxHash = $"0x{Guid.NewGuid():N}",
+                Status = "CONFIRMED",
+                Blockchain = "MATIC-AMOY",
+                From = $"0x{Guid.NewGuid():N}".Substring(0, 42),
+                To = $"0x{Guid.NewGuid():N}".Substring(0, 42),
+                Amount = "10.0",
+                CreatedAt = DateTime.UtcNow.AddDays(-1),
+                UpdatedAt = DateTime.UtcNow.AddDays(-1)
+            }
+        };
+
+        return Task.FromResult(transactions);
+    }
 }
