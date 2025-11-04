@@ -12,6 +12,7 @@ export interface Wallet {
 export interface WalletBalance {
   walletAddress: string;
   balance: number;
+  nativeBalance: number; // POL/MATIC balance
   currency: string;
 }
 

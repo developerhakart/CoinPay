@@ -5,12 +5,18 @@ using CoinPay.Api.Middleware;
 using CoinPay.Api.HealthChecks;
 using CoinPay.Api.Services.Auth;
 using CoinPay.Api.Services.Circle;
+using CoinPay.Api.Services.Circle.Models;
 using CoinPay.Api.Services.Wallet;
 using CoinPay.Api.Services.Blockchain;
 using CoinPay.Api.Repositories;
 using CoinPay.Api.Services.Caching;
 using CoinPay.Api.Services.BackgroundWorkers;
 using CoinPay.Api.Services.Transaction;
+using CoinPay.Api.Services.Encryption;
+using CoinPay.Api.Services.BankAccount;
+using CoinPay.Api.Services.FiatGateway;
+using CoinPay.Api.Services.ExchangeRate;
+using CoinPay.Api.Services.Fees;
 using StackExchange.Redis;
 using Serilog;
 using Serilog.Events;
@@ -178,23 +184,77 @@ builder.Services.AddAuthentication("Bearer")
 builder.Services.AddAuthorization();
 
 // Register services
-// Use MockCircleService for MVP testing (no real Circle API calls)
-builder.Services.AddScoped<ICircleService, MockCircleService>();
-// For production with real Circle API:
-// builder.Services.AddScoped<ICircleService, CircleService>();
+// Register entity secret encryption service for Circle API
+builder.Services.AddSingleton<IEntitySecretEncryptionService, EntitySecretEncryptionService>();
+
+// Use real CircleService for testnet testing
+builder.Services.AddScoped<ICircleService, CircleService>();
+// Use MockCircleService for MVP testing (no real Circle API calls):
+// builder.Services.AddScoped<ICircleService, MockCircleService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 
-// Use MockBlockchainRpcService for MVP testing
-builder.Services.AddScoped<IBlockchainRpcService, MockBlockchainRpcService>();
-// For production with real blockchain RPC:
-// builder.Services.AddScoped<IBlockchainRpcService, BlockchainRpcService>();
+// Use PolygonAmoyRpcService for real blockchain balance queries
+builder.Services.AddScoped<IBlockchainRpcService, PolygonAmoyRpcService>();
+// For testing with mock data:
+// builder.Services.AddScoped<IBlockchainRpcService, MockBlockchainRpcService>();
+
+// Direct blockchain transfer service (for testing/development)
+// Only register if valid private key is configured
+var testPrivateKey = Environment.GetEnvironmentVariable("TEST_WALLET_PRIVATE_KEY")
+                    ?? builder.Configuration["Blockchain:TestWallet:PrivateKey"];
+
+if (!string.IsNullOrEmpty(testPrivateKey) &&
+    testPrivateKey != "YOUR_TEST_WALLET_PRIVATE_KEY_HERE" &&
+    testPrivateKey != "0xYOUR_TEST_WALLET_PRIVATE_KEY_HERE")
+{
+    builder.Services.AddScoped<IDirectTransferService, DirectTransferService>();
+    Console.WriteLine($"[INFO] DirectTransferService registered with test wallet");
+}
+else
+{
+    Console.WriteLine("[INFO] DirectTransferService NOT registered - no valid private key configured");
+    Console.WriteLine("[INFO] Wallet transfers will use mock responses");
+}
 
 // Register repositories
 builder.Services.AddScoped<IWalletRepository, WalletRepository>();
 builder.Services.AddScoped<ITransactionRepository, CoinPay.Api.Repositories.TransactionRepository>();
 builder.Services.AddScoped<CoinPay.Api.Repositories.IWebhookRepository, CoinPay.Api.Repositories.WebhookRepository>();
+builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
+builder.Services.AddScoped<IPayoutRepository, PayoutRepository>();
+
+// Register encryption service (Phase 3)
+builder.Services.AddSingleton<IEncryptionService, AesEncryptionService>();
+
+// Register bank account validation service (Phase 3)
+builder.Services.AddScoped<IBankAccountValidationService, BankAccountValidationService>();
+
+// Register fiat gateway services (Phase 3)
+// Use MockFiatGatewayService for MVP testing
+builder.Services.AddScoped<IFiatGatewayService, MockFiatGatewayService>();
+// For production with real gateway:
+// builder.Services.AddScoped<IFiatGatewayService, FiatGatewayService>();
+
+// Register memory cache for exchange rate service (Phase 3)
+builder.Services.AddMemoryCache();
+
+// Register new exchange rate service with memory cache (Phase 3)
+builder.Services.AddScoped<CoinPay.Api.Services.ExchangeRate.IExchangeRateService, CoinPay.Api.Services.ExchangeRate.ExchangeRateService>();
+
+// Register legacy exchange rate service for fiat gateway (Phase 3)
+// This uses Redis caching and delegates to IFiatGatewayService
+builder.Services.AddScoped<CoinPay.Api.Services.FiatGateway.IExchangeRateService, CoinPay.Api.Services.FiatGateway.ExchangeRateService>();
+
+// Register conversion fee calculator (Phase 3)
+builder.Services.AddScoped<CoinPay.Api.Services.Fees.IConversionFeeCalculator, CoinPay.Api.Services.Fees.ConversionFeeCalculator>();
+
+// Register payout status service (Phase 3)
+builder.Services.AddScoped<CoinPay.Api.Services.Payout.IPayoutStatusService, CoinPay.Api.Services.Payout.PayoutStatusService>();
+
+// Register payout audit service (Phase 3)
+builder.Services.AddSingleton<CoinPay.Api.Services.Payout.IPayoutAuditService, CoinPay.Api.Services.Payout.PayoutAuditService>();
 
 // Register transaction services
 builder.Services.AddScoped<ITransactionStatusService, TransactionStatusService>();
@@ -339,25 +399,106 @@ app.MapGet("/api/transactions/status/{status}", async (string status, AppDbConte
 .WithDescription("Retrieves all transactions filtered by status (Pending, Completed, Failed)");
 
 // POST: Create a new transaction
-app.MapPost("/api/transactions", async (Transaction transaction, AppDbContext db) =>
+app.MapPost("/api/transactions", async (
+    Transaction transaction,
+    AppDbContext db,
+    ICircleService circleService,
+    IWalletRepository walletRepository) =>
 {
-    // Generate transaction ID if not provided
-    if (string.IsNullOrEmpty(transaction.TransactionId))
+    try
     {
-        transaction.TransactionId = $"TXN{DateTime.UtcNow.Ticks}";
+        // Check if this is a POL transfer that needs to be executed via Circle API
+        if (transaction.Currency?.ToUpper() == "POL" && transaction.Type == "Transfer")
+        {
+            Log.Information("Processing POL transfer: Amount={Amount}, To={To}",
+                transaction.Amount, transaction.ReceiverName);
+
+            // Get user's wallet (using hardcoded user ID 1 for now - TODO: get from auth)
+            var userId = 1;
+            var wallet = await walletRepository.GetByUserIdAsync(userId);
+
+            if (wallet == null)
+            {
+                Log.Warning("No wallet found for user {UserId}", userId);
+                return Results.BadRequest(new { error = "Wallet not found. Please create a wallet first." });
+            }
+
+            if (string.IsNullOrEmpty(wallet.CircleWalletId))
+            {
+                Log.Warning("User {UserId} wallet has no Circle wallet ID", userId);
+                return Results.BadRequest(new { error = "Circle wallet not configured. Please set up your wallet." });
+            }
+
+            // Validate destination address
+            if (string.IsNullOrEmpty(transaction.ReceiverName) || !transaction.ReceiverName.StartsWith("0x"))
+            {
+                return Results.BadRequest(new { error = "Invalid destination address. Must be a valid Ethereum address." });
+            }
+
+            // Execute transfer via Circle API
+            var transferRequest = new CircleDeveloperTransferRequest
+            {
+                IdempotencyKey = Guid.NewGuid().ToString(),
+                WalletId = wallet.CircleWalletId,
+                DestinationAddress = transaction.ReceiverName,
+                Blockchain = "MATIC-AMOY",
+                Amounts = new List<string> { transaction.Amount.ToString("G29") }, // Use general format without trailing zeros
+                FeeLevel = "MEDIUM",
+                TokenAddress = null // null for native POL currency
+            };
+
+            Log.Information("Executing Circle API transfer: WalletId={WalletId}, To={To}, Amount={Amount}",
+                transferRequest.WalletId, transferRequest.DestinationAddress, transaction.Amount);
+
+            var circleResponse = await circleService.ExecuteDeveloperTransferAsync(transferRequest);
+
+            Log.Information("Circle API transfer executed: TransactionId={TransactionId}, Status={Status}",
+                circleResponse.TransactionId, circleResponse.Status);
+
+            // Store transaction with Circle transaction ID
+            transaction.TransactionId = circleResponse.TransactionId;
+            transaction.CreatedAt = DateTime.UtcNow;
+            transaction.Status = circleResponse.Status == "PENDING" ? "Pending" :
+                                circleResponse.Status == "CONFIRMED" ? "Completed" :
+                                circleResponse.Status == "FAILED" ? "Failed" : "Pending";
+
+            db.Transactions.Add(transaction);
+            await db.SaveChangesAsync();
+
+            Log.Information("POL transfer transaction created: Id={Id}, CircleTransactionId={CircleTransactionId}",
+                transaction.Id, transaction.TransactionId);
+
+            return Results.Created($"/api/transactions/{transaction.Id}", transaction);
+        }
+
+        // For non-POL transactions, use the original logic
+        // Generate transaction ID if not provided
+        if (string.IsNullOrEmpty(transaction.TransactionId))
+        {
+            transaction.TransactionId = $"TXN{DateTime.UtcNow.Ticks}";
+        }
+
+        transaction.CreatedAt = DateTime.UtcNow;
+
+        db.Transactions.Add(transaction);
+        await db.SaveChangesAsync();
+
+        return Results.Created($"/api/transactions/{transaction.Id}", transaction);
     }
-
-    transaction.CreatedAt = DateTime.UtcNow;
-
-    db.Transactions.Add(transaction);
-    await db.SaveChangesAsync();
-
-    return Results.Created($"/api/transactions/{transaction.Id}", transaction);
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error creating transaction");
+        return Results.Problem(
+            detail: ex.Message,
+            statusCode: 500,
+            title: "Failed to create transaction"
+        );
+    }
 })
 .WithName("CreateTransaction")
 .WithTags("Transactions")
 .WithSummary("Create a new transaction")
-.WithDescription("Creates a new transaction with the provided details");
+.WithDescription("Creates a new transaction with the provided details. For POL transfers, executes the transfer via Circle API.");
 
 // PUT: Update transaction
 app.MapPut("/api/transactions/{id}", async (int id, Transaction updatedTransaction, AppDbContext db) =>
@@ -756,13 +897,13 @@ app.MapGet("/api/wallet/balance/{walletAddress}", async (
         return Results.Problem("An error occurred while fetching wallet balance");
     }
 })
-.RequireAuthorization()
+.AllowAnonymous() // Balance checking is public - anyone can check any wallet balance
 .WithName("GetWalletBalance")
 .WithTags("Wallet")
 .WithSummary("Get wallet balance")
 .WithDescription("Retrieves the USDC balance for a wallet address. Use refresh=true to bypass cache and get fresh balance.");
 
-// POST: Transfer USDC
+// POST: Transfer USDC/POL (Direct or Circle)
 app.MapPost("/api/wallet/transfer", async (WalletTransferRequest request, IWalletService walletService) =>
 {
     try
@@ -776,15 +917,75 @@ app.MapPost("/api/wallet/transfer", async (WalletTransferRequest request, IWalle
     }
     catch (Exception ex)
     {
-        Log.Error(ex, "Error transferring USDC from {From} to {To}", request.FromWalletAddress, request.ToWalletAddress);
-        return Results.Problem("An error occurred during USDC transfer");
+        Log.Error(ex, "Error transferring {Currency} from {From} to {To}", request.Currency, request.FromWalletAddress, request.ToWalletAddress);
+        return Results.Problem("An error occurred during transfer");
     }
 })
 .RequireAuthorization()
 .WithName("TransferUSDC")
 .WithTags("Wallet")
-.WithSummary("Transfer USDC")
-.WithDescription("Initiates a USDC transfer from one wallet to another");
+.WithSummary("Transfer USDC or POL")
+.WithDescription("Initiates a USDC or POL transfer from one wallet to another. Uses DirectTransferService if configured, otherwise returns mock response.");
+
+// POST: Initiate Circle transaction (passkey-based)
+app.MapPost("/api/wallet/circle/transaction/initiate", async (CircleTransactionChallengeRequest request, ICircleService circleService) =>
+{
+    try
+    {
+        var result = await circleService.InitiateTransactionAsync(request);
+        return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error initiating Circle transaction for user {UserId}", request.UserId);
+        return Results.Problem("An error occurred while initiating transaction");
+    }
+})
+.RequireAuthorization()
+.WithName("InitiateCircleTransaction")
+.WithTags("Wallet", "Circle")
+.WithSummary("Initiate Circle transaction challenge")
+.WithDescription("Initiates a Circle transaction challenge for passkey-based signing. Returns challenge data for frontend to sign with user's passkey.");
+
+// POST: Execute Circle transaction (after passkey signing)
+app.MapPost("/api/wallet/circle/transaction/execute", async (CircleTransactionExecuteRequest request, ICircleService circleService) =>
+{
+    try
+    {
+        var result = await circleService.ExecuteTransactionAsync(request);
+        return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error executing Circle transaction for challenge {ChallengeId}", request.ChallengeId);
+        return Results.Problem("An error occurred while executing transaction");
+    }
+})
+.RequireAuthorization()
+.WithName("ExecuteCircleTransaction")
+.WithTags("Wallet", "Circle")
+.WithSummary("Execute Circle transaction")
+.WithDescription("Executes a Circle transaction after user has signed the challenge with their passkey. Submits transaction to blockchain.");
+
+// GET: Get Circle transaction status
+app.MapGet("/api/wallet/circle/transaction/{transactionId}", async (string transactionId, ICircleService circleService) =>
+{
+    try
+    {
+        var result = await circleService.GetTransactionStatusAsync(transactionId);
+        return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Error getting Circle transaction status for {TransactionId}", transactionId);
+        return Results.Problem("An error occurred while fetching Circle transaction status");
+    }
+})
+.RequireAuthorization()
+.WithName("GetCircleTransactionStatus")
+.WithTags("Wallet", "Circle")
+.WithSummary("Get Circle transaction status")
+.WithDescription("Retrieves the status of a Circle-managed blockchain transaction");
 
 // GET: Get transaction status
 app.MapGet("/api/wallet/transaction/{transactionId}", async (string transactionId, IWalletService walletService) =>

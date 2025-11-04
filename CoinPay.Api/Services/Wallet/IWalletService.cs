@@ -1,4 +1,5 @@
 using CoinPay.Api.DTOs;
+using CoinPay.Api.Models;
 
 namespace CoinPay.Api.Services.Wallet;
 
@@ -10,6 +11,9 @@ public interface IWalletService
     Task<TransactionStatusResponse> GetTransactionStatusAsync(string transactionId);
     Task<List<TransactionHistoryItem>> GetTransactionHistoryAsync(string walletAddress, int limit = 20);
     Task InvalidateBalanceCacheAsync(string walletAddress);
+    Task<User?> GetUserByIdAsync(int userId);
+    Task<decimal> DeductBalanceAsync(string walletAddress, decimal amount);
+    Task RefundBalanceAsync(string walletAddress, decimal amount);
 }
 
 public class WalletCreationResponse
@@ -24,6 +28,7 @@ public class WalletBalanceResponse
 {
     public string WalletAddress { get; set; } = string.Empty;
     public decimal USDCBalance { get; set; }
+    public decimal NativeBalance { get; set; } // POL/MATIC balance
     public string Blockchain { get; set; } = string.Empty;
 }
 
@@ -32,6 +37,7 @@ public class WalletTransferRequest
     public string FromWalletAddress { get; set; } = string.Empty;
     public string ToWalletAddress { get; set; } = string.Empty;
     public decimal Amount { get; set; }
+    public string Currency { get; set; } = "USDC"; // USDC or POL
     public string? Memo { get; set; }
 }
 

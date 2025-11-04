@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using CoinPay.Api.Models;
+using CoinPay.Api.Data.Configurations;
 
 namespace CoinPay.Api.Data;
 
@@ -16,9 +17,19 @@ public class AppDbContext : DbContext
     public DbSet<WebhookRegistration> WebhookRegistrations { get; set; }
     public DbSet<WebhookDeliveryLog> WebhookDeliveryLogs { get; set; }
 
+    // Sprint N03: Phase 3 - Fiat Off-Ramp
+    public DbSet<BankAccount> BankAccounts { get; set; }
+    public DbSet<PayoutTransaction> PayoutTransactions { get; set; }
+    public DbSet<PayoutAuditLog> PayoutAuditLogs { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Apply configurations for Sprint N03 models
+        modelBuilder.ApplyConfiguration(new BankAccountConfiguration());
+        modelBuilder.ApplyConfiguration(new PayoutTransactionConfiguration());
+        modelBuilder.ApplyConfiguration(new PayoutAuditLogConfiguration());
 
         // Configure BlockchainTransaction indexes
         modelBuilder.Entity<BlockchainTransaction>()

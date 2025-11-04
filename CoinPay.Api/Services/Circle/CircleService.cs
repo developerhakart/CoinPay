@@ -16,6 +16,7 @@ public class CircleService : ICircleService
     private readonly RestClient _client;
     private readonly CircleOptions _options;
     private readonly ILogger<CircleService> _logger;
+    private readonly IEntitySecretEncryptionService _encryptionService;
     private readonly AsyncRetryPolicy<RestResponse> _retryPolicy;
 
     /// <summary>
@@ -23,10 +24,15 @@ public class CircleService : ICircleService
     /// </summary>
     /// <param name="options">Circle configuration options</param>
     /// <param name="logger">Logger instance for structured logging</param>
-    public CircleService(IOptions<CircleOptions> options, ILogger<CircleService> logger)
+    /// <param name="encryptionService">Entity secret encryption service</param>
+    public CircleService(
+        IOptions<CircleOptions> options,
+        ILogger<CircleService> logger,
+        IEntitySecretEncryptionService encryptionService)
     {
         _options = options.Value;
         _logger = logger;
+        _encryptionService = encryptionService;
 
         // Initialize RestSharp client with base URL
         var restOptions = new RestClientOptions(_options.ApiUrl)
@@ -249,6 +255,106 @@ public class CircleService : ICircleService
         return response;
     }
 
+    /// <inheritdoc/>
+    public async Task<CircleTransactionChallengeResponse> InitiateTransactionAsync(
+        CircleTransactionChallengeRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var correlationId = Guid.NewGuid().ToString();
+        _logger.LogInformation(
+            "Initiating transaction for user {UserId} to {ToAddress}, Amount: {Amount} [CorrelationId: {CorrelationId}]",
+            request.UserId,
+            request.DestinationAddress,
+            request.Amounts.FirstOrDefault()?.Amount ?? "0",
+            correlationId);
+
+        var restRequest = new RestRequest("/transactions/transfer", Method.Post);
+        restRequest.AddHeader("Authorization", $"Bearer {_options.ApiKey}");
+        restRequest.AddHeader("X-Circle-App-Id", _options.AppId);
+        restRequest.AddHeader("X-Correlation-Id", correlationId);
+        restRequest.AddJsonBody(new
+        {
+            userId = request.UserId,
+            walletId = request.WalletId,
+            blockchain = request.Blockchain,
+            amounts = request.Amounts.Select(a => new
+            {
+                amount = a.Amount,
+                token = a.Token
+            }),
+            destinationAddress = request.DestinationAddress,
+            tokenAddress = request.TokenAddress,
+            feeLevel = request.FeeLevel
+        });
+
+        var response = await ExecuteWithRetryAsync<CircleTransactionChallengeResponse>(
+            restRequest,
+            correlationId,
+            cancellationToken);
+
+        _logger.LogInformation(
+            "Transaction challenge created. ChallengeId: {ChallengeId} [CorrelationId: {CorrelationId}]",
+            response.ChallengeId,
+            correlationId);
+
+        return response;
+    }
+
+    /// <inheritdoc/>
+    public async Task<CircleTransactionResponse> ExecuteTransactionAsync(
+        CircleTransactionExecuteRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var correlationId = Guid.NewGuid().ToString();
+        _logger.LogInformation(
+            "Executing transaction for challenge {ChallengeId} [CorrelationId: {CorrelationId}]",
+            request.ChallengeId,
+            correlationId);
+
+        var restRequest = new RestRequest("/transactions/execute", Method.Post);
+        restRequest.AddHeader("Authorization", $"Bearer {_options.ApiKey}");
+        restRequest.AddHeader("X-Circle-App-Id", _options.AppId);
+        restRequest.AddHeader("X-Correlation-Id", correlationId);
+        restRequest.AddJsonBody(request);
+
+        var response = await ExecuteWithRetryAsync<CircleTransactionResponse>(
+            restRequest,
+            correlationId,
+            cancellationToken);
+
+        _logger.LogInformation(
+            "Transaction executed. TransactionId: {TransactionId}, Status: {Status} [CorrelationId: {CorrelationId}]",
+            response.TransactionId,
+            response.Status,
+            correlationId);
+
+        return response;
+    }
+
+    /// <inheritdoc/>
+    public async Task<CircleTransactionResponse> GetTransactionStatusAsync(
+        string transactionId,
+        CancellationToken cancellationToken = default)
+    {
+        var correlationId = Guid.NewGuid().ToString();
+        _logger.LogInformation(
+            "Retrieving transaction status for {TransactionId} [CorrelationId: {CorrelationId}]",
+            transactionId,
+            correlationId);
+
+        var request = new RestRequest($"/transactions/{transactionId}", Method.Get);
+        request.AddHeader("Authorization", $"Bearer {_options.ApiKey}");
+        request.AddHeader("X-Circle-App-Id", _options.AppId);
+        request.AddHeader("X-Correlation-Id", correlationId);
+
+        var response = await ExecuteWithRetryAsync<CircleTransactionResponse>(
+            request,
+            correlationId,
+            cancellationToken);
+
+        return response;
+    }
+
     /// <summary>
     /// Executes a REST request with retry policy and error handling.
     /// </summary>
@@ -287,6 +393,73 @@ public class CircleService : ICircleService
             });
 
         return data ?? throw new InvalidOperationException("Failed to deserialize Circle API response");
+    }
+
+    /// <inheritdoc/>
+    public async Task<CircleTransactionResponse> ExecuteDeveloperTransferAsync(
+        CircleDeveloperTransferRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var correlationId = Guid.NewGuid().ToString();
+        _logger.LogInformation(
+            "Executing developer-controlled transfer. WalletId: {WalletId}, To: {To}, Amount: {Amount}, Blockchain: {Blockchain} [CorrelationId: {CorrelationId}]",
+            request.WalletId,
+            request.DestinationAddress,
+            string.Join(",", request.Amounts),
+            request.Blockchain,
+            correlationId);
+
+        var restRequest = new RestRequest("/developer/transactions/transfer", Method.Post);
+        restRequest.AddHeader("Authorization", $"Bearer {_options.ApiKey}");
+        restRequest.AddHeader("X-Correlation-Id", correlationId);
+
+        // Encrypt entity secret for this transfer (done automatically for each transfer)
+        _logger.LogDebug("Encrypting entity secret for transfer [CorrelationId: {CorrelationId}]", correlationId);
+        request.EntitySecretCiphertext = _encryptionService.EncryptEntitySecret(_options.EntitySecret);
+        _logger.LogDebug("Entity secret encrypted successfully [CorrelationId: {CorrelationId}]", correlationId);
+
+        // Ensure idempotency key is set
+        if (string.IsNullOrEmpty(request.IdempotencyKey))
+        {
+            request.IdempotencyKey = Guid.NewGuid().ToString();
+        }
+
+        // Build request body - exclude tokenAddress if null (for native transfers)
+        var requestBody = new Dictionary<string, object>
+        {
+            { "idempotencyKey", request.IdempotencyKey },
+            { "entitySecretCiphertext", request.EntitySecretCiphertext },
+            { "walletId", request.WalletId },
+            { "destinationAddress", request.DestinationAddress },
+            { "blockchain", request.Blockchain },
+            { "amounts", request.Amounts },
+            { "feeLevel", request.FeeLevel }
+        };
+
+        // Only include tokenAddress if it's not null (for ERC-20 transfers)
+        if (!string.IsNullOrEmpty(request.TokenAddress))
+        {
+            requestBody["tokenAddress"] = request.TokenAddress;
+        }
+
+        restRequest.AddJsonBody(requestBody);
+
+        // Log the request body for debugging
+        _logger.LogDebug("Circle API Request Body: {RequestBody} [CorrelationId: {CorrelationId}]",
+            System.Text.Json.JsonSerializer.Serialize(requestBody), correlationId);
+
+        var response = await ExecuteWithRetryAsync<CircleTransactionResponse>(
+            restRequest,
+            correlationId,
+            cancellationToken);
+
+        _logger.LogInformation(
+            "Developer transfer executed. TransactionId: {TransactionId}, Status: {Status} [CorrelationId: {CorrelationId}]",
+            response.TransactionId,
+            response.Status,
+            correlationId);
+
+        return response;
     }
 }
 

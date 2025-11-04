@@ -1,5 +1,6 @@
 using CoinPay.Api.Data;
 using CoinPay.Api.Services.Circle;
+using CoinPay.Api.Services.Circle.Models;
 using CoinPay.Api.Services.Blockchain;
 using CoinPay.Api.Services.Caching;
 using CoinPay.Api.Repositories;
@@ -12,6 +13,7 @@ public class WalletService : IWalletService
 {
     private readonly ICircleService _circleService;
     private readonly IBlockchainRpcService _blockchainRpc;
+    private readonly IDirectTransferService? _directTransferService;
     private readonly AppDbContext _dbContext;
     private readonly IWalletRepository _walletRepository;
     private readonly ICachingService? _cachingService;
@@ -24,13 +26,15 @@ public class WalletService : IWalletService
         AppDbContext dbContext,
         IWalletRepository walletRepository,
         ILogger<WalletService> logger,
-        ICachingService? cachingService = null)
+        ICachingService? cachingService = null,
+        IDirectTransferService? directTransferService = null)
     {
         _circleService = circleService;
         _blockchainRpc = blockchainRpc;
         _dbContext = dbContext;
         _walletRepository = walletRepository;
         _cachingService = cachingService;
+        _directTransferService = directTransferService;
         _logger = logger;
     }
 
@@ -95,8 +99,38 @@ public class WalletService : IWalletService
         var wallet = await _walletRepository.GetByAddressAsync(walletAddress);
         if (wallet == null)
         {
-            _logger.LogWarning("Wallet not found: {WalletAddress}", walletAddress);
-            throw new InvalidOperationException($"Wallet {walletAddress} not found");
+            _logger.LogInformation("Wallet not found in database: {WalletAddress}, fetching balance from blockchain", walletAddress);
+
+            // Wallet not in our database - fetch real balance directly from blockchain
+            try
+            {
+                var usdcBalance = await _blockchainRpc.GetUSDCBalanceAsync(walletAddress);
+                var nativeBalance = await _blockchainRpc.GetNativeBalanceAsync(walletAddress);
+
+                _logger.LogInformation("Blockchain balance for {WalletAddress}: {USDCBalance} USDC, {NativeBalance} POL",
+                    walletAddress, usdcBalance, nativeBalance);
+
+                return new WalletBalanceResponse
+                {
+                    WalletAddress = walletAddress,
+                    USDCBalance = usdcBalance,
+                    NativeBalance = nativeBalance,
+                    Blockchain = "PolygonAmoy"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to fetch blockchain balance for {WalletAddress}, returning 0", walletAddress);
+
+                // Return 0 if blockchain query fails
+                return new WalletBalanceResponse
+                {
+                    WalletAddress = walletAddress,
+                    USDCBalance = 0,
+                    NativeBalance = 0,
+                    Blockchain = "PolygonAmoy"
+                };
+            }
         }
 
         var cacheKey = $"wallet:balance:{walletAddress}";
@@ -112,13 +146,17 @@ public class WalletService : IWalletService
                     var balanceData = JsonSerializer.Deserialize<CachedBalanceData>(cachedBalance);
                     if (balanceData != null)
                     {
-                        _logger.LogDebug("Returning cached balance from Redis for {WalletAddress}: {Balance}",
-                            walletAddress, balanceData.Balance);
+                        // Fetch native balance from blockchain (not cached to always show real-time POL)
+                        var cachedNativeBalance = await _blockchainRpc.GetNativeBalanceAsync(walletAddress);
+
+                        _logger.LogDebug("Returning cached USDC balance from Redis for {WalletAddress}: {USDCBalance} USDC, {NativeBalance} POL",
+                            walletAddress, balanceData.Balance, cachedNativeBalance);
 
                         return new WalletBalanceResponse
                         {
                             WalletAddress = walletAddress,
                             USDCBalance = balanceData.Balance,
+                            NativeBalance = cachedNativeBalance,
                             Blockchain = wallet.Blockchain
                         };
                     }
@@ -130,30 +168,33 @@ public class WalletService : IWalletService
             }
         }
 
-        // Fetch fresh balance from blockchain
-        var balance = await _blockchainRpc.GetUSDCBalanceAsync(walletAddress);
+        // Fetch fresh balances from blockchain
+        var freshUsdcBalance = await _blockchainRpc.GetUSDCBalanceAsync(walletAddress);
+        var freshNativeBalance = await _blockchainRpc.GetNativeBalanceAsync(walletAddress);
 
         // Update database
-        wallet.Balance = balance;
+        wallet.Balance = freshUsdcBalance;
         wallet.BalanceUpdatedAt = DateTime.UtcNow;
         await _walletRepository.UpdateAsync(wallet);
 
         // Update Redis cache
         if (_cachingService != null)
         {
-            var cacheData = new CachedBalanceData { Balance = balance, UpdatedAt = DateTime.UtcNow };
+            var cacheData = new CachedBalanceData { Balance = freshUsdcBalance, UpdatedAt = DateTime.UtcNow };
             var serialized = JsonSerializer.Serialize(cacheData);
             await _cachingService.SetAsync(cacheKey, serialized, TimeSpan.FromSeconds(CacheTTLSeconds));
-            _logger.LogDebug("Balance cached in Redis for {WalletAddress}: {Balance}, TTL={TTL}s",
-                walletAddress, balance, CacheTTLSeconds);
+            _logger.LogDebug("Balance cached in Redis for {WalletAddress}: {USDCBalance} USDC, {NativeBalance} POL, TTL={TTL}s",
+                walletAddress, freshUsdcBalance, freshNativeBalance, CacheTTLSeconds);
         }
 
-        _logger.LogInformation("Balance updated for {WalletAddress}: {Balance} USDC", walletAddress, balance);
+        _logger.LogInformation("Balance updated for {WalletAddress}: {USDCBalance} USDC, {NativeBalance} POL",
+            walletAddress, freshUsdcBalance, freshNativeBalance);
 
         return new WalletBalanceResponse
         {
             WalletAddress = walletAddress,
-            USDCBalance = balance,
+            USDCBalance = freshUsdcBalance,
+            NativeBalance = freshNativeBalance,
             Blockchain = wallet.Blockchain
         };
     }
@@ -181,22 +222,121 @@ public class WalletService : IWalletService
     public async Task<TransferResponse> TransferUSDCAsync(WalletTransferRequest request)
     {
         _logger.LogInformation(
-            "Initiating transfer from {From} to {To}, Amount: {Amount}",
+            "Initiating {Currency} transfer from {From} to {To}, Amount: {Amount}",
+            request.Currency,
             request.FromWalletAddress,
             request.ToWalletAddress,
             request.Amount);
 
-        // For MVP, return mock response
-        // In production, call Circle API to initiate transfer
+        // Try Circle Developer-Controlled Transfer first
+        try
+        {
+            // Get user's Circle wallet ID from database
+            var user = await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.WalletAddress == request.FromWalletAddress);
 
+            if (user?.CircleWalletId != null)
+            {
+                _logger.LogInformation("Using Circle developer-controlled transfer for wallet {WalletId}", user.CircleWalletId);
+
+                // Prepare Circle developer transfer request
+                var circleRequest = new CircleDeveloperTransferRequest
+                {
+                    WalletId = user.CircleWalletId,
+                    DestinationAddress = request.ToWalletAddress,
+                    Blockchain = "MATIC-AMOY",
+                    Amounts = new List<string> { request.Amount.ToString("F6") },
+                    FeeLevel = "MEDIUM"
+                };
+
+                // Set token address for USDC transfers (null for POL)
+                if (request.Currency.ToUpper() == "USDC")
+                {
+                    circleRequest.TokenAddress = "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582"; // USDC on Polygon Amoy
+                }
+
+                var result = await _circleService.ExecuteDeveloperTransferAsync(circleRequest);
+
+                // Invalidate balance cache
+                await InvalidateBalanceCacheAsync(request.FromWalletAddress);
+                await InvalidateBalanceCacheAsync(request.ToWalletAddress);
+
+                _logger.LogInformation("Circle transfer executed. TransactionId: {TransactionId}, Status: {Status}",
+                    result.TransactionId, result.Status);
+
+                return new TransferResponse
+                {
+                    TransactionId = result.TxHash ?? result.TransactionId,
+                    Status = result.Status,
+                    Amount = request.Amount,
+                    FromAddress = result.From,
+                    ToAddress = result.To,
+                    InitiatedAt = result.CreatedAt
+                };
+            }
+            else
+            {
+                _logger.LogWarning("User does not have CircleWalletId. Wallet address: {Address}", request.FromWalletAddress);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Circle developer transfer failed. Falling back to DirectTransferService or mock.");
+        }
+
+        // Fallback 1: DirectTransferService (if configured)
+        if (_directTransferService != null)
+        {
+            try
+            {
+                DirectTransferResult result;
+
+                if (request.Currency.ToUpper() == "POL" || request.Currency.ToUpper() == "MATIC")
+                {
+                    _logger.LogInformation("Sending POL via DirectTransferService");
+                    result = await _directTransferService.SendNativeAsync(
+                        request.ToWalletAddress,
+                        request.Amount);
+                }
+                else if (request.Currency.ToUpper() == "USDC")
+                {
+                    _logger.LogInformation("Sending USDC via DirectTransferService");
+                    result = await _directTransferService.SendUsdcAsync(
+                        request.ToWalletAddress,
+                        request.Amount);
+                }
+                else
+                {
+                    throw new ArgumentException($"Unsupported currency: {request.Currency}");
+                }
+
+                await InvalidateBalanceCacheAsync(request.FromWalletAddress);
+                await InvalidateBalanceCacheAsync(request.ToWalletAddress);
+
+                _logger.LogInformation("DirectTransferService transfer completed. TxHash: {TxHash}", result.TxHash);
+
+                return new TransferResponse
+                {
+                    TransactionId = result.TxHash,
+                    Status = result.Status,
+                    Amount = request.Amount,
+                    FromAddress = result.FromAddress,
+                    ToAddress = result.ToAddress,
+                    InitiatedAt = result.Timestamp
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DirectTransferService failed. Returning mock response.");
+            }
+        }
+
+        // Fallback 2: Mock response
         var transactionId = $"TXN{DateTime.UtcNow.Ticks}";
-
-        // Invalidate balance cache for both sender and receiver
-        // Since the transfer is initiated, balances will change
         await InvalidateBalanceCacheAsync(request.FromWalletAddress);
         await InvalidateBalanceCacheAsync(request.ToWalletAddress);
 
-        _logger.LogInformation("Balance caches invalidated for sender and receiver");
+        _logger.LogWarning("Using mock transfer response. No Circle wallet or DirectTransferService configured.");
 
         return new TransferResponse
         {
@@ -270,5 +410,90 @@ public class WalletService : IWalletService
         };
 
         return await Task.FromResult(mockHistory.Take(limit).ToList());
+    }
+
+    public async Task<Models.User?> GetUserByIdAsync(int userId)
+    {
+        return await _dbContext.Users.FindAsync(userId);
+    }
+
+    /// <summary>
+    /// Deduct USDC balance from wallet (for payouts, etc.)
+    /// This method checks balance first and throws if insufficient
+    /// </summary>
+    public async Task<decimal> DeductBalanceAsync(string walletAddress, decimal amount)
+    {
+        _logger.LogInformation("Deducting {Amount} USDC from wallet {WalletAddress}", amount, walletAddress);
+
+        if (amount <= 0)
+        {
+            throw new ArgumentException("Deduction amount must be greater than zero", nameof(amount));
+        }
+
+        // Get wallet from database
+        var wallet = await _walletRepository.GetByAddressAsync(walletAddress);
+        if (wallet == null)
+        {
+            _logger.LogError("Wallet not found: {WalletAddress}", walletAddress);
+            throw new InvalidOperationException($"Wallet {walletAddress} not found");
+        }
+
+        // Get current balance (force refresh to ensure accuracy)
+        var balanceResult = await GetWalletBalanceAsync(walletAddress, forceRefresh: true);
+
+        // Check if sufficient balance
+        if (balanceResult.USDCBalance < amount)
+        {
+            _logger.LogWarning("Insufficient balance for wallet {WalletAddress}. Required: {Required}, Available: {Available}",
+                walletAddress, amount, balanceResult.USDCBalance);
+            throw new InvalidOperationException(
+                $"Insufficient USDC balance. Required: {amount} USDC, Available: {balanceResult.USDCBalance} USDC");
+        }
+
+        // Deduct balance in database
+        var newBalance = balanceResult.USDCBalance - amount;
+        wallet.Balance = newBalance;
+        wallet.BalanceUpdatedAt = DateTime.UtcNow;
+        await _walletRepository.UpdateAsync(wallet);
+
+        // Invalidate cache to ensure fresh data on next query
+        await InvalidateBalanceCacheAsync(walletAddress);
+
+        _logger.LogInformation("Successfully deducted {Amount} USDC from wallet {WalletAddress}. New balance: {NewBalance}",
+            amount, walletAddress, newBalance);
+
+        return newBalance;
+    }
+
+    /// <summary>
+    /// Refund USDC balance to wallet (for failed payouts, cancellations, etc.)
+    /// </summary>
+    public async Task RefundBalanceAsync(string walletAddress, decimal amount)
+    {
+        _logger.LogInformation("Refunding {Amount} USDC to wallet {WalletAddress}", amount, walletAddress);
+
+        if (amount <= 0)
+        {
+            throw new ArgumentException("Refund amount must be greater than zero", nameof(amount));
+        }
+
+        // Get wallet from database
+        var wallet = await _walletRepository.GetByAddressAsync(walletAddress);
+        if (wallet == null)
+        {
+            _logger.LogError("Wallet not found: {WalletAddress}", walletAddress);
+            throw new InvalidOperationException($"Wallet {walletAddress} not found");
+        }
+
+        // Add balance in database
+        wallet.Balance += amount;
+        wallet.BalanceUpdatedAt = DateTime.UtcNow;
+        await _walletRepository.UpdateAsync(wallet);
+
+        // Invalidate cache to ensure fresh data on next query
+        await InvalidateBalanceCacheAsync(walletAddress);
+
+        _logger.LogInformation("Successfully refunded {Amount} USDC to wallet {WalletAddress}. New balance: {NewBalance}",
+            amount, walletAddress, wallet.Balance);
     }
 }

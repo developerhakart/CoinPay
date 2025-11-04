@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store';
 import { walletService } from '@/services/walletService';
@@ -8,6 +8,7 @@ interface TransferFormData {
   toAddress: string;
   amount: string;
   description: string;
+  currency: 'USDC' | 'POL';
 }
 
 export function TransferPage() {
@@ -17,35 +18,114 @@ export function TransferPage() {
   const [formData, setFormData] = useState<TransferFormData>({
     toAddress: '',
     amount: '',
-    description: ''
+    description: '',
+    currency: 'USDC'
   });
 
+  const [senderAddress, setSenderAddress] = useState<string>(user?.walletAddress || '');
   const [balance, setBalance] = useState<number>(0);
+  const [nativeBalance, setNativeBalance] = useState<number>(0);
+  const [recipientBalance, setRecipientBalance] = useState<number | null>(null);
+  const [recipientNativeBalance, setRecipientNativeBalance] = useState<number | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(true);
+  const [isCheckingRecipient, setIsCheckingRecipient] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<TransferFormData>>({});
+  const [copiedSender, setCopiedSender] = useState(false);
+  const [senderError, setSenderError] = useState<string>('');
 
-  // Fetch balance on mount
+  // Copy sender address to clipboard
+  const handleCopySender = async () => {
+    if (!senderAddress) return;
+    try {
+      await navigator.clipboard.writeText(senderAddress);
+      setCopiedSender(true);
+      setTimeout(() => setCopiedSender(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy address:', err);
+    }
+  };
+
+  // Handle sender address change
+  const handleSenderAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSenderAddress(value);
+    setSenderError('');
+  };
+
+  // Fetch sender balance when address changes
   useEffect(() => {
-    const fetchBalance = async () => {
-      if (!user?.walletAddress) return;
+    const fetchSenderBalance = async () => {
+      if (!senderAddress || !isValidAddress(senderAddress)) {
+        setBalance(0);
+        setNativeBalance(0);
+        setIsLoadingBalance(false);
+        if (senderAddress && !isValidAddress(senderAddress)) {
+          setSenderError('Invalid sender address format');
+        }
+        return;
+      }
 
       try {
         setIsLoadingBalance(true);
-        const response = await walletService.getBalance(user.walletAddress);
+        setSenderError('');
+        const response = await walletService.getBalance(senderAddress);
         setBalance(response.balance || 0);
+        setNativeBalance(response.nativeBalance || 0);
       } catch (err) {
-        console.error('Failed to fetch balance:', err);
+        console.error('Failed to fetch sender balance:', err);
         setBalance(0);
+        setNativeBalance(0);
+        setSenderError('Unable to fetch balance for this address');
       } finally {
         setIsLoadingBalance(false);
       }
     };
 
-    fetchBalance();
-  }, [user?.walletAddress]);
+    const timer = setTimeout(() => {
+      fetchSenderBalance();
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [senderAddress]);
+
+  // Check recipient balance when address is valid
+  const checkRecipientBalance = useCallback(async (address: string) => {
+    if (!isValidAddress(address)) {
+      setRecipientBalance(null);
+      setRecipientNativeBalance(null);
+      return;
+    }
+
+    try {
+      setIsCheckingRecipient(true);
+      const response = await walletService.getBalance(address);
+      setRecipientBalance(response.balance || 0);
+      setRecipientNativeBalance(response.nativeBalance || 0);
+    } catch (err) {
+      console.error('Failed to fetch recipient balance:', err);
+      setRecipientBalance(null);
+      setRecipientNativeBalance(null);
+    } finally {
+      setIsCheckingRecipient(false);
+    }
+  }, []);
+
+  // Debounced effect to check recipient balance
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.toAddress && isValidAddress(formData.toAddress)) {
+        checkRecipientBalance(formData.toAddress);
+      } else {
+        setRecipientBalance(null);
+        setRecipientNativeBalance(null);
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [formData.toAddress, checkRecipientBalance]);
 
   // Validate Ethereum address
   const isValidAddress = (address: string): boolean => {
@@ -56,13 +136,22 @@ export function TransferPage() {
   const validateForm = (): boolean => {
     const newErrors: Partial<TransferFormData> = {};
 
+    // Validate sender address
+    if (!senderAddress) {
+      setSenderError('Sender address is required');
+      return false;
+    } else if (!isValidAddress(senderAddress)) {
+      setSenderError('Invalid sender address format');
+      return false;
+    }
+
     // Validate recipient address
     if (!formData.toAddress) {
       newErrors.toAddress = 'Recipient address is required';
     } else if (!isValidAddress(formData.toAddress)) {
       newErrors.toAddress = 'Invalid Ethereum address format';
-    } else if (formData.toAddress.toLowerCase() === user?.walletAddress?.toLowerCase()) {
-      newErrors.toAddress = 'Cannot send to your own address';
+    } else if (formData.toAddress.toLowerCase() === senderAddress.toLowerCase()) {
+      newErrors.toAddress = 'Cannot send to the same address as sender';
     }
 
     // Validate amount
@@ -70,14 +159,17 @@ export function TransferPage() {
       newErrors.amount = 'Amount is required';
     } else {
       const amountNum = parseFloat(formData.amount);
+      const currentBalance = formData.currency === 'USDC' ? balance : nativeBalance;
+      const currencyLabel = formData.currency;
+
       if (isNaN(amountNum) || amountNum <= 0) {
         newErrors.amount = 'Amount must be greater than 0';
-      } else if (amountNum > balance) {
-        newErrors.amount = `Insufficient balance. You have ${balance.toFixed(2)} USDC`;
+      } else if (amountNum > currentBalance) {
+        newErrors.amount = `Insufficient balance. You have ${currentBalance.toFixed(6)} ${currencyLabel}`;
       } else if (amountNum < 0.000001) {
-        newErrors.amount = 'Minimum amount is 0.000001 USDC';
+        newErrors.amount = `Minimum amount is 0.000001 ${currencyLabel}`;
       } else if (amountNum > 1000000) {
-        newErrors.amount = 'Maximum amount is 1,000,000 USDC';
+        newErrors.amount = `Maximum amount is 1,000,000 ${currencyLabel}`;
       }
     }
 
@@ -120,7 +212,8 @@ export function TransferPage() {
 
   // Set max amount
   const handleMaxClick = () => {
-    setFormData(prev => ({ ...prev, amount: balance.toString() }));
+    const maxBalance = formData.currency === 'USDC' ? balance : nativeBalance;
+    setFormData(prev => ({ ...prev, amount: maxBalance.toString() }));
     if (errors.amount) {
       setErrors(prev => ({ ...prev, amount: undefined }));
     }
@@ -143,19 +236,19 @@ export function TransferPage() {
     try {
       const response = await transactionService.create({
         amount: parseFloat(formData.amount),
-        currency: 'USDC',
+        currency: formData.currency,
         type: 'Transfer',
         status: 'Pending',
         senderName: user?.username || 'Unknown',
-        receiverName: formData.toAddress.slice(0, 8) + '...',
-        description: formData.description || `Transfer ${formData.amount} USDC to ${formData.toAddress.slice(0, 8)}...`
+        receiverName: formData.toAddress, // Send full address for Circle API
+        description: formData.description || `Transfer ${formData.amount} ${formData.currency} to ${formData.toAddress.slice(0, 8)}...`
       });
 
       // Success - navigate to transactions page
       navigate('/transactions', {
         state: {
           message: 'Transfer initiated successfully!',
-          transactionId: response.transaction.id
+          transactionId: response.id
         }
       });
     } catch (err: any) {
@@ -214,29 +307,92 @@ export function TransferPage() {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Send USDC</h1>
-        <p className="text-gray-600 mb-8">Transfer USDC to any Ethereum address on Polygon Amoy</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Send Crypto</h1>
+        <p className="text-gray-600 mb-8">Transfer USDC or POL to any Ethereum address on Polygon Amoy</p>
 
-        {/* Balance Card */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Available Balance</p>
-              {isLoadingBalance ? (
-                <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
-              ) : (
-                <p className="text-2xl font-bold text-gray-900">
-                  {balance.toFixed(6)} <span className="text-lg font-normal text-gray-500">USDC</span>
-                </p>
+        {/* Sender Address Card */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-lg p-5 mb-6 text-white">
+          <div className="mb-3">
+            <h2 className="text-lg font-bold mb-1">From (Sender Wallet)</h2>
+            <p className="text-blue-100 text-xs">Enter or paste the sender wallet address</p>
+          </div>
+
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-blue-100">
+                Sender Address
+              </span>
+              <button
+                type="button"
+                onClick={handleCopySender}
+                disabled={!senderAddress}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-white/20 hover:bg-white/30 rounded transition-colors border border-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {copiedSender ? (
+                  <>
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <span>Copy</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Editable Sender Address Input */}
+            <div className="relative mb-2">
+              <input
+                type="text"
+                value={senderAddress}
+                onChange={handleSenderAddressChange}
+                placeholder="0x..."
+                className={`w-full bg-gray-900/50 text-white rounded px-3 py-2 font-mono text-xs border ${
+                  senderError ? 'border-red-400' : 'border-white/20'
+                } focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent transition-colors`}
+              />
+              {isLoadingBalance && senderAddress && isValidAddress(senderAddress) && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
               )}
             </div>
-            <div className="text-right">
-              <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Gasless
-              </span>
+
+            {/* Error Message */}
+            {senderError && (
+              <p className="text-xs text-red-300 mb-2">{senderError}</p>
+            )}
+
+            {/* Balance Display */}
+            <div className="pt-2 border-t border-white/20">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-blue-100">Available Balance</span>
+                {isLoadingBalance ? (
+                  <div className="h-5 w-24 bg-white/20 rounded animate-pulse"></div>
+                ) : senderAddress && isValidAddress(senderAddress) ? (
+                  <span className="text-sm font-bold">
+                    {balance.toFixed(6)} USDC
+                  </span>
+                ) : (
+                  <span className="text-xs text-blue-200 italic">Enter valid address</span>
+                )}
+              </div>
+              {!isLoadingBalance && senderAddress && isValidAddress(senderAddress) && nativeBalance > 0 && (
+                <div className="flex items-center justify-end">
+                  <span className="text-xs text-blue-100">
+                    {nativeBalance.toFixed(6)} POL
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -261,29 +417,116 @@ export function TransferPage() {
                 <label htmlFor="toAddress" className="block text-sm font-medium text-gray-700 mb-2">
                   Recipient Address
                 </label>
-                <input
-                  type="text"
-                  id="toAddress"
-                  name="toAddress"
-                  value={formData.toAddress}
-                  onChange={handleChange}
-                  placeholder="0x..."
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors font-mono text-sm ${
-                    errors.toAddress ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="toAddress"
+                    name="toAddress"
+                    value={formData.toAddress}
+                    onChange={handleChange}
+                    placeholder="0x..."
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors font-mono text-sm ${
+                      errors.toAddress ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
+                  />
+                  {isCheckingRecipient && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <svg className="animate-spin h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </div>
+                  )}
+                </div>
                 {errors.toAddress && (
                   <p className="mt-1 text-sm text-red-600">{errors.toAddress}</p>
                 )}
+
+                {/* Recipient Balance Display */}
+                {!errors.toAddress && recipientBalance !== null && formData.toAddress && isValidAddress(formData.toAddress) && (
+                  <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-sm font-medium text-blue-900">Recipient Balance</span>
+                      </div>
+                      <span className="text-sm font-bold text-blue-900">
+                        {recipientBalance.toFixed(6)} USDC
+                      </span>
+                    </div>
+                    {recipientNativeBalance !== null && recipientNativeBalance > 0 && (
+                      <div className="flex items-center justify-end mb-1">
+                        <span className="text-xs text-blue-700">
+                          {recipientNativeBalance.toFixed(6)} POL
+                        </span>
+                      </div>
+                    )}
+                    <p className="text-xs text-blue-700">
+                      {recipientBalance === 0 && (recipientNativeBalance === null || recipientNativeBalance === 0)
+                        ? 'This wallet has no balance yet'
+                        : 'Valid recipient wallet with existing balance'}
+                    </p>
+                  </div>
+                )}
+
                 <p className="mt-1 text-xs text-gray-500">
                   Enter a valid Ethereum address (42 characters starting with 0x)
                 </p>
               </div>
 
+              {/* Currency Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Currency
+                </label>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, currency: 'USDC' }))}
+                    className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all font-medium ${
+                      formData.currency === 'USDC'
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>USDC</span>
+                    </div>
+                    <p className="text-xs mt-1 opacity-75">
+                      {balance.toFixed(6)} available
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, currency: 'POL' }))}
+                    className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all font-medium ${
+                      formData.currency === 'POL'
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span>POL</span>
+                    </div>
+                    <p className="text-xs mt-1 opacity-75">
+                      {nativeBalance.toFixed(6)} available
+                    </p>
+                  </button>
+                </div>
+              </div>
+
               {/* Amount */}
               <div>
                 <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
-                  Amount (USDC)
+                  Amount ({formData.currency})
                 </label>
                 <div className="relative">
                   <input
@@ -309,7 +552,7 @@ export function TransferPage() {
                   <p className="mt-1 text-sm text-red-600">{errors.amount}</p>
                 )}
                 <p className="mt-1 text-xs text-gray-500">
-                  Minimum: 0.000001 USDC • Maximum: 1,000,000 USDC
+                  Minimum: 0.000001 {formData.currency} • Maximum: 1,000,000 {formData.currency}
                 </p>
               </div>
 
@@ -366,7 +609,7 @@ export function TransferPage() {
             <div className="space-y-4 mb-6">
               <div className="flex justify-between py-3 border-b border-gray-200">
                 <span className="text-sm font-medium text-gray-500">From</span>
-                <span className="text-sm font-mono text-gray-900">{user.walletAddress?.slice(0, 10)}...{user.walletAddress?.slice(-8)}</span>
+                <span className="text-sm font-mono text-gray-900">{senderAddress?.slice(0, 10)}...{senderAddress?.slice(-8)}</span>
               </div>
 
               <div className="flex justify-between py-3 border-b border-gray-200">
@@ -376,7 +619,7 @@ export function TransferPage() {
 
               <div className="flex justify-between py-3 border-b border-gray-200">
                 <span className="text-sm font-medium text-gray-500">Amount</span>
-                <span className="text-lg font-bold text-gray-900">{parseFloat(formData.amount).toFixed(6)} USDC</span>
+                <span className="text-lg font-bold text-gray-900">{parseFloat(formData.amount).toFixed(6)} {formData.currency}</span>
               </div>
 
               {formData.description && (

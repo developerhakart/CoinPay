@@ -30,7 +30,6 @@ export interface CreateTransactionRequest {
   description?: string;
 }
 
-export interface TransactionResponse {
-  transaction: Transaction;
+export interface TransactionResponse extends Transaction {
   message?: string;
 }
