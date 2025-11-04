@@ -21,6 +21,26 @@ services:
       - coinpay-network
     restart: unless-stopped
 
+  postgres:
+    image: postgres:15-alpine
+    container_name: coinpay-postgres-compose
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: coinpay
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - coinpay-network
+    restart: unless-stopped
+
   api:
     build:
       context: .
@@ -31,10 +51,13 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - Vault__Address=http://vault:8200
       - Vault__Token=dev-root-token
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=coinpay;Username=postgres;Password=root
     ports:
       - "7777:8080"
     depends_on:
       vault:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - coinpay-network

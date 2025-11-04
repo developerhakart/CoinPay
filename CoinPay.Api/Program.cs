@@ -235,8 +235,19 @@ builder.Services.AddScoped<CoinPay.Api.Repositories.IWebhookRepository, CoinPay.
 builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
 builder.Services.AddScoped<IPayoutRepository, PayoutRepository>();
 
+// Sprint N04: Phase 4 - Exchange Investment repositories
+builder.Services.AddScoped<CoinPay.Api.Repositories.IExchangeConnectionRepository, CoinPay.Api.Repositories.ExchangeConnectionRepository>();
+builder.Services.AddScoped<CoinPay.Api.Repositories.IInvestmentRepository, CoinPay.Api.Repositories.InvestmentRepository>();
+
 // Register encryption service (Phase 3)
 builder.Services.AddSingleton<IEncryptionService, AesEncryptionService>();
+
+// Sprint N04: Phase 4 - Exchange Investment services
+builder.Services.AddScoped<CoinPay.Api.Services.Exchange.WhiteBit.IWhiteBitApiClient, CoinPay.Api.Services.Exchange.WhiteBit.WhiteBitApiClient>();
+builder.Services.AddScoped<CoinPay.Api.Services.Exchange.WhiteBit.IWhiteBitAuthService, CoinPay.Api.Services.Exchange.WhiteBit.WhiteBitAuthService>();
+builder.Services.AddSingleton<CoinPay.Api.Services.Encryption.IExchangeCredentialEncryptionService, CoinPay.Api.Services.Encryption.ExchangeCredentialEncryptionService>();
+builder.Services.AddScoped<CoinPay.Api.Services.Investment.IRewardCalculationService, CoinPay.Api.Services.Investment.RewardCalculationService>();
+Log.Information("Sprint N04: Exchange Investment services registered");
 
 // Register bank account validation service (Phase 3)
 builder.Services.AddScoped<IBankAccountValidationService, BankAccountValidationService>();
@@ -303,6 +314,10 @@ builder.Services.AddHostedService<TransactionMonitoringService>();
 Log.Information("Transaction Monitoring background service registered");
 builder.Services.AddHostedService<CircleTransactionMonitoringService>();
 Log.Information("Circle Transaction Monitoring background service registered");
+
+// Sprint N04: Phase 4 - Investment Position Sync Worker
+builder.Services.AddHostedService<CoinPay.Api.Services.BackgroundWorkers.InvestmentPositionSyncService>();
+Log.Information("Sprint N04: Investment Position Sync background service registered");
 
     var app = builder.Build();
 

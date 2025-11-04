@@ -1,0 +1,327 @@
+### Sprint N04: Exchange Investment API Tests
+### Requirements: API running on localhost:5100
+### Run these tests in VS Code with REST Client extension or using curl
+
+@baseUrl = http://localhost:5100
+@username = testuser
+@password = TestPassword123!
+
+### ===============================================
+### PART 1: AUTHENTICATION
+### ===============================================
+
+### 1.1 Register New User (if needed)
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "investment_test_user",
+  "password": "InvestTest123!"
+}
+
+### 1.2 Login to Get JWT Token
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### Extract token from response
+@token = {{login.response.body.token}}
+
+### ===============================================
+### PART 2: EXCHANGE CONNECTION TESTS
+### ===============================================
+
+### 2.1 Connect WhiteBit Account (Invalid Credentials - Expected to Fail)
+POST {{baseUrl}}/api/exchange/whitebit/connect
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "apiKey": "test_api_key_12345",
+  "apiSecret": "test_api_secret_67890"
+}
+
+### Expected: 400 Bad Request or Connection Error (WhiteBit will reject invalid credentials)
+
+### 2.2 Get WhiteBit Connection Status
+GET {{baseUrl}}/api/exchange/whitebit/status
+Authorization: Bearer {{token}}
+
+### Expected: 200 OK with connection status (connected: false initially)
+
+### 2.3 Disconnect WhiteBit (if connected)
+POST {{baseUrl}}/api/exchange/whitebit/disconnect
+Authorization: Bearer {{token}}
+
+### Expected: 200 OK
+
+### ===============================================
+### PART 3: INVESTMENT PLANS TESTS
+### ===============================================
+
+### 3.1 Get Available Investment Plans
+GET {{baseUrl}}/api/exchange/whitebit/plans
+Authorization: Bearer {{token}}
+
+### Expected: 200 OK with array of plans (or error if not connected)
+
+### 3.2 Get Plans Without Auth (Should Fail)
+GET {{baseUrl}}/api/exchange/whitebit/plans
+
+### Expected: 401 Unauthorized
+
+### ===============================================
+### PART 4: INVESTMENT CREATION TESTS
+### ===============================================
+
+### 4.1 Create Investment (Valid Request)
+# @name createInvestment
+POST {{baseUrl}}/api/investment/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "planId": "whitebit-flexible-usdt",
+  "amount": 100.00
+}
+
+### Expected: 201 Created with position details (or error if not connected to WhiteBit)
+
+@positionId = {{createInvestment.response.body.positionId}}
+
+### 4.2 Create Investment with Invalid Amount (Should Fail)
+POST {{baseUrl}}/api/investment/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "planId": "whitebit-flexible-usdt",
+  "amount": 0
+}
+
+### Expected: 400 Bad Request - Amount must be positive
+
+### 4.3 Create Investment with Invalid Plan ID (Should Fail)
+POST {{baseUrl}}/api/investment/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "planId": "invalid-plan-id",
+  "amount": 100.00
+}
+
+### Expected: 404 Not Found - Plan not found
+
+### 4.4 Create Investment Without Auth (Should Fail)
+POST {{baseUrl}}/api/investment/create
+Content-Type: application/json
+
+{
+  "planId": "whitebit-flexible-usdt",
+  "amount": 100.00
+}
+
+### Expected: 401 Unauthorized
+
+### ===============================================
+### PART 5: POSITION RETRIEVAL TESTS
+### ===============================================
+
+### 5.1 Get All User Positions
+GET {{baseUrl}}/api/investment/positions
+Authorization: Bearer {{token}}
+
+### Expected: 200 OK with array of positions
+
+### 5.2 Get Positions Without Auth (Should Fail)
+GET {{baseUrl}}/api/investment/positions
+
+### Expected: 401 Unauthorized
+
+### 5.3 Get Position Details by ID
+GET {{baseUrl}}/api/investment/{{positionId}}
+Authorization: Bearer {{token}}
+
+### Expected: 200 OK with detailed position info (or 404 if positionId not set)
+
+### 5.4 Get Non-Existent Position (Should Fail)
+GET {{baseUrl}}/api/investment/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{token}}
+
+### Expected: 404 Not Found
+
+### ===============================================
+### PART 6: WITHDRAWAL TESTS
+### ===============================================
+
+### 6.1 Withdraw Investment (Valid Request)
+POST {{baseUrl}}/api/investment/withdraw/{{positionId}}
+Authorization: Bearer {{token}}
+
+### Expected: 200 OK with withdrawal details (or error if position already closed)
+
+### 6.2 Withdraw Non-Existent Position (Should Fail)
+POST {{baseUrl}}/api/investment/withdraw/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{token}}
+
+### Expected: 404 Not Found
+
+### 6.3 Withdraw Without Auth (Should Fail)
+POST {{baseUrl}}/api/investment/withdraw/{{positionId}}
+
+### Expected: 401 Unauthorized
+
+### 6.4 Withdraw Already Closed Position (Should Fail)
+POST {{baseUrl}}/api/investment/withdraw/{{positionId}}
+Authorization: Bearer {{token}}
+
+### Expected: 400 Bad Request - Position already closed (if run after 6.1)
+
+### ===============================================
+### PART 7: SECURITY TESTS
+### ===============================================
+
+### 7.1 SQL Injection Attempt - Plan ID
+POST {{baseUrl}}/api/investment/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "planId": "'; DROP TABLE InvestmentPositions; --",
+  "amount": 100.00
+}
+
+### Expected: 404 Not Found or 400 Bad Request (NOT 500 Server Error)
+
+### 7.2 SQL Injection Attempt - Position ID
+GET {{baseUrl}}/api/investment/' OR '1'='1
+Authorization: Bearer {{token}}
+
+### Expected: 400 Bad Request or 404 Not Found (NOT 500 Server Error)
+
+### 7.3 XSS Attempt - API Key
+POST {{baseUrl}}/api/exchange/whitebit/connect
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "apiKey": "<script>alert('XSS')</script>",
+  "apiSecret": "test_secret"
+}
+
+### Expected: Input should be sanitized (no script execution)
+
+### 7.4 Excessive Amount Request
+POST {{baseUrl}}/api/investment/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "planId": "whitebit-flexible-usdt",
+  "amount": 999999999999999999.99
+}
+
+### Expected: 400 Bad Request - Amount exceeds maximum
+
+### 7.5 Negative Amount Request
+POST {{baseUrl}}/api/investment/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "planId": "whitebit-flexible-usdt",
+  "amount": -100.00
+}
+
+### Expected: 400 Bad Request - Amount must be positive
+
+### ===============================================
+### PART 8: RATE LIMITING TESTS
+### ===============================================
+
+### 8.1 Multiple Rapid Requests (Test Rate Limiting)
+### Run this block multiple times in quick succession
+GET {{baseUrl}}/api/investment/positions
+Authorization: Bearer {{token}}
+
+### Expected: After many requests, should return 429 Too Many Requests (if rate limiting implemented)
+
+### ===============================================
+### PART 9: CORS TESTS
+### ===============================================
+
+### 9.1 Preflight Request
+OPTIONS {{baseUrl}}/api/investment/positions
+Origin: http://localhost:3000
+Access-Control-Request-Method: GET
+Access-Control-Request-Headers: authorization
+
+### Expected: 200 OK with CORS headers
+
+### ===============================================
+### PART 10: ERROR HANDLING TESTS
+### ===============================================
+
+### 10.1 Malformed JSON Request
+POST {{baseUrl}}/api/investment/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "planId": "test",
+  "amount": "not a number"
+}
+
+### Expected: 400 Bad Request with validation error
+
+### 10.2 Missing Required Fields
+POST {{baseUrl}}/api/investment/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "planId": "whitebit-flexible-usdt"
+}
+
+### Expected: 400 Bad Request - Amount is required
+
+### 10.3 Empty Request Body
+POST {{baseUrl}}/api/investment/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{}
+
+### Expected: 400 Bad Request - Required fields missing
+
+### ===============================================
+### SUMMARY
+### ===============================================
+
+### Tests to Run:
+### 1. Authentication (2 tests)
+### 2. Exchange Connection (3 tests)
+### 3. Investment Plans (2 tests)
+### 4. Investment Creation (4 tests)
+### 5. Position Retrieval (4 tests)
+### 6. Withdrawal (4 tests)
+### 7. Security (5 tests)
+### 8. Rate Limiting (1 test)
+### 9. CORS (1 test)
+### 10. Error Handling (3 tests)
+###
+### Total: 29 test cases
+###
+### Expected Results:
+### - All authenticated requests with valid data should succeed
+### - All unauthenticated requests should return 401
+### - All invalid data requests should return 400
+### - All not found requests should return 404
+### - Security attacks should be blocked/sanitized
+### - CORS should allow configured origins

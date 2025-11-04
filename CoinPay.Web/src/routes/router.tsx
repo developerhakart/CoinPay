@@ -13,6 +13,8 @@ import { BankAccountsPage } from '@/pages/BankAccountsPage';
 import { WithdrawPage } from '@/pages/WithdrawPage';
 import { PayoutHistoryPage } from '@/pages/PayoutHistoryPage';
 import { PayoutStatusPage } from '@/pages/PayoutStatusPage';
+// Phase 4: Exchange Investment
+import { InvestmentPage } from '@/pages/InvestmentPage';
 
 export const router = createBrowserRouter([
   {
@@ -63,6 +65,11 @@ export const router = createBrowserRouter([
       {
         path: '/payout/:id/status',
         element: <PayoutStatusPage />,
+      },
+      // Phase 4: Exchange Investment Routes
+      {
+        path: '/investment',
+        element: <InvestmentPage />,
       },
     ],
   },
