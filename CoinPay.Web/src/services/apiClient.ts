@@ -76,31 +76,22 @@ apiClient.interceptors.response.use(
           break;
 
         case 403:
-          // Forbidden
-          console.error('Access forbidden');
+          // Forbidden - Access denied
           break;
 
         case 404:
-          // Not found
-          console.error('Resource not found');
+          // Resource not found
           break;
 
         case 500:
         case 502:
         case 503:
           // Server errors
-          console.error('Server error occurred');
           break;
 
         default:
           break;
       }
-    } else if (error.request) {
-      // Request made but no response received
-      console.error('No response received from server');
-    } else {
-      // Something else happened
-      console.error('Request setup error:', error.message);
     }
 
     return Promise.reject(error);

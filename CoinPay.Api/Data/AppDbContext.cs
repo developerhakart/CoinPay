@@ -27,6 +27,9 @@ public class AppDbContext : DbContext
     public DbSet<InvestmentPosition> InvestmentPositions { get; set; }
     public DbSet<InvestmentTransaction> InvestmentTransactions { get; set; }
 
+    // Sprint N05: Phase 5 - Basic Swap (DEX Integration)
+    public DbSet<SwapTransaction> SwapTransactions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -155,6 +158,22 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(t => t.UserId1)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure SwapTransaction indexes (Sprint N05)
+        modelBuilder.Entity<SwapTransaction>()
+            .HasIndex(s => s.UserId);
+
+        modelBuilder.Entity<SwapTransaction>()
+            .HasIndex(s => s.WalletAddress);
+
+        modelBuilder.Entity<SwapTransaction>()
+            .HasIndex(s => s.Status);
+
+        modelBuilder.Entity<SwapTransaction>()
+            .HasIndex(s => s.CreatedAt);
+
+        modelBuilder.Entity<SwapTransaction>()
+            .HasIndex(s => s.TransactionHash);
 
         // Seed some initial data with static timestamps
         modelBuilder.Entity<Transaction>().HasData(

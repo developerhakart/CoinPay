@@ -19,17 +19,20 @@ namespace CoinPay.Api.Controllers;
 public class BankAccountController : ControllerBase
 {
     private readonly IBankAccountRepository _bankAccountRepository;
+    private readonly IPayoutRepository _payoutRepository;
     private readonly IEncryptionService _encryptionService;
     private readonly IBankAccountValidationService _validationService;
     private readonly ILogger<BankAccountController> _logger;
 
     public BankAccountController(
         IBankAccountRepository bankAccountRepository,
+        IPayoutRepository payoutRepository,
         IEncryptionService encryptionService,
         IBankAccountValidationService validationService,
         ILogger<BankAccountController> logger)
     {
         _bankAccountRepository = bankAccountRepository;
+        _payoutRepository = payoutRepository;
         _encryptionService = encryptionService;
         _validationService = validationService;
         _logger = logger;
@@ -320,9 +323,20 @@ public class BankAccountController : ControllerBase
                 return NotFound(new { error = new { code = "NOT_FOUND", message = "Bank account not found" } });
             }
 
-            // TODO: Check if bank account has pending payouts
-            // This will be implemented when payout endpoints are created
-            // For now, allow deletion
+            // Check if bank account has pending payouts
+            var hasPendingPayouts = await _payoutRepository.HasPendingPayoutsAsync(id);
+            if (hasPendingPayouts)
+            {
+                _logger.LogWarning("DeleteBankAccount: Cannot delete bank account {BankAccountId} with pending payouts", id);
+                return BadRequest(new
+                {
+                    error = new
+                    {
+                        code = "BANK_ACCOUNT_IN_USE",
+                        message = "Cannot delete bank account with pending payouts. Please wait for payouts to complete or cancel them first."
+                    }
+                });
+            }
 
             // Soft delete
             var deleted = await _bankAccountRepository.DeleteAsync(id);

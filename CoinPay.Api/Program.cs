@@ -103,6 +103,14 @@ if (!string.IsNullOrEmpty(redisConnectionString))
             return ConnectionMultiplexer.Connect(configuration);
         });
         builder.Services.AddScoped<ICachingService, RedisCachingService>();
+
+        // Add IDistributedCache for SwapQuoteCacheService
+        builder.Services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = redisConnectionString;
+            options.InstanceName = "CoinPay:";
+        });
+
         Log.Information("Redis caching configured: {RedisConnection}", redisConnectionString);
     }
     catch (Exception ex)
@@ -248,6 +256,20 @@ builder.Services.AddScoped<CoinPay.Api.Services.Exchange.WhiteBit.IWhiteBitAuthS
 builder.Services.AddSingleton<CoinPay.Api.Services.Encryption.IExchangeCredentialEncryptionService, CoinPay.Api.Services.Encryption.ExchangeCredentialEncryptionService>();
 builder.Services.AddScoped<CoinPay.Api.Services.Investment.IRewardCalculationService, CoinPay.Api.Services.Investment.RewardCalculationService>();
 Log.Information("Sprint N04: Exchange Investment services registered");
+
+// Sprint N05: Phase 5 - Basic Swap (DEX Integration) services
+builder.Services.AddScoped<CoinPay.Api.Services.Swap.IDexAggregatorService, CoinPay.Api.Services.Swap.OneInchAggregatorService>();
+builder.Services.AddScoped<CoinPay.Api.Services.Swap.OneInchAggregatorService>();
+builder.Services.AddScoped<CoinPay.Api.Services.Swap.DexAggregatorFactory>();
+builder.Services.AddScoped<CoinPay.Api.Services.Swap.IFeeCalculationService, CoinPay.Api.Services.Swap.FeeCalculationService>();
+builder.Services.AddScoped<CoinPay.Api.Services.Swap.ISlippageToleranceService, CoinPay.Api.Services.Swap.SlippageToleranceService>();
+builder.Services.AddScoped<CoinPay.Api.Services.Swap.ISwapQuoteService, CoinPay.Api.Services.Swap.SwapQuoteService>();
+builder.Services.AddScoped<CoinPay.Api.Services.Caching.ISwapQuoteCacheService, CoinPay.Api.Services.Caching.SwapQuoteCacheService>();
+builder.Services.AddScoped<CoinPay.Api.Repositories.ISwapTransactionRepository, CoinPay.Api.Repositories.SwapTransactionRepository>();
+builder.Services.AddScoped<CoinPay.Api.Services.Swap.ITokenBalanceValidationService, CoinPay.Api.Services.Swap.TokenBalanceValidationService>();
+builder.Services.AddScoped<CoinPay.Api.Services.Swap.IPlatformFeeCollectionService, CoinPay.Api.Services.Swap.PlatformFeeCollectionService>();
+builder.Services.AddScoped<CoinPay.Api.Services.Swap.ISwapExecutionService, CoinPay.Api.Services.Swap.SwapExecutionService>();
+Log.Information("Sprint N05: DEX Swap services registered");
 
 // Register bank account validation service (Phase 3)
 builder.Services.AddScoped<IBankAccountValidationService, BankAccountValidationService>();
@@ -430,7 +452,8 @@ app.MapPost("/api/transactions", async (
     Transaction transaction,
     AppDbContext db,
     ICircleService circleService,
-    IWalletRepository walletRepository) =>
+    IWalletRepository walletRepository,
+    IConfiguration configuration) =>
 {
     try
     {
@@ -462,7 +485,30 @@ app.MapPost("/api/transactions", async (
                 return Results.BadRequest(new { error = "Invalid destination address. Must be a valid Ethereum address." });
             }
 
-            // Execute transfer via Circle API
+            // Check if Circle is in mock mode
+            var useMockMode = configuration.GetValue<bool>("Circle:UseMockMode");
+
+            if (useMockMode)
+            {
+                // Mock mode - return success without calling real Circle API
+                Log.Warning("⚠️ Circle API running in MOCK MODE - returning simulated successful transfer");
+
+                var mockTransactionId = $"mock-circle-tx-{Guid.NewGuid().ToString("N").Substring(0, 12)}";
+
+                transaction.TransactionId = mockTransactionId;
+                transaction.CreatedAt = DateTime.UtcNow;
+                transaction.Status = "Pending"; // Simulate pending status
+
+                db.Transactions.Add(transaction);
+                await db.SaveChangesAsync();
+
+                Log.Information("Mock POL transfer transaction created: Id={Id}, MockTransactionId={MockTransactionId}",
+                    transaction.Id, transaction.TransactionId);
+
+                return Results.Created($"/api/transactions/{transaction.Id}", transaction);
+            }
+
+            // Execute transfer via Circle API (real mode)
             var transferRequest = new CircleDeveloperTransferRequest
             {
                 IdempotencyKey = Guid.NewGuid().ToString(),

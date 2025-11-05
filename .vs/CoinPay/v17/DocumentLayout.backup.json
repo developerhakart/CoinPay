@@ -1,0 +1,62 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Projects\\Test\\Claude\\CoinPay\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{2A4FA468-67A4-760A-51CF-1170103ED46C}|CoinPay.Api\\CoinPay.Api.csproj|d:\\projects\\test\\claude\\coinpay\\coinpay.api\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{2A4FA468-67A4-760A-51CF-1170103ED46C}|CoinPay.Api\\CoinPay.Api.csproj|solutionrelative:coinpay.api\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2A4FA468-67A4-760A-51CF-1170103ED46C}|CoinPay.Api\\CoinPay.Api.csproj|d:\\projects\\test\\claude\\coinpay\\coinpay.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{2A4FA468-67A4-760A-51CF-1170103ED46C}|CoinPay.Api\\CoinPay.Api.csproj|solutionrelative:coinpay.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "appsettings.Development.json",
+              "DocumentMoniker": "D:\\Projects\\Test\\Claude\\CoinPay\\CoinPay.Api\\appsettings.Development.json",
+              "RelativeDocumentMoniker": "CoinPay.Api\\appsettings.Development.json",
+              "ToolTip": "D:\\Projects\\Test\\Claude\\CoinPay\\CoinPay.Api\\appsettings.Development.json",
+              "RelativeToolTip": "CoinPay.Api\\appsettings.Development.json",
+              "ViewState": "AgIAACcAAAAAAAAAAAAAADkAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-10-31T03:02:13.095Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\Projects\\Test\\Claude\\CoinPay\\CoinPay.Api\\appsettings.json",
+              "RelativeDocumentMoniker": "CoinPay.Api\\appsettings.json",
+              "ToolTip": "D:\\Projects\\Test\\Claude\\CoinPay\\CoinPay.Api\\appsettings.json",
+              "RelativeToolTip": "CoinPay.Api\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-10-31T03:02:08.811Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{56df62a4-05a3-4e5b-aa1a-99371ccfb997}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

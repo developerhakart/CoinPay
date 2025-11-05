@@ -3,7 +3,9 @@ using CoinPay.Api.Models;
 using CoinPay.Api.Repositories;
 using CoinPay.Api.Services.Blockchain;
 using CoinPay.Api.Services.UserOperation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CoinPay.Api.Controllers;
 
@@ -12,6 +14,7 @@ namespace CoinPay.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 [Produces("application/json")]
 public class TransactionController : ControllerBase
 {
@@ -63,10 +66,14 @@ public class TransactionController : ControllerBase
 
         try
         {
-            // For now, use a hardcoded user/wallet (in production, get from authenticated user)
-            // TODO: Replace with actual authentication
-            var userId = 1;
-            var wallet = await _walletRepository.GetByUserIdAsync(userId, cancellationToken);
+            var userId = GetUserId();
+            if (userId == null)
+            {
+                _logger.LogWarning("User ID not found in token");
+                return Unauthorized(new { error = "User not authenticated" });
+            }
+
+            var wallet = await _walletRepository.GetByUserIdAsync(userId.Value, cancellationToken);
 
             if (wallet == null)
             {
@@ -435,9 +442,14 @@ public class TransactionController : ControllerBase
         if (pageSize < 1) pageSize = 20;
         if (pageSize > 100) pageSize = 100;
 
-        // For now, use hardcoded user (TODO: Replace with actual authentication)
-        var userId = 1;
-        var wallet = await _walletRepository.GetByUserIdAsync(userId, cancellationToken);
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            _logger.LogWarning("User ID not found in token");
+            return Unauthorized(new { error = "User not authenticated" });
+        }
+
+        var wallet = await _walletRepository.GetByUserIdAsync(userId.Value, cancellationToken);
 
         if (wallet == null)
         {
@@ -546,5 +558,18 @@ public class TransactionController : ControllerBase
             _logger.LogError(ex, "Error fetching balance for address {Address}", address);
             return StatusCode(500, new { error = "Failed to fetch balance", details = ex.Message });
         }
+    }
+
+    /// <summary>
+    /// Get authenticated user ID from JWT token
+    /// </summary>
+    private int? GetUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(userIdClaim, out int userId))
+        {
+            return userId;
+        }
+        return null;
     }
 }

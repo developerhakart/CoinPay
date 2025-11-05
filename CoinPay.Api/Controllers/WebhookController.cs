@@ -1,7 +1,9 @@
 using System.Security.Cryptography;
+using System.Security.Claims;
 using CoinPay.Api.DTOs;
 using CoinPay.Api.Models;
 using CoinPay.Api.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoinPay.Api.Controllers;
@@ -11,6 +13,7 @@ namespace CoinPay.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 [Produces("application/json")]
 public class WebhookController : ControllerBase
 {
@@ -53,15 +56,19 @@ public class WebhookController : ControllerBase
             return BadRequest(new { error = "Invalid event names. Valid events: transaction.confirmed, transaction.failed" });
         }
 
-        // For now, use a hardcoded user (TODO: Replace with actual authentication)
-        var userId = 1;
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            _logger.LogWarning("User ID not found in token");
+            return Unauthorized(new { error = "User not authenticated" });
+        }
 
         // Generate webhook secret
         var secret = GenerateWebhookSecret();
 
         var webhook = new WebhookRegistration
         {
-            UserId = userId,
+            UserId = userId.Value,
             Url = request.Url,
             Secret = secret,
             Events = string.Join(",", request.Events),
@@ -90,6 +97,13 @@ public class WebhookController : ControllerBase
         int id,
         CancellationToken cancellationToken)
     {
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            _logger.LogWarning("User ID not found in token");
+            return Unauthorized(new { error = "User not authenticated" });
+        }
+
         var webhook = await _webhookRepository.GetByIdAsync(id, cancellationToken);
 
         if (webhook == null)
@@ -97,7 +111,13 @@ public class WebhookController : ControllerBase
             return NotFound(new { error = "Webhook not found" });
         }
 
-        // TODO: Verify user owns this webhook
+        // Verify user owns this webhook
+        if (!await VerifyWebhookOwnership(id, userId.Value, cancellationToken))
+        {
+            _logger.LogWarning("User {UserId} attempted to access webhook {WebhookId} owned by another user", userId, id);
+            return NotFound(new { error = "Webhook not found" });
+        }
+
         return Ok(MapToResponse(webhook));
     }
 
@@ -111,10 +131,14 @@ public class WebhookController : ControllerBase
     public async Task<ActionResult<List<WebhookRegistrationResponse>>> GetAllWebhooks(
         CancellationToken cancellationToken)
     {
-        // For now, use a hardcoded user (TODO: Replace with actual authentication)
-        var userId = 1;
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            _logger.LogWarning("User ID not found in token");
+            return Unauthorized(new { error = "User not authenticated" });
+        }
 
-        var webhooks = await _webhookRepository.GetByUserIdAsync(userId, cancellationToken);
+        var webhooks = await _webhookRepository.GetByUserIdAsync(userId.Value, cancellationToken);
 
         var response = webhooks.Select(MapToResponse).ToList();
 
@@ -137,6 +161,13 @@ public class WebhookController : ControllerBase
         [FromBody] UpdateWebhookRequest request,
         CancellationToken cancellationToken)
     {
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            _logger.LogWarning("User ID not found in token");
+            return Unauthorized(new { error = "User not authenticated" });
+        }
+
         var webhook = await _webhookRepository.GetByIdAsync(id, cancellationToken);
 
         if (webhook == null)
@@ -144,7 +175,12 @@ public class WebhookController : ControllerBase
             return NotFound(new { error = "Webhook not found" });
         }
 
-        // TODO: Verify user owns this webhook
+        // Verify user owns this webhook
+        if (!await VerifyWebhookOwnership(id, userId.Value, cancellationToken))
+        {
+            _logger.LogWarning("User {UserId} attempted to update webhook {WebhookId} owned by another user", userId, id);
+            return NotFound(new { error = "Webhook not found" });
+        }
 
         // Update fields
         if (request.Url != null)
@@ -191,6 +227,13 @@ public class WebhookController : ControllerBase
         int id,
         CancellationToken cancellationToken)
     {
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            _logger.LogWarning("User ID not found in token");
+            return Unauthorized(new { error = "User not authenticated" });
+        }
+
         var webhook = await _webhookRepository.GetByIdAsync(id, cancellationToken);
 
         if (webhook == null)
@@ -198,7 +241,12 @@ public class WebhookController : ControllerBase
             return NotFound(new { error = "Webhook not found" });
         }
 
-        // TODO: Verify user owns this webhook
+        // Verify user owns this webhook
+        if (!await VerifyWebhookOwnership(id, userId.Value, cancellationToken))
+        {
+            _logger.LogWarning("User {UserId} attempted to delete webhook {WebhookId} owned by another user", userId, id);
+            return NotFound(new { error = "Webhook not found" });
+        }
 
         await _webhookRepository.DeleteAsync(id, cancellationToken);
 
@@ -222,6 +270,13 @@ public class WebhookController : ControllerBase
         [FromQuery] int limit = 100,
         CancellationToken cancellationToken = default)
     {
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            _logger.LogWarning("User ID not found in token");
+            return Unauthorized(new { error = "User not authenticated" });
+        }
+
         var webhook = await _webhookRepository.GetByIdAsync(id, cancellationToken);
 
         if (webhook == null)
@@ -229,7 +284,12 @@ public class WebhookController : ControllerBase
             return NotFound(new { error = "Webhook not found" });
         }
 
-        // TODO: Verify user owns this webhook
+        // Verify user owns this webhook
+        if (!await VerifyWebhookOwnership(id, userId.Value, cancellationToken))
+        {
+            _logger.LogWarning("User {UserId} attempted to access delivery logs for webhook {WebhookId} owned by another user", userId, id);
+            return NotFound(new { error = "Webhook not found" });
+        }
 
         var logs = await _webhookRepository.GetDeliveryLogsAsync(id, limit, cancellationToken);
 
@@ -274,5 +334,31 @@ public class WebhookController : ControllerBase
             IsActive = webhook.IsActive,
             CreatedAt = webhook.CreatedAt
         };
+    }
+
+    /// <summary>
+    /// Get authenticated user ID from JWT token
+    /// </summary>
+    private int? GetUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(userIdClaim, out int userId))
+        {
+            return userId;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Verify that the current user owns the specified webhook
+    /// </summary>
+    private async Task<bool> VerifyWebhookOwnership(int webhookId, int userId, CancellationToken cancellationToken = default)
+    {
+        var webhook = await _webhookRepository.GetByIdAsync(webhookId, cancellationToken);
+        if (webhook == null || webhook.UserId != userId)
+        {
+            return false;
+        }
+        return true;
     }
 }

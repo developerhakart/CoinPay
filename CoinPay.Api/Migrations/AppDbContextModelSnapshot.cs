@@ -488,6 +488,102 @@ namespace CoinPay.Api.Migrations
                     b.ToTable("PayoutTransactions", (string)null);
                 });
 
+            modelBuilder.Entity("CoinPay.Api.Models.SwapTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DexProvider")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("ExchangeRate")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("FromAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("FromToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FromTokenSymbol")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("GasCost")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("GasUsed")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("MinimumReceived")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("PlatformFee")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("PlatformFeePercentage")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("PriceImpact")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("SlippageTolerance")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("ToAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("ToToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ToTokenSymbol")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TransactionHash")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("WalletAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("TransactionHash");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("WalletAddress");
+
+                    b.ToTable("SwapTransactions");
+                });
+
             modelBuilder.Entity("CoinPay.Api.Models.Transaction", b =>
                 {
                     b.Property<int>("Id")

@@ -496,4 +496,22 @@ public class WalletService : IWalletService
         _logger.LogInformation("Successfully refunded {Amount} USDC to wallet {WalletAddress}. New balance: {NewBalance}",
             amount, walletAddress, wallet.Balance);
     }
+
+    /// <summary>
+    /// Gets the wallet for a user by user ID
+    /// </summary>
+    public async Task<Models.Wallet?> GetUserWalletAsync(Guid userId)
+    {
+        // Convert Guid to int (assuming User.Id is int)
+        // Note: This is a temporary solution. In production, User.Id should be Guid
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId.ToString());
+        if (user == null)
+        {
+            _logger.LogWarning("User not found: {UserId}", userId);
+            return null;
+        }
+
+        var wallet = await _walletRepository.GetByUserIdAsync(user.Id);
+        return wallet;
+    }
 }

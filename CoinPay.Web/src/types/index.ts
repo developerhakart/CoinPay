@@ -4,3 +4,4 @@ export * from './wallet';
 export * from './transaction';
 export * from './api';
 export * from './investment';
+export * from './swap';

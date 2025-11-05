@@ -1,0 +1,1810 @@
+{
+  "config": {
+    "configFile": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\playwright.config.ts",
+    "rootDir": "D:/Projects/Test/Claude/CoinPay/Testing/E2E/playwright",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 6
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "../reports/playwright-html"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../reports/playwright-results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "../reports/playwright-junit.xml"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "D:/Projects/Test/Claude/CoinPay/Testing/E2E/playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "D:/Projects/Test/Claude/CoinPay/Testing/E2E/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "D:/Projects/Test/Claude/CoinPay/Testing/E2E/playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "D:/Projects/Test/Claude/CoinPay/Testing/E2E/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "D:/Projects/Test/Claude/CoinPay/Testing/E2E/playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "D:/Projects/Test/Claude/CoinPay/Testing/E2E/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "D:/Projects/Test/Claude/CoinPay/Testing/E2E/playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "D:/Projects/Test/Claude/CoinPay/Testing/E2E/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "D:/Projects/Test/Claude/CoinPay/Testing/E2E/playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "D:/Projects/Test/Claude/CoinPay/Testing/E2E/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "D:/Projects/Test/Claude/CoinPay/Testing/E2E/playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "iPad",
+        "name": "iPad",
+        "testDir": "D:/Projects/Test/Claude/CoinPay/Testing/E2E/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 6,
+    "webServer": {
+      "command": "cd ../../CoinPay.Web && npm run dev",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 120000,
+      "stdout": "ignore",
+      "stderr": "pipe"
+    }
+  },
+  "suites": [
+    {
+      "title": "auth.spec.ts",
+      "file": "auth.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Passkey Authentication",
+          "file": "auth.spec.ts",
+          "line": 18,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should register new user with passkey",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 8240,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Register/i\u001b[39m\nReceived string:  \u001b[31m\"CoinPay\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"CoinPay\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Register/i\u001b[39m\nReceived string:  \u001b[31m\"CoinPay\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"CoinPay\"\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts:37:24",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts",
+                          "column": 24,
+                          "line": 37
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 35 |\u001b[39m\n \u001b[90m 36 |\u001b[39m     \u001b[90m// Verify registration page loaded\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 37 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveTitle(\u001b[35m/Register/i\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 38 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'h1'\u001b[39m))\u001b[33m.\u001b[39mtoContainText(\u001b[35m/register/i\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 39 |\u001b[39m\n \u001b[90m 40 |\u001b[39m     \u001b[90m// Fill registration form\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts",
+                            "column": 24,
+                            "line": 37
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Register/i\u001b[39m\nReceived string:  \u001b[31m\"CoinPay\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"CoinPay\"\u001b[22m\n\n\n  35 |\n  36 |     // Verify registration page loaded\n> 37 |     await expect(page).toHaveTitle(/Register/i);\n     |                        ^\n  38 |     await expect(page.locator('h1')).toContainText(/register/i);\n  39 |\n  40 |     // Fill registration form\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts:37:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:07.789Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\auth-Passkey-Authenticatio-0a39c-ister-new-user-with-passkey-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\auth-Passkey-Authenticatio-0a39c-ister-new-user-with-passkey-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\auth-Passkey-Authenticatio-0a39c-ister-new-user-with-passkey-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts",
+                        "column": 24,
+                        "line": 37
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-a8f4a41b34d834b556c1",
+              "file": "auth.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "should login existing user with passkey",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 8159,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Login/i\u001b[39m\nReceived string:  \u001b[31m\"CoinPay\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"CoinPay\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Login/i\u001b[39m\nReceived string:  \u001b[31m\"CoinPay\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"CoinPay\"\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts:77:24",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts",
+                          "column": 24,
+                          "line": 77
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 75 |\u001b[39m\n \u001b[90m 76 |\u001b[39m     \u001b[90m// Verify login page\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 77 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveTitle(\u001b[35m/Login/i\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 78 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'h1'\u001b[39m))\u001b[33m.\u001b[39mtoContainText(\u001b[35m/login/i\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 79 |\u001b[39m\n \u001b[90m 80 |\u001b[39m     \u001b[90m// Enter username\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts",
+                            "column": 24,
+                            "line": 77
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Login/i\u001b[39m\nReceived string:  \u001b[31m\"CoinPay\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"CoinPay\"\u001b[22m\n\n\n  75 |\n  76 |     // Verify login page\n> 77 |     await expect(page).toHaveTitle(/Login/i);\n     |                        ^\n  78 |     await expect(page.locator('h1')).toContainText(/login/i);\n  79 |\n  80 |     // Enter username\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts:77:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:07.812Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\auth-Passkey-Authenticatio-43570--existing-user-with-passkey-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\auth-Passkey-Authenticatio-43570--existing-user-with-passkey-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\auth-Passkey-Authenticatio-43570--existing-user-with-passkey-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts",
+                        "column": 24,
+                        "line": 77
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-f87bd60740b3e588021c",
+              "file": "auth.spec.ts",
+              "line": 70,
+              "column": 7
+            },
+            {
+              "title": "should show error for non-existent user",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 13531,
+                      "error": {
+                        "message": "TimeoutError: page.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"username\"]')\u001b[22m\n",
+                        "stack": "TimeoutError: page.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"username\"]')\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts:104:16",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts",
+                          "column": 16,
+                          "line": 104
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 102 |\u001b[39m\n \u001b[90m 103 |\u001b[39m     \u001b[36mconst\u001b[39m nonExistentUser \u001b[33m=\u001b[39m \u001b[32m'nonexistentuser999'\u001b[39m\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 104 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(\u001b[32m'input[name=\"username\"]'\u001b[39m\u001b[33m,\u001b[39m nonExistentUser)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 105 |\u001b[39m\n \u001b[90m 106 |\u001b[39m     \u001b[36mconst\u001b[39m loginButton \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'button:has-text(\"Login\")'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 107 |\u001b[39m     \u001b[36mawait\u001b[39m loginButton\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts",
+                            "column": 16,
+                            "line": 104
+                          },
+                          "message": "TimeoutError: page.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"username\"]')\u001b[22m\n\n\n  102 |\n  103 |     const nonExistentUser = 'nonexistentuser999';\n> 104 |     await page.fill('input[name=\"username\"]', nonExistentUser);\n      |                ^\n  105 |\n  106 |     const loginButton = page.locator('button:has-text(\"Login\")');\n  107 |     await loginButton.click();\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts:104:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:07.788Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\auth-Passkey-Authenticatio-d7075-error-for-non-existent-user-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\auth-Passkey-Authenticatio-d7075-error-for-non-existent-user-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\auth-Passkey-Authenticatio-d7075-error-for-non-existent-user-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts",
+                        "column": 16,
+                        "line": 104
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-cd54c1bdee9e610744b6",
+              "file": "auth.spec.ts",
+              "line": 100,
+              "column": 7
+            },
+            {
+              "title": "should maintain session after page refresh",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 8634,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/dashboard/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:3000/login\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"http://localhost:3000/login\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/dashboard/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:3000/login\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"http://localhost:3000/login\"\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts:142:24",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts",
+                          "column": 24,
+                          "line": 142
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 140 |\u001b[39m\n \u001b[90m 141 |\u001b[39m     \u001b[90m// Verify still on dashboard (not redirected to login)\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 142 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[35m/\\/dashboard/\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 143 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'text=/dashboard|wallet|balance/i'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 144 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 145 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts",
+                            "column": 24,
+                            "line": 142
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/dashboard/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:3000/login\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"http://localhost:3000/login\"\u001b[22m\n\n\n  140 |\n  141 |     // Verify still on dashboard (not redirected to login)\n> 142 |     await expect(page).toHaveURL(/\\/dashboard/);\n      |                        ^\n  143 |     await expect(page.locator('text=/dashboard|wallet|balance/i')).toBeVisible();\n  144 |   });\n  145 |\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts:142:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:07.814Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\auth-Passkey-Authenticatio-af09f--session-after-page-refresh-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\auth-Passkey-Authenticatio-af09f--session-after-page-refresh-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\auth-Passkey-Authenticatio-af09f--session-after-page-refresh-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts",
+                        "column": 24,
+                        "line": 142
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-423a3622164ebf17bea2",
+              "file": "auth.spec.ts",
+              "line": 121,
+              "column": 7
+            },
+            {
+              "title": "should logout user and clear session",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 8247,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('button:has-text(\"Logout\")')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('button:has-text(\"Logout\")')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('button:has-text(\"Logout\")')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('button:has-text(\"Logout\")')\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts:163:32",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts",
+                          "column": 32,
+                          "line": 163
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 161 |\u001b[39m     \u001b[90m// Click logout button\u001b[39m\n \u001b[90m 162 |\u001b[39m     \u001b[36mconst\u001b[39m logoutButton \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'button:has-text(\"Logout\")'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 163 |\u001b[39m     \u001b[36mawait\u001b[39m expect(logoutButton)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 164 |\u001b[39m     \u001b[36mawait\u001b[39m logoutButton\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 165 |\u001b[39m\n \u001b[90m 166 |\u001b[39m     \u001b[90m// Verify redirected to login\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts",
+                            "column": 32,
+                            "line": 163
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('button:has-text(\"Logout\")')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('button:has-text(\"Logout\")')\u001b[22m\n\n\n  161 |     // Click logout button\n  162 |     const logoutButton = page.locator('button:has-text(\"Logout\")');\n> 163 |     await expect(logoutButton).toBeVisible();\n      |                                ^\n  164 |     await logoutButton.click();\n  165 |\n  166 |     // Verify redirected to login\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts:163:32"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:07.798Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\auth-Passkey-Authenticatio-ebcee-gout-user-and-clear-session-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\auth-Passkey-Authenticatio-ebcee-gout-user-and-clear-session-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\auth-Passkey-Authenticatio-ebcee-gout-user-and-clear-session-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\auth.spec.ts",
+                        "column": 32,
+                        "line": 163
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-bd12e3862439d4b74367",
+              "file": "auth.spec.ts",
+              "line": 150,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Protected Routes",
+          "file": "auth.spec.ts",
+          "line": 178,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should redirect to login when accessing protected routes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 3361,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:07.758Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-6d0e7f5913ada87f8047",
+              "file": "auth.spec.ts",
+              "line": 184,
+              "column": 7
+            },
+            {
+              "title": "should allow access to public routes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 637,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:12.113Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-af6d1ba6108a8f4bdb37",
+              "file": "auth.spec.ts",
+              "line": 205,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Authentication API Integration",
+          "file": "auth.spec.ts",
+          "line": 223,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should register user via API",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 208,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:12.765Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-d5459c4f805e3a477479",
+              "file": "auth.spec.ts",
+              "line": 229,
+              "column": 7
+            },
+            {
+              "title": "should authenticate user via API",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 13,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:12.988Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-6c4e3ce9fd88768c886c",
+              "file": "auth.spec.ts",
+              "line": 250,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "transfer.spec.ts",
+      "file": "transfer.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Gasless Transfer Functionality",
+          "file": "transfer.spec.ts",
+          "line": 23,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should complete successful USDC transfer",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 6263,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Transfer|Send/i\u001b[39m\nReceived string:  \u001b[31m\"CoinPay\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"CoinPay\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Transfer|Send/i\u001b[39m\nReceived string:  \u001b[31m\"CoinPay\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"CoinPay\"\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:43:24",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                          "column": 24,
+                          "line": 43
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 41 |\u001b[39m\n \u001b[90m 42 |\u001b[39m     \u001b[90m// Verify transfer form loaded\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 43 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveTitle(\u001b[35m/Transfer|Send/i\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 44 |\u001b[39m     \u001b[36mconst\u001b[39m pageHeading \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'h1, h2'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 45 |\u001b[39m     \u001b[36mawait\u001b[39m expect(pageHeading)\u001b[33m.\u001b[39mtoContainText(\u001b[35m/transfer|send/i\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 46 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                            "column": 24,
+                            "line": 43
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveTitle\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/Transfer|Send/i\u001b[39m\nReceived string:  \u001b[31m\"CoinPay\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveTitle\" with timeout 5000ms\u001b[22m\n\u001b[2m    8 × unexpected value \"CoinPay\"\u001b[22m\n\n\n  41 |\n  42 |     // Verify transfer form loaded\n> 43 |     await expect(page).toHaveTitle(/Transfer|Send/i);\n     |                        ^\n  44 |     const pageHeading = page.locator('h1, h2');\n  45 |     await expect(pageHeading).toContainText(/transfer|send/i);\n  46 |\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:43:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:13.018Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--a48d0-te-successful-USDC-transfer-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--a48d0-te-successful-USDC-transfer-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--a48d0-te-successful-USDC-transfer-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                        "column": 24,
+                        "line": 43
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "7ebe0bf4403ea664f493-dba858479ffe217300c7",
+              "file": "transfer.spec.ts",
+              "line": 39,
+              "column": 7
+            },
+            {
+              "title": "should show error for insufficient balance",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 11897,
+                      "error": {
+                        "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first()\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:107:26",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                          "column": 26,
+                          "line": 107
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 105 |\u001b[39m     \u001b[90m// Fill form with amount greater than balance\u001b[39m\n \u001b[90m 106 |\u001b[39m     \u001b[36mconst\u001b[39m recipientInput \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'input[name=\"recipient\"], input[placeholder*=\"address\" i]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 107 |\u001b[39m     \u001b[36mawait\u001b[39m recipientInput\u001b[33m.\u001b[39mfill(\u001b[33mVALID_RECIPIENT_ADDRESS\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 108 |\u001b[39m\n \u001b[90m 109 |\u001b[39m     \u001b[36mconst\u001b[39m amountInput \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'input[name=\"amount\"], input[type=\"number\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n \u001b[90m 110 |\u001b[39m     \u001b[36mawait\u001b[39m amountInput\u001b[33m.\u001b[39mfill(\u001b[32m'999999.00'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                            "column": 26,
+                            "line": 107
+                          },
+                          "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first()\u001b[22m\n\n\n  105 |     // Fill form with amount greater than balance\n  106 |     const recipientInput = page.locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first();\n> 107 |     await recipientInput.fill(VALID_RECIPIENT_ADDRESS);\n      |                          ^\n  108 |\n  109 |     const amountInput = page.locator('input[name=\"amount\"], input[type=\"number\"]').first();\n  110 |     await amountInput.fill('999999.00');\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:107:26"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:18.090Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--7fcd2-or-for-insufficient-balance-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--7fcd2-or-for-insufficient-balance-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--7fcd2-or-for-insufficient-balance-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                        "column": 26,
+                        "line": 107
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "7ebe0bf4403ea664f493-33431e40c2b2dfaa890d",
+              "file": "transfer.spec.ts",
+              "line": 102,
+              "column": 7
+            },
+            {
+              "title": "should show error for invalid address format",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 11615,
+                      "error": {
+                        "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first()\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:144:26",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                          "column": 26,
+                          "line": 144
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 142 |\u001b[39m     \u001b[90m// Test Case 1: Address too short\u001b[39m\n \u001b[90m 143 |\u001b[39m     \u001b[36mconst\u001b[39m recipientInput \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'input[name=\"recipient\"], input[placeholder*=\"address\" i]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 144 |\u001b[39m     \u001b[36mawait\u001b[39m recipientInput\u001b[33m.\u001b[39mfill(\u001b[33mINVALID_ADDRESS_SHORT\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 145 |\u001b[39m\n \u001b[90m 146 |\u001b[39m     \u001b[36mconst\u001b[39m amountInput \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'input[name=\"amount\"], input[type=\"number\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n \u001b[90m 147 |\u001b[39m     \u001b[36mawait\u001b[39m amountInput\u001b[33m.\u001b[39mfill(\u001b[32m'5.00'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                            "column": 26,
+                            "line": 144
+                          },
+                          "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first()\u001b[22m\n\n\n  142 |     // Test Case 1: Address too short\n  143 |     const recipientInput = page.locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first();\n> 144 |     await recipientInput.fill(INVALID_ADDRESS_SHORT);\n      |                          ^\n  145 |\n  146 |     const amountInput = page.locator('input[name=\"amount\"], input[type=\"number\"]').first();\n  147 |     await amountInput.fill('5.00');\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:144:26"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:18.074Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--c4012--for-invalid-address-format-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--c4012--for-invalid-address-format-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--c4012--for-invalid-address-format-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                        "column": 26,
+                        "line": 144
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "7ebe0bf4403ea664f493-307262b786bb826cc20d",
+              "file": "transfer.spec.ts",
+              "line": 139,
+              "column": 7
+            },
+            {
+              "title": "should prevent transfer to own address",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 11777,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"wallet-address\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"wallet-address\"]')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"wallet-address\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"wallet-address\"]')\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:176:33",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                          "column": 33,
+                          "line": 176
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 174 |\u001b[39m     \u001b[90m// Get user's own wallet address\u001b[39m\n \u001b[90m 175 |\u001b[39m     \u001b[36mconst\u001b[39m walletAddress \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"wallet-address\"]'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 176 |\u001b[39m     \u001b[36mawait\u001b[39m expect(walletAddress)\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 177 |\u001b[39m     \u001b[36mconst\u001b[39m ownAddress \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m walletAddress\u001b[33m.\u001b[39mtextContent()\u001b[33m;\u001b[39m\n \u001b[90m 178 |\u001b[39m     \u001b[36mconst\u001b[39m cleanOwnAddress \u001b[33m=\u001b[39m ownAddress\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mtrim() \u001b[33m||\u001b[39m \u001b[32m''\u001b[39m\u001b[33m;\u001b[39m\n \u001b[90m 179 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                            "column": 33,
+                            "line": 176
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"wallet-address\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"wallet-address\"]')\u001b[22m\n\n\n  174 |     // Get user's own wallet address\n  175 |     const walletAddress = page.locator('[data-testid=\"wallet-address\"]');\n> 176 |     await expect(walletAddress).toBeVisible({ timeout: 10000 });\n      |                                 ^\n  177 |     const ownAddress = await walletAddress.textContent();\n  178 |     const cleanOwnAddress = ownAddress?.trim() || '';\n  179 |\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:176:33"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:18.168Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--540a5-ent-transfer-to-own-address-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--540a5-ent-transfer-to-own-address-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--540a5-ent-transfer-to-own-address-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                        "column": 33,
+                        "line": 176
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "7ebe0bf4403ea664f493-6ab3169355e34495701b",
+              "file": "transfer.spec.ts",
+              "line": 171,
+              "column": 7
+            },
+            {
+              "title": "should validate minimum and maximum amounts",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 11699,
+                      "error": {
+                        "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first()\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:206:26",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                          "column": 26,
+                          "line": 206
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 204 |\u001b[39m\n \u001b[90m 205 |\u001b[39m     \u001b[36mconst\u001b[39m recipientInput \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'input[name=\"recipient\"], input[placeholder*=\"address\" i]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 206 |\u001b[39m     \u001b[36mawait\u001b[39m recipientInput\u001b[33m.\u001b[39mfill(\u001b[33mVALID_RECIPIENT_ADDRESS\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 207 |\u001b[39m\n \u001b[90m 208 |\u001b[39m     \u001b[36mconst\u001b[39m amountInput \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'input[name=\"amount\"], input[type=\"number\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n \u001b[90m 209 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                            "column": 26,
+                            "line": 206
+                          },
+                          "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first()\u001b[22m\n\n\n  204 |\n  205 |     const recipientInput = page.locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first();\n> 206 |     await recipientInput.fill(VALID_RECIPIENT_ADDRESS);\n      |                          ^\n  207 |\n  208 |     const amountInput = page.locator('input[name=\"amount\"], input[type=\"number\"]').first();\n  209 |\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:206:26"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:18.660Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--99faa-minimum-and-maximum-amounts-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--99faa-minimum-and-maximum-amounts-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--99faa-minimum-and-maximum-amounts-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                        "column": 26,
+                        "line": 206
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "7ebe0bf4403ea664f493-b2578808e5112f9a0f82",
+              "file": "transfer.spec.ts",
+              "line": 202,
+              "column": 7
+            },
+            {
+              "title": "should use MAX button to fill entire balance",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 527,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:20.566Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7ebe0bf4403ea664f493-7a2ff8d17b8eb0fa48bd",
+              "file": "transfer.spec.ts",
+              "line": 232,
+              "column": 7
+            },
+            {
+              "title": "should show accurate transfer details in preview",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 11831,
+                      "error": {
+                        "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first()\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:260:26",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                          "column": 26,
+                          "line": 260
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 258 |\u001b[39m     \u001b[90m// Fill form with specific values\u001b[39m\n \u001b[90m 259 |\u001b[39m     \u001b[36mconst\u001b[39m recipientInput \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'input[name=\"recipient\"], input[placeholder*=\"address\" i]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 260 |\u001b[39m     \u001b[36mawait\u001b[39m recipientInput\u001b[33m.\u001b[39mfill(\u001b[33mVALID_RECIPIENT_ADDRESS\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 261 |\u001b[39m\n \u001b[90m 262 |\u001b[39m     \u001b[36mconst\u001b[39m amountInput \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'input[name=\"amount\"], input[type=\"number\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n \u001b[90m 263 |\u001b[39m     \u001b[36mawait\u001b[39m amountInput\u001b[33m.\u001b[39mfill(\u001b[32m'25.123456'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                            "column": 26,
+                            "line": 260
+                          },
+                          "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first()\u001b[22m\n\n\n  258 |     // Fill form with specific values\n  259 |     const recipientInput = page.locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first();\n> 260 |     await recipientInput.fill(VALID_RECIPIENT_ADDRESS);\n      |                          ^\n  261 |\n  262 |     const amountInput = page.locator('input[name=\"amount\"], input[type=\"number\"]').first();\n  263 |     await amountInput.fill('25.123456');\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:260:26"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:21.225Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--890d2-transfer-details-in-preview-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--890d2-transfer-details-in-preview-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--890d2-transfer-details-in-preview-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                        "column": 26,
+                        "line": 260
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "7ebe0bf4403ea664f493-6f2dc45e76b622288edd",
+              "file": "transfer.spec.ts",
+              "line": 255,
+              "column": 7
+            },
+            {
+              "title": "should track transaction status after submission",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 11282,
+                      "error": {
+                        "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first()\u001b[22m\n",
+                        "stack": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first()\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:310:26",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                          "column": 26,
+                          "line": 310
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 308 |\u001b[39m\n \u001b[90m 309 |\u001b[39m     \u001b[36mconst\u001b[39m recipientInput \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'input[name=\"recipient\"], input[placeholder*=\"address\" i]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 310 |\u001b[39m     \u001b[36mawait\u001b[39m recipientInput\u001b[33m.\u001b[39mfill(\u001b[33mVALID_RECIPIENT_ADDRESS\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 311 |\u001b[39m\n \u001b[90m 312 |\u001b[39m     \u001b[36mconst\u001b[39m amountInput \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'input[name=\"amount\"], input[type=\"number\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\n \u001b[90m 313 |\u001b[39m     \u001b[36mawait\u001b[39m amountInput\u001b[33m.\u001b[39mfill(\u001b[32m'1.00'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                            "column": 26,
+                            "line": 310
+                          },
+                          "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first()\u001b[22m\n\n\n  308 |\n  309 |     const recipientInput = page.locator('input[name=\"recipient\"], input[placeholder*=\"address\" i]').first();\n> 310 |     await recipientInput.fill(VALID_RECIPIENT_ADDRESS);\n      |                          ^\n  311 |\n  312 |     const amountInput = page.locator('input[name=\"amount\"], input[type=\"number\"]').first();\n  313 |     await amountInput.fill('1.00');\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:310:26"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:23.184Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--ec059-ion-status-after-submission-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--ec059-ion-status-after-submission-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--ec059-ion-status-after-submission-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                        "column": 26,
+                        "line": 310
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "7ebe0bf4403ea664f493-751d4664963f0f41ba75",
+              "file": "transfer.spec.ts",
+              "line": 305,
+              "column": 7
+            },
+            {
+              "title": "should verify gasless transaction (no gas fees)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 11352,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"wallet-balance\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"wallet-balance\"]')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"wallet-balance\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"wallet-balance\"]')\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:351:34",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                          "column": 34,
+                          "line": 351
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 349 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/wallet'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 350 |\u001b[39m     \u001b[36mconst\u001b[39m balanceDisplay \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"wallet-balance\"]'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 351 |\u001b[39m     \u001b[36mawait\u001b[39m expect(balanceDisplay)\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 352 |\u001b[39m\n \u001b[90m 353 |\u001b[39m     \u001b[36mconst\u001b[39m initialBalanceText \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m balanceDisplay\u001b[33m.\u001b[39mtextContent()\u001b[33m;\u001b[39m\n \u001b[90m 354 |\u001b[39m     \u001b[36mconst\u001b[39m initialBalance \u001b[33m=\u001b[39m parseFloat(initialBalanceText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mmatch(\u001b[35m/[\\d.]+/\u001b[39m)\u001b[33m?\u001b[39m\u001b[33m.\u001b[39m[\u001b[35m0\u001b[39m] \u001b[33m||\u001b[39m \u001b[32m'0'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                            "column": 34,
+                            "line": 351
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"wallet-balance\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"wallet-balance\"]')\u001b[22m\n\n\n  349 |     await page.goto('/wallet');\n  350 |     const balanceDisplay = page.locator('[data-testid=\"wallet-balance\"]');\n> 351 |     await expect(balanceDisplay).toBeVisible({ timeout: 10000 });\n      |                                  ^\n  352 |\n  353 |     const initialBalanceText = await balanceDisplay.textContent();\n  354 |     const initialBalance = parseFloat(initialBalanceText?.match(/[\\d.]+/)?.[0] || '0');\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts:351:34"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:31.086Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--573d3-ss-transaction-no-gas-fees--chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--573d3-ss-transaction-no-gas-fees--chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\transfer-Gasless-Transfer--573d3-ss-transaction-no-gas-fees--chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\transfer.spec.ts",
+                        "column": 34,
+                        "line": 351
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "7ebe0bf4403ea664f493-cb5bfaeb299a7ec0104e",
+              "file": "transfer.spec.ts",
+              "line": 347,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Transfer API Integration",
+          "file": "transfer.spec.ts",
+          "line": 398,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should submit transfer via API",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 120,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:31.457Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7ebe0bf4403ea664f493-02b72d3b4ea6a8c1c82b",
+              "file": "transfer.spec.ts",
+              "line": 404,
+              "column": 7
+            },
+            {
+              "title": "should fetch transfer status via API",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 136,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:31.561Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7ebe0bf4403ea664f493-c2f5cff02f9bb4b90cc9",
+              "file": "transfer.spec.ts",
+              "line": 437,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "wallet.spec.ts",
+      "file": "wallet.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Wallet Management",
+          "file": "wallet.spec.ts",
+          "line": 18,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should create wallet automatically on user registration",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 11290,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"wallet-section\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"wallet-section\"]')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"wallet-section\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"wallet-section\"]')\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\wallet.spec.ts:41:33",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\wallet.spec.ts",
+                          "column": 33,
+                          "line": 41
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 39 |\u001b[39m     \u001b[90m// Verify wallet section exists\u001b[39m\n \u001b[90m 40 |\u001b[39m     \u001b[36mconst\u001b[39m walletSection \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"wallet-section\"]'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 41 |\u001b[39m     \u001b[36mawait\u001b[39m expect(walletSection)\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 42 |\u001b[39m\n \u001b[90m 43 |\u001b[39m     \u001b[90m// Verify wallet address is displayed\u001b[39m\n \u001b[90m 44 |\u001b[39m     \u001b[36mconst\u001b[39m walletAddress \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"wallet-address\"]'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\wallet.spec.ts",
+                            "column": 33,
+                            "line": 41
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"wallet-section\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"wallet-section\"]')\u001b[22m\n\n\n  39 |     // Verify wallet section exists\n  40 |     const walletSection = page.locator('[data-testid=\"wallet-section\"]');\n> 41 |     await expect(walletSection).toBeVisible({ timeout: 10000 });\n     |                                 ^\n  42 |\n  43 |     // Verify wallet address is displayed\n  44 |     const walletAddress = page.locator('[data-testid=\"wallet-address\"]');\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\wallet.spec.ts:41:33"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:32.514Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\wallet-Wallet-Management-s-25b66-ically-on-user-registration-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\wallet-Wallet-Management-s-25b66-ically-on-user-registration-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\wallet-Wallet-Management-s-25b66-ically-on-user-registration-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\wallet.spec.ts",
+                        "column": 33,
+                        "line": 41
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "27e87c8ff6887d69f80e-991d02f97a044e0e3918",
+              "file": "wallet.spec.ts",
+              "line": 34,
+              "column": 7
+            },
+            {
+              "title": "should display wallet balance correctly and allow refresh",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 11525,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"wallet-balance\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"wallet-balance\"]')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"wallet-balance\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"wallet-balance\"]')\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\wallet.spec.ts:69:34",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\wallet.spec.ts",
+                          "column": 34,
+                          "line": 69
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 67 |\u001b[39m     \u001b[90m// Wait for balance to load\u001b[39m\n \u001b[90m 68 |\u001b[39m     \u001b[36mconst\u001b[39m balanceDisplay \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"wallet-balance\"]'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 69 |\u001b[39m     \u001b[36mawait\u001b[39m expect(balanceDisplay)\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 70 |\u001b[39m\n \u001b[90m 71 |\u001b[39m     \u001b[90m// Verify balance format (6 decimal places for USDC)\u001b[39m\n \u001b[90m 72 |\u001b[39m     \u001b[36mconst\u001b[39m balanceText \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m balanceDisplay\u001b[33m.\u001b[39mtextContent()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\wallet.spec.ts",
+                            "column": 34,
+                            "line": 69
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"wallet-balance\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"wallet-balance\"]')\u001b[22m\n\n\n  67 |     // Wait for balance to load\n  68 |     const balanceDisplay = page.locator('[data-testid=\"wallet-balance\"]');\n> 69 |     await expect(balanceDisplay).toBeVisible({ timeout: 10000 });\n     |                                  ^\n  70 |\n  71 |     // Verify balance format (6 decimal places for USDC)\n  72 |     const balanceText = await balanceDisplay.textContent();\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\wallet.spec.ts:69:34"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:31.621Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\wallet-Wallet-Management-s-6df96-correctly-and-allow-refresh-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\wallet-Wallet-Management-s-6df96-correctly-and-allow-refresh-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\wallet-Wallet-Management-s-6df96-correctly-and-allow-refresh-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\wallet.spec.ts",
+                        "column": 34,
+                        "line": 69
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "27e87c8ff6887d69f80e-898bdf26987d0b662778",
+              "file": "wallet.spec.ts",
+              "line": 64,
+              "column": 7
+            },
+            {
+              "title": "should copy wallet address to clipboard",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 11510,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"wallet-address\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"wallet-address\"]')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"wallet-address\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"wallet-address\"]')\u001b[22m\n\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\wallet.spec.ts:108:33",
+                        "location": {
+                          "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\wallet.spec.ts",
+                          "column": 33,
+                          "line": 108
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 106 |\u001b[39m     \u001b[90m// Wait for wallet address to load\u001b[39m\n \u001b[90m 107 |\u001b[39m     \u001b[36mconst\u001b[39m walletAddress \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"wallet-address\"]'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 108 |\u001b[39m     \u001b[36mawait\u001b[39m expect(walletAddress)\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 109 |\u001b[39m\n \u001b[90m 110 |\u001b[39m     \u001b[90m// Get the address text\u001b[39m\n \u001b[90m 111 |\u001b[39m     \u001b[36mconst\u001b[39m addressText \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m walletAddress\u001b[33m.\u001b[39mtextContent()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\wallet.spec.ts",
+                            "column": 33,
+                            "line": 108
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"wallet-address\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"wallet-address\"]')\u001b[22m\n\n\n  106 |     // Wait for wallet address to load\n  107 |     const walletAddress = page.locator('[data-testid=\"wallet-address\"]');\n> 108 |     await expect(walletAddress).toBeVisible({ timeout: 10000 });\n      |                                 ^\n  109 |\n  110 |     // Get the address text\n  111 |     const addressText = await walletAddress.textContent();\n    at D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\wallet.spec.ts:108:33"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:31.764Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\wallet-Wallet-Management-s-1feec-wallet-address-to-clipboard-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\wallet-Wallet-Management-s-1feec-wallet-address-to-clipboard-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\test-results\\wallet-Wallet-Management-s-1feec-wallet-address-to-clipboard-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Projects\\Test\\Claude\\CoinPay\\Testing\\E2E\\playwright\\wallet.spec.ts",
+                        "column": 33,
+                        "line": 108
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "27e87c8ff6887d69f80e-d4f9bc1e2f9e1f2cfbab",
+              "file": "wallet.spec.ts",
+              "line": 103,
+              "column": 7
+            },
+            {
+              "title": "should generate QR code for wallet address",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 588,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:34.108Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "27e87c8ff6887d69f80e-08533a982adc19499b00",
+              "file": "wallet.spec.ts",
+              "line": 143,
+              "column": 7
+            },
+            {
+              "title": "should navigate to transaction history from wallet page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 17,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 516,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:35.617Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "27e87c8ff6887d69f80e-8bd5e71ff153ea0cd04a",
+              "file": "wallet.spec.ts",
+              "line": 180,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Wallet API Integration",
+          "file": "wallet.spec.ts",
+          "line": 200,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should fetch wallet balance via API",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 34,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:34.849Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "27e87c8ff6887d69f80e-a2a7cdd37658e5e0a43c",
+              "file": "wallet.spec.ts",
+              "line": 206,
+              "column": 7
+            },
+            {
+              "title": "should fetch wallet address via API",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 16,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-05T05:39:34.910Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "27e87c8ff6887d69f80e-acf24ab4c550f4c0d735",
+              "file": "wallet.spec.ts",
+              "line": 238,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-11-05T05:39:06.326Z",
+    "duration": 37739.818,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 16,
+    "flaky": 0
+  }
+}
