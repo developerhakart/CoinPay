@@ -20,7 +20,10 @@
       "Bash(docker exec:*)",
       "Bash(docker logs:*)",
       "Bash(docker stop:*)",
-      "Bash(docker rm:*)"
+      "Bash(docker rm:*)",
+      "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" merge development -m \"$(cat <<''EOF''\nMerge development to master - Sprint N05 + Bug Fixes + Circle Mock Mode\n\nMerging Sprint N05 DEX Swap feature, critical bug fixes, and Circle API mock mode\nfrom development branch to master.\n\nFeatures:\n- Complete DEX swap functionality with 1inch integration\n- 6 critical security bug fixes (authentication, validation, ownership)\n- Circle API mock mode for development testing\n- Test wallet setup and Vault secrets restoration\n\nSee commit 2328da6 for full details.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" add .claude/settings.local.json)",
+      "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" commit -m \"chore: update Claude settings on master\")"
     ],
     "deny": [],
     "ask": []
