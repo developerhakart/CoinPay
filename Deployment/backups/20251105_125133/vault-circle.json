@@ -1,0 +1,20 @@
+{
+  "request_id": "f183f839-d341-5a20-0bc8-3f0c87676b34",
+  "lease_id": "",
+  "lease_duration": 0,
+  "renewable": false,
+  "data": {
+    "data": {
+      "ApiKey": "TEST_API_KEY:d93edad9d7011eae471468f01252bafa:8cc4aae56a478a0a313914a062be0445",
+      "EntitySecret": "dc1ff0c795a9701035d45927a8cfc3dd54255f19e1ceebb8e50bafeaf2493d26"
+    },
+    "metadata": {
+      "created_time": "2025-11-05T08:02:01.197194343Z",
+      "custom_metadata": null,
+      "deletion_time": "",
+      "destroyed": false,
+      "version": 2
+    }
+  },
+  "warnings": null
+}

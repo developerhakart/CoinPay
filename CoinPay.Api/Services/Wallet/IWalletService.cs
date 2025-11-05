@@ -14,6 +14,7 @@ public interface IWalletService
     Task<User?> GetUserByIdAsync(int userId);
     Task<decimal> DeductBalanceAsync(string walletAddress, decimal amount);
     Task RefundBalanceAsync(string walletAddress, decimal amount);
+    Task<Models.Wallet?> GetUserWalletAsync(Guid userId);
 }
 
 public class WalletCreationResponse

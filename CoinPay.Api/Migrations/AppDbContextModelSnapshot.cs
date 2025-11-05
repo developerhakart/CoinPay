@@ -173,6 +173,194 @@ namespace CoinPay.Api.Migrations
                     b.ToTable("BlockchainTransactions");
                 });
 
+            modelBuilder.Entity("CoinPay.Api.Models.ExchangeConnection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ApiKeyEncrypted")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ApiSecretEncrypted")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EncryptionKeyId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ExchangeName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("LastValidatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("UserId1")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
+
+                    b.HasIndex("UserId", "ExchangeName")
+                        .IsUnique();
+
+                    b.ToTable("ExchangeConnections");
+                });
+
+            modelBuilder.Entity("CoinPay.Api.Models.InvestmentPosition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("AccruedRewards")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("Apy")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Asset")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("CurrentValue")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ExchangeConnectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExchangeConnectionId1")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ExchangeName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ExternalPositionId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("LastSyncedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PlanId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("PrincipalAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("UserId1")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("ExchangeConnectionId");
+
+                    b.HasIndex("ExchangeConnectionId1");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
+
+                    b.ToTable("InvestmentPositions");
+                });
+
+            modelBuilder.Entity("CoinPay.Api.Models.InvestmentTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Asset")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ExternalTransactionId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("InvestmentPositionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("InvestmentPositionId1")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TransactionType")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("UserId1")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("InvestmentPositionId");
+
+                    b.HasIndex("InvestmentPositionId1");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
+
+                    b.ToTable("InvestmentTransactions");
+                });
+
             modelBuilder.Entity("CoinPay.Api.Models.PayoutAuditLog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -298,6 +486,102 @@ namespace CoinPay.Api.Migrations
                         .HasDatabaseName("IX_PayoutTransactions_UserId");
 
                     b.ToTable("PayoutTransactions", (string)null);
+                });
+
+            modelBuilder.Entity("CoinPay.Api.Models.SwapTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DexProvider")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("ExchangeRate")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("FromAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("FromToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FromTokenSymbol")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("GasCost")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("GasUsed")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("MinimumReceived")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("PlatformFee")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("PlatformFeePercentage")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("PriceImpact")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("SlippageTolerance")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("ToAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("ToToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ToTokenSymbol")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TransactionHash")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("WalletAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("TransactionHash");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("WalletAddress");
+
+                    b.ToTable("SwapTransactions");
                 });
 
             modelBuilder.Entity("CoinPay.Api.Models.Transaction", b =>
@@ -587,6 +871,68 @@ namespace CoinPay.Api.Migrations
                     b.Navigation("Wallet");
                 });
 
+            modelBuilder.Entity("CoinPay.Api.Models.ExchangeConnection", b =>
+                {
+                    b.HasOne("CoinPay.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CoinPay.Api.Models.InvestmentPosition", b =>
+                {
+                    b.HasOne("CoinPay.Api.Models.ExchangeConnection", null)
+                        .WithMany()
+                        .HasForeignKey("ExchangeConnectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoinPay.Api.Models.ExchangeConnection", "ExchangeConnection")
+                        .WithMany()
+                        .HasForeignKey("ExchangeConnectionId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CoinPay.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ExchangeConnection");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CoinPay.Api.Models.InvestmentTransaction", b =>
+                {
+                    b.HasOne("CoinPay.Api.Models.InvestmentPosition", null)
+                        .WithMany("Transactions")
+                        .HasForeignKey("InvestmentPositionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CoinPay.Api.Models.InvestmentPosition", "InvestmentPosition")
+                        .WithMany()
+                        .HasForeignKey("InvestmentPositionId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_InvestmentTransactions_InvestmentPositions_InvestmentPosit~1");
+
+                    b.HasOne("CoinPay.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("InvestmentPosition");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("CoinPay.Api.Models.PayoutAuditLog", b =>
                 {
                     b.HasOne("CoinPay.Api.Models.PayoutTransaction", "PayoutTransaction")
@@ -650,6 +996,11 @@ namespace CoinPay.Api.Migrations
             modelBuilder.Entity("CoinPay.Api.Models.BankAccount", b =>
                 {
                     b.Navigation("PayoutTransactions");
+                });
+
+            modelBuilder.Entity("CoinPay.Api.Models.InvestmentPosition", b =>
+                {
+                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("CoinPay.Api.Models.PayoutTransaction", b =>

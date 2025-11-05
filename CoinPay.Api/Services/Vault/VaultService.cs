@@ -66,7 +66,10 @@ public class VaultService : IVaultService
     /// </summary>
     public async Task<Dictionary<string, string>> GetSecretAsync(string path)
     {
-        var fullPath = $"{_options.BasePath}/{path}";
+        // Use path directly if BasePath is empty, otherwise combine them
+        var fullPath = string.IsNullOrEmpty(_options.BasePath)
+            ? path
+            : $"{_options.BasePath}/{path}";
 
         for (int attempt = 1; attempt <= _options.RetryAttempts; attempt++)
         {

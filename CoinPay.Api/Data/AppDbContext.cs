@@ -22,6 +22,14 @@ public class AppDbContext : DbContext
     public DbSet<PayoutTransaction> PayoutTransactions { get; set; }
     public DbSet<PayoutAuditLog> PayoutAuditLogs { get; set; }
 
+    // Sprint N04: Phase 4 - Exchange Investment
+    public DbSet<ExchangeConnection> ExchangeConnections { get; set; }
+    public DbSet<InvestmentPosition> InvestmentPositions { get; set; }
+    public DbSet<InvestmentTransaction> InvestmentTransactions { get; set; }
+
+    // Sprint N05: Phase 5 - Basic Swap (DEX Integration)
+    public DbSet<SwapTransaction> SwapTransactions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -82,6 +90,90 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(l => l.TransactionId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Configure ExchangeConnection indexes (Sprint N04)
+        modelBuilder.Entity<ExchangeConnection>()
+            .HasIndex(e => e.UserId);
+
+        modelBuilder.Entity<ExchangeConnection>()
+            .HasIndex(e => new { e.UserId, e.ExchangeName })
+            .IsUnique();
+
+        modelBuilder.Entity<ExchangeConnection>()
+            .HasIndex(e => e.IsActive);
+
+        // Configure ExchangeConnection foreign key to Users (Sprint N04)
+        modelBuilder.Entity<ExchangeConnection>()
+            .HasOne(e => e.User)
+            .WithMany()
+            .HasForeignKey(e => e.UserId1)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure InvestmentPosition indexes (Sprint N04)
+        modelBuilder.Entity<InvestmentPosition>()
+            .HasIndex(i => i.UserId);
+
+        modelBuilder.Entity<InvestmentPosition>()
+            .HasIndex(i => i.ExchangeConnectionId);
+
+        modelBuilder.Entity<InvestmentPosition>()
+            .HasIndex(i => i.Status);
+
+        modelBuilder.Entity<InvestmentPosition>()
+            .HasIndex(i => i.CreatedAt);
+
+        // Configure InvestmentTransaction indexes (Sprint N04)
+        modelBuilder.Entity<InvestmentTransaction>()
+            .HasIndex(t => t.InvestmentPositionId);
+
+        modelBuilder.Entity<InvestmentTransaction>()
+            .HasIndex(t => t.UserId);
+
+        modelBuilder.Entity<InvestmentTransaction>()
+            .HasIndex(t => t.CreatedAt);
+
+        // Configure InvestmentPosition relationships (Sprint N04)
+        modelBuilder.Entity<InvestmentPosition>()
+            .HasOne<ExchangeConnection>()
+            .WithMany()
+            .HasForeignKey(i => i.ExchangeConnectionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<InvestmentPosition>()
+            .HasMany(i => i.Transactions)
+            .WithOne()
+            .HasForeignKey(t => t.InvestmentPositionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure InvestmentPosition foreign key to Users (Sprint N04)
+        modelBuilder.Entity<InvestmentPosition>()
+            .HasOne(i => i.User)
+            .WithMany()
+            .HasForeignKey(i => i.UserId1)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure InvestmentTransaction foreign key to Users (Sprint N04)
+        modelBuilder.Entity<InvestmentTransaction>()
+            .HasOne(t => t.User)
+            .WithMany()
+            .HasForeignKey(t => t.UserId1)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure SwapTransaction indexes (Sprint N05)
+        modelBuilder.Entity<SwapTransaction>()
+            .HasIndex(s => s.UserId);
+
+        modelBuilder.Entity<SwapTransaction>()
+            .HasIndex(s => s.WalletAddress);
+
+        modelBuilder.Entity<SwapTransaction>()
+            .HasIndex(s => s.Status);
+
+        modelBuilder.Entity<SwapTransaction>()
+            .HasIndex(s => s.CreatedAt);
+
+        modelBuilder.Entity<SwapTransaction>()
+            .HasIndex(s => s.TransactionHash);
 
         // Seed some initial data with static timestamps
         modelBuilder.Entity<Transaction>().HasData(
