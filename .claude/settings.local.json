@@ -99,7 +99,10 @@
       "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" commit -m \"chore: update settings after merge\")",
       "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" stash pop:*)",
       "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" log development --oneline -5)",
-      "Bash(git -C:*)"
+      "Bash(git -C:*)",
+      "Bash(find:*)",
+      "Bash(cd:*)",
+      "Bash(npm run lint)"
     ],
     "deny": [],
     "ask": []

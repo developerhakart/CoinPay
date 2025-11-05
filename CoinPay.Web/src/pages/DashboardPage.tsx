@@ -1,10 +1,13 @@
 import { useAuthStore } from '@/store';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import { OnboardingWizard, useOnboarding } from '@/components/onboarding/OnboardingWizard';
 
 export function DashboardPage() {
   const { user, logout } = useAuthStore();
   const [copied, setCopied] = useState(false);
+  const { shouldShowOnboarding, markAsCompleted } = useOnboarding();
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
 
   const handleCopyAddress = async () => {
     if (!user?.walletAddress) return;
@@ -17,6 +20,15 @@ export function DashboardPage() {
     }
   };
 
+  const handleOnboardingComplete = () => {
+    markAsCompleted();
+    setIsOnboardingOpen(false);
+  };
+
+  const handleShowOnboarding = () => {
+    setIsOnboardingOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
@@ -24,6 +36,13 @@ export function DashboardPage() {
           <h1 className="text-2xl font-bold text-gray-900">CoinPay Dashboard</h1>
           <div className="flex items-center gap-4">
             <span className="text-gray-600">Welcome, {user?.username}</span>
+            <button
+              onClick={handleShowOnboarding}
+              className="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
+              aria-label="Show onboarding tutorial"
+            >
+              Tutorial
+            </button>
             <button
               onClick={logout}
               className="px-4 py-2 bg-danger-500 text-white rounded-md hover:bg-danger-600 transition-colors"
@@ -66,6 +85,38 @@ export function DashboardPage() {
           >
             <h3 className="text-lg font-semibold text-white mb-2">Investment</h3>
             <p className="text-blue-100">Earn rewards on your crypto holdings</p>
+          </Link>
+
+          <Link
+            to="/help"
+            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Help Center</h3>
+            <p className="text-gray-600">Get answers and learn how to use CoinPay</p>
+          </Link>
+
+          <Link
+            to="/swap"
+            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Swap</h3>
+            <p className="text-gray-600">Exchange tokens at competitive rates</p>
+          </Link>
+
+          <Link
+            to="/withdraw"
+            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Withdraw</h3>
+            <p className="text-gray-600">Cash out to your bank account</p>
+          </Link>
+
+          <Link
+            to="/bank-accounts"
+            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Bank Accounts</h3>
+            <p className="text-gray-600">Manage your linked bank accounts</p>
           </Link>
         </div>
 
@@ -138,6 +189,12 @@ export function DashboardPage() {
           </dl>
         </div>
       </main>
+
+      <OnboardingWizard
+        isOpen={shouldShowOnboarding || isOnboardingOpen}
+        onClose={() => setIsOnboardingOpen(false)}
+        onComplete={handleOnboardingComplete}
+      />
     </div>
   );
 }

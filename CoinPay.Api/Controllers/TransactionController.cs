@@ -419,6 +419,7 @@ public class TransactionController : ControllerBase
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Transaction history with pagination</returns>
     [HttpGet("history")]
+    [ResponseCache(Duration = 60, VaryByQueryKeys = new[] { "page", "pageSize", "status", "startDate", "endDate", "minAmount", "maxAmount", "sortBy", "sortDescending" })]
     [ProducesResponseType(typeof(TransactionHistoryResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TransactionHistoryResponse>> GetTransactionHistory(
@@ -525,6 +526,7 @@ public class TransactionController : ControllerBase
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Wallet balance</returns>
     [HttpGet("balance/{address}")]
+    [ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(typeof(BalanceResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<BalanceResponse>> GetBalance(

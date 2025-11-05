@@ -572,6 +572,177 @@ dotnet ef migrations remove
 ### Sample Data
 The database is pre-seeded with 3 sample transactions through EF Core seed data configuration.
 
+## Sprint N06: Performance & Monitoring
+
+This sprint introduces critical performance optimizations and monitoring capabilities to ensure API reliability and optimal user experience.
+
+### Response Caching (BE-604)
+
+Response caching reduces database load and improves response times for frequently accessed endpoints.
+
+#### Configured Endpoints
+- **GET /api/wallet/balance/{walletAddress}** - Cached for 30 seconds
+- **GET /api/transactions/history** - Cached for 60 seconds with query parameter variations
+- **GET /api/swap/quote** - Cached for 30 seconds with token, amount, and slippage variations
+
+#### How It Works
+- Responses are cached on the server using HTTP Cache-Control headers
+- Cache is automatically validated on subsequent requests
+- Uses `VaryByQueryKeys` to cache different results based on query parameters
+- Clients receive cached responses when available, reducing API computation
+
+#### Configuration
+No additional configuration needed. Response caching is enabled by default in `Program.cs`:
+```csharp
+builder.Services.AddResponseCaching();
+app.UseResponseCaching();
+```
+
+### Application Insights Integration (BE-608)
+
+Azure Application Insights provides comprehensive monitoring and diagnostics for the API.
+
+#### Features
+- Request/response tracking and performance metrics
+- Dependency tracking (database, external API calls)
+- Exception and error tracking
+- Custom event logging
+- Performance anomaly detection
+- Real-time analytics dashboard
+
+#### Configuration
+
+**1. In appsettings.json:**
+```json
+{
+  "ApplicationInsights": {
+    "InstrumentationKey": "your-instrumentation-key-here"
+  }
+}
+```
+
+**2. For Development (appsettings.Development.json):**
+```json
+{
+  "ApplicationInsights": {
+    "InstrumentationKey": "dev-instrumentation-key-placeholder"
+  }
+}
+```
+
+**3. For Production:**
+1. Create an Application Insights resource in Azure Portal
+2. Copy the Instrumentation Key
+3. Store securely in HashiCorp Vault or Azure Key Vault
+4. Update production configuration with the real key
+
+#### Accessing Insights
+- Azure Portal: https://portal.azure.com
+- Application Insights Workspace: View performance metrics, failures, dependencies
+- Live Metrics Stream: Real-time request and performance data
+
+### Rate Limiting (BE-612)
+
+Rate limiting protects the API from abuse and ensures fair resource distribution across users.
+
+#### Configured Rules
+
+**Development Environment (appsettings.Development.json):**
+```json
+{
+  "IpRateLimiting": {
+    "EnableEndpointRateLimiting": true,
+    "GeneralRules": [
+      {
+        "Endpoint": "*",
+        "Period": "1m",
+        "Limit": 1000,
+        "Message": "Max 1000 requests per minute"
+      }
+    ],
+    "EndpointRules": [
+      {
+        "Endpoint": "POST:/api/auth/*",
+        "Period": "1m",
+        "Limit": 5,
+        "Message": "Max 5 auth attempts per minute"
+      },
+      {
+        "Endpoint": "POST:/api/swap/execute",
+        "Period": "1m",
+        "Limit": 10,
+        "Message": "Max 10 swaps per minute"
+      },
+      {
+        "Endpoint": "GET:/api/swap/quote",
+        "Period": "1m",
+        "Limit": 30,
+        "Message": "Max 30 quote requests per minute"
+      }
+    ]
+  }
+}
+```
+
+**Production Environment (appsettings.Production.json):**
+- More restrictive limits to prevent abuse
+- Should be updated based on actual usage patterns
+- Consider IP whitelisting for trusted services
+
+#### HTTP Responses
+When a client exceeds the rate limit:
+- **Status Code:** 429 (Too Many Requests)
+- **Response Body:**
+```json
+{
+  "message": "API call quota exceeded. Maximum X requests per minute."
+}
+```
+
+#### Configuring Rate Limits
+1. Edit relevant `appsettings.*.json` file
+2. Modify `IpRateLimiting` settings:
+   - `GeneralRules`: Default rate limit for all endpoints
+   - `EndpointRules`: Specific limits for sensitive endpoints
+   - `Period`: Time window (s=seconds, m=minutes, h=hours)
+   - `Limit`: Maximum requests allowed in the period
+
+3. For exempting IPs (trusted services):
+```json
+{
+  "IpRateLimiting": {
+    "IpWhitelist": ["127.0.0.1", "192.168.1.100"],
+    "EndpointWhitelist": ["/health", "/swagger"]
+  }
+}
+```
+
+### Performance Monitoring Best Practices
+
+1. **Monitor Response Times**
+   - Ideal: < 200ms for GET requests
+   - Acceptable: < 500ms for POST requests
+   - Check Application Insights for baseline metrics
+
+2. **Cache Hit Ratios**
+   - Aim for > 80% cache hit rate on GET endpoints
+   - Monitor via browser Developer Tools (Cache-Control headers)
+
+3. **Rate Limit Monitoring**
+   - Watch for 429 responses in Application Insights
+   - Adjust limits if legitimate users are being blocked
+   - Review traffic patterns during peak usage
+
+4. **Database Query Performance**
+   - Monitor slow queries in PostgreSQL logs
+   - Ensure indexes are created on frequently filtered columns
+   - Use EXPLAIN ANALYZE to optimize query plans
+
+5. **API Health Checks**
+   - GET /health - Overall health status
+   - GET /health/ready - Ready to serve traffic
+   - GET /health/live - Liveness probe for orchestration
+
 ## Contributing
 
 1. Fork the repository

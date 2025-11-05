@@ -52,6 +52,7 @@ public class SwapController : ControllerBase
     /// <returns>Swap quote with exchange rate and fees</returns>
     [HttpGet("quote")]
     [AllowAnonymous]
+    [ResponseCache(Duration = 30, VaryByQueryKeys = new[] { "fromToken", "toToken", "amount", "slippage" })]
     [ProducesResponseType(typeof(SwapQuoteResponse), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(500)]

@@ -22,6 +22,7 @@ using StackExchange.Redis;
 using Serilog;
 using Serilog.Events;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using AspNetCoreRateLimit;
 
 // Configure Serilog before building the application
 Log.Logger = new LoggerConfiguration()
@@ -84,6 +85,21 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+// Sprint N06: Response Caching - Improves API performance for frequently accessed endpoints
+builder.Services.AddResponseCaching();
+Log.Information("Response caching service registered");
+
+// Sprint N06: Application Insights Telemetry - Enables monitoring and diagnostics
+builder.Services.AddApplicationInsightsTelemetry();
+Log.Information("Application Insights telemetry registered");
+
+// Sprint N06: Rate Limiting - Protects API from abuse and ensures fair resource usage
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.Configure<IpRateLimitPolicies>(builder.Configuration.GetSection("IpRateLimitPolicies"));
+builder.Services.AddInMemoryRateLimiting();
+Log.Information("Rate limiting service configured");
 
 // Add DbContext with PostgreSQL database
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -360,6 +376,10 @@ Log.Information("Sprint N04: Investment Position Sync background service registe
     // 2. CorrelationId middleware - adds tracking to all requests
     app.UseMiddleware<CorrelationIdMiddleware>();
 
+    // Sprint N06: Rate Limiting middleware - must be early in the pipeline
+    app.UseIpRateLimiting();
+    Log.Information("IP Rate Limiting middleware enabled");
+
     app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -374,6 +394,10 @@ app.UseHttpsRedirection();
 var corsPolicy = app.Environment.IsDevelopment() ? "DevelopmentPolicy" : "ProductionPolicy";
 app.UseCors(corsPolicy);
 Log.Information("Using CORS policy: {CorsPolicy}", corsPolicy);
+
+// Sprint N06: Response Caching middleware - improves performance by caching responses
+app.UseResponseCaching();
+Log.Information("Response caching middleware enabled");
 
 // Add authentication and authorization middleware
 app.UseAuthentication();
@@ -954,14 +978,24 @@ app.MapPost("/api/wallet/create", async (HttpContext context, IWalletService wal
 .WithDescription("Creates a new Circle Web3 Services wallet for the authenticated user");
 
 // GET: Get wallet balance
+// Sprint N06: Response caching enabled for 30 seconds on wallet balance queries
 app.MapGet("/api/wallet/balance/{walletAddress}", async (
     string walletAddress,
+    HttpContext httpContext,
     IWalletService walletService,
     bool refresh = false) =>
 {
     try
     {
         var result = await walletService.GetWalletBalanceAsync(walletAddress, refresh);
+
+        // Sprint N06: Cache the response for 30 seconds (if not explicitly refreshing)
+        if (!refresh)
+        {
+            httpContext.Response.GetTypedHeaders().CacheControl =
+                new Microsoft.Net.Http.Headers.CacheControlHeaderValue { MaxAge = TimeSpan.FromSeconds(30), Public = true };
+        }
+
         return Results.Ok(result);
     }
     catch (Exception ex)

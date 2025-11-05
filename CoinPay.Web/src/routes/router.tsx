@@ -18,6 +18,8 @@ import { InvestmentPage } from '@/pages/InvestmentPage';
 // Phase 5: Token Swap
 import { SwapPage } from '@/pages/SwapPage';
 import { SwapHistoryPage } from '@/pages/SwapHistoryPage';
+// Phase 6: Help Center
+import { HelpPage } from '@/pages/HelpPage';
 
 export const router = createBrowserRouter([
   {
@@ -37,6 +39,10 @@ export const router = createBrowserRouter([
     children: [
       {
         path: '/dashboard',
+        element: <DashboardPage />,
+      },
+      {
+        path: '/onboarding',
         element: <DashboardPage />,
       },
       {
@@ -82,6 +88,11 @@ export const router = createBrowserRouter([
       {
         path: '/swap/history',
         element: <SwapHistoryPage />,
+      },
+      // Phase 6: Help Center Routes
+      {
+        path: '/help',
+        element: <HelpPage />,
       },
     ],
   },
