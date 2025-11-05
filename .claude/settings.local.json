@@ -89,7 +89,10 @@
       "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" log --oneline -5)",
       "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" log --oneline --all --graph -10)",
       "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" checkout development)",
-      "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" commit -m \"chore: update settings with push permission\")"
+      "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" commit -m \"chore: update settings with push permission\")",
+      "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" merge development -m \"$(cat <<''EOF''\nMerge development to master - sync latest settings\n\nSynchronizing latest Claude settings configuration from development branch.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" diff .claude/settings.local.json)",
+      "Bash(git -C \"D:/Projects/Test/Claude/CoinPay\" commit -m \"chore: update settings for merge operation\")"
     ],
     "deny": [],
     "ask": []
