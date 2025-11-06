@@ -1,5 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
+import PageSkeleton from '@/components/common/PageSkeleton';
 import { HomePage } from '@/pages/HomePage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
@@ -13,13 +15,13 @@ import { BankAccountsPage } from '@/pages/BankAccountsPage';
 import { WithdrawPage } from '@/pages/WithdrawPage';
 import { PayoutHistoryPage } from '@/pages/PayoutHistoryPage';
 import { PayoutStatusPage } from '@/pages/PayoutStatusPage';
-// Phase 4: Exchange Investment
-import { InvestmentPage } from '@/pages/InvestmentPage';
-// Phase 5: Token Swap
-import { SwapPage } from '@/pages/SwapPage';
-import { SwapHistoryPage } from '@/pages/SwapHistoryPage';
-// Phase 6: Help Center
-import { HelpPage } from '@/pages/HelpPage';
+// Phase 4: Exchange Investment - Lazy loaded
+const InvestmentPage = lazy(() => import('@/pages/InvestmentPage').then(module => ({ default: module.InvestmentPage })));
+// Phase 5: Token Swap - Lazy loaded
+const SwapPage = lazy(() => import('@/pages/SwapPage').then(module => ({ default: module.SwapPage })));
+const SwapHistoryPage = lazy(() => import('@/pages/SwapHistoryPage').then(module => ({ default: module.SwapHistoryPage })));
+// Phase 6: Help Center - Lazy loaded
+const HelpPage = lazy(() => import('@/pages/HelpPage').then(module => ({ default: module.HelpPage })));
 
 export const router = createBrowserRouter([
   {
@@ -78,21 +80,37 @@ export const router = createBrowserRouter([
       // Phase 4: Exchange Investment Routes
       {
         path: '/investment',
-        element: <InvestmentPage />,
+        element: (
+          <Suspense fallback={<PageSkeleton />}>
+            <InvestmentPage />
+          </Suspense>
+        ),
       },
       // Phase 5: Token Swap Routes
       {
         path: '/swap',
-        element: <SwapPage />,
+        element: (
+          <Suspense fallback={<PageSkeleton />}>
+            <SwapPage />
+          </Suspense>
+        ),
       },
       {
         path: '/swap/history',
-        element: <SwapHistoryPage />,
+        element: (
+          <Suspense fallback={<PageSkeleton />}>
+            <SwapHistoryPage />
+          </Suspense>
+        ),
       },
       // Phase 6: Help Center Routes
       {
         path: '/help',
-        element: <HelpPage />,
+        element: (
+          <Suspense fallback={<PageSkeleton />}>
+            <HelpPage />
+          </Suspense>
+        ),
       },
     ],
   },

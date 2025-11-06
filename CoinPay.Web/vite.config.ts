@@ -8,6 +8,26 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['@headlessui/react'],
+          'query': ['@tanstack/react-query'],
+          'utils': ['date-fns', 'zustand'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 500,
+    minify: 'esbuild',
+    sourcemap: false, // Disable for production
+    reportCompressedSize: true,
+    target: 'esnext',
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom'],
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

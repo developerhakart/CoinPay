@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 export function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50">
-      <div className="container mx-auto px-4 py-16">
+      <div id="main-content" className="container mx-auto px-4 py-16">
         <div className="text-center max-w-4xl mx-auto">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
             Welcome to CoinPay

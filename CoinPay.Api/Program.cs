@@ -91,6 +91,12 @@ builder.Services.AddResponseCaching();
 Log.Information("Response caching service registered");
 
 // Sprint N06: Application Insights Telemetry - Enables monitoring and diagnostics
+// Configuration in appsettings.json includes:
+// - ConnectionString: Azure Application Insights connection string (set in production)
+// - EnableAdaptiveSampling: Automatically adjusts telemetry volume based on traffic
+// - EnablePerformanceCounterCollectionModule: Collects CPU, memory, and other system metrics
+// - EnableDependencyTrackingTelemetryModule: Tracks external dependencies (databases, HTTP calls, etc.)
+// Logging levels configured separately in Logging:ApplicationInsights section
 builder.Services.AddApplicationInsightsTelemetry();
 Log.Information("Application Insights telemetry registered");
 
@@ -99,6 +105,7 @@ builder.Services.AddMemoryCache();
 builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
 builder.Services.Configure<IpRateLimitPolicies>(builder.Configuration.GetSection("IpRateLimitPolicies"));
 builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 Log.Information("Rate limiting service configured");
 
 // Add DbContext with PostgreSQL database

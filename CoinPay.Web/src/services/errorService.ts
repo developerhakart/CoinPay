@@ -12,10 +12,12 @@ const ERROR_MESSAGES: Record<string, string> = {
   SAME_ADDRESS_TRANSFER: 'Cannot send to yourself. Please enter a different recipient address.',
 
   // Network and Connection Errors
-  NETWORK_ERROR: 'Connection issue. Please check your internet connection and try again.',
+  NETWORK_ERROR: 'Network connection issue. Please check your internet and try again.',
   RPC_ERROR: 'Network service temporarily unavailable. Please try again in a moment.',
-  TIMEOUT_ERROR: 'Request timed out. Please check your connection and try again.',
+  TIMEOUT_ERROR: 'Request timed out. Please try again.',
+  TIMEOUT: 'Request timed out. Please try again.',
   SERVICE_UNAVAILABLE: 'The service is temporarily unavailable. Please try again later.',
+  SERVER_ERROR: 'Server error occurred. Our team has been notified.',
 
   // Transaction Errors
   TRANSACTION_FAILED: 'Transaction failed. {reason}',
@@ -27,10 +29,13 @@ const ERROR_MESSAGES: Record<string, string> = {
   // Token and Swap Errors
   SWAP_FAILED: 'Swap failed. {reason}',
   SLIPPAGE_EXCEEDED: 'Slippage exceeded. The token price moved beyond your tolerance. Try increasing slippage or submit a new quote.',
+  SLIPPAGE_TOO_HIGH: 'Price moved too much. Increase slippage tolerance or try again.',
   INVALID_TOKEN_PAIR: 'Invalid token pair for swapping. Please select valid tokens.',
   TOKEN_NOT_FOUND: 'Token "{token}" not found. Please select a different token.',
   INSUFFICIENT_LIQUIDITY: 'Insufficient liquidity for this swap. Try swapping a smaller amount.',
+  LIQUIDITY_ERROR: 'Insufficient liquidity for this swap amount.',
   PRICE_IMPACT_TOO_HIGH: 'Price impact is too high. Your swap amount is too large for current liquidity.',
+  INVALID_AMOUNT: 'Invalid amount. Must be between {min} and {max} {token}.',
 
   // Investment Errors
   INVALID_INVESTMENT_STRATEGY: 'Invalid investment strategy configuration. Please check your settings.',
@@ -39,6 +44,9 @@ const ERROR_MESSAGES: Record<string, string> = {
   STRATEGY_ALREADY_RUNNING: 'This strategy is already running. Stop it before starting again.',
   INSUFFICIENT_EXCHANGE_BALANCE: 'Insufficient balance on WhiteBIT. Please fund your exchange account.',
   STRATEGY_EXECUTION_FAILED: 'Strategy execution failed. {reason}',
+  INVESTMENT_FAILED: 'Investment creation failed. Please try again.',
+  WITHDRAWAL_FAILED: 'Withdrawal failed. Please contact support.',
+  EXCHANGE_NOT_CONNECTED: 'Please connect your WhiteBit account first.',
 
   // Authentication Errors
   AUTHENTICATION_FAILED: 'Authentication failed. Please log in again.',
@@ -57,8 +65,10 @@ const ERROR_MESSAGES: Record<string, string> = {
   // API and Data Errors
   INVALID_REQUEST: 'Invalid request. Please check your input and try again.',
   MISSING_REQUIRED_FIELD: 'Missing required field: {field}',
-  INVALID_EMAIL: 'Invalid email address. Please enter a valid email.',
+  REQUIRED_FIELD: 'This field is required.',
+  INVALID_EMAIL: 'Please enter a valid email address.',
   INVALID_PASSWORD: 'Invalid password. Password must be at least 8 characters.',
+  INVALID_FORMAT: 'Invalid format. Please check your input.',
   DUPLICATE_EMAIL: 'Email already registered. Please use a different email or log in.',
   VALIDATION_ERROR: 'Validation error: {message}',
 
@@ -198,3 +208,17 @@ export function formatErrorForDisplay(error: unknown): {
     code,
   };
 }
+
+/**
+ * Log error with context information
+ * @param error - Error to log
+ * @param context - Additional context information
+ */
+export const logError = (error: Error, context?: Record<string, any>): void => {
+  console.error('[Error]', {
+    message: error.message,
+    stack: error.stack,
+    context,
+    timestamp: new Date().toISOString(),
+  });
+};

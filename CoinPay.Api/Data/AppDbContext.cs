@@ -175,6 +175,22 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<SwapTransaction>()
             .HasIndex(s => s.TransactionHash);
 
+        // Sprint N06: Performance optimization indexes (BE-605)
+        // Transaction status index for filtering by status
+        modelBuilder.Entity<Transaction>()
+            .HasIndex(t => t.Status)
+            .HasDatabaseName("IX_Transactions_Status");
+
+        // Investment position indexes for user queries and status filtering
+        modelBuilder.Entity<InvestmentPosition>()
+            .HasIndex(i => new { i.UserId, i.Status })
+            .HasDatabaseName("IX_InvestmentPositions_UserId_Status");
+
+        // Swap transaction indexes for user history and date-based queries
+        modelBuilder.Entity<SwapTransaction>()
+            .HasIndex(s => new { s.UserId, s.CreatedAt })
+            .HasDatabaseName("IX_SwapTransactions_UserId_CreatedAt");
+
         // Seed some initial data with static timestamps
         modelBuilder.Entity<Transaction>().HasData(
             new Transaction
