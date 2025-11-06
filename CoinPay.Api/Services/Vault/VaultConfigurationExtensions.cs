@@ -96,7 +96,9 @@ public static class VaultConfigurationExtensions
                 MapSecret(configDictionary, circleSecrets, "Circle:WebhookSecret", "webhook_secret");
                 MapSecret(configDictionary, circleSecrets, "Circle:ApiBaseUrl", "api_base_url");
                 MapSecret(configDictionary, circleSecrets, "Circle:AppId", "app_id");
-                logger.LogInformation("Circle API configuration loaded from Vault");
+                MapSecret(configDictionary, circleSecrets, "Circle:UseMockMode", "use_mock_mode");
+                logger.LogInformation("Circle API configuration loaded from Vault (UseMockMode: {UseMockMode})",
+                    circleSecrets.GetValueOrDefault("use_mock_mode", "not set"));
             }
 
             // JWT secrets
@@ -122,6 +124,26 @@ public static class VaultConfigurationExtensions
             {
                 MapSecret(configDictionary, blockchainSecrets, "Blockchain:TestWallet:PrivateKey", "test_wallet_private_key");
                 logger.LogInformation("Blockchain configuration loaded from Vault");
+            }
+
+            // WhiteBit Exchange secrets
+            if (allSecrets.TryGetValue("whitebit", out var whitebitSecrets))
+            {
+                MapSecret(configDictionary, whitebitSecrets, "WhiteBit:ApiUrl", "api_url");
+                MapSecret(configDictionary, whitebitSecrets, "WhiteBit:BaseUrl", "base_url");
+                MapSecret(configDictionary, whitebitSecrets, "WhiteBit:UseMockMode", "use_mock_mode");
+                logger.LogInformation("WhiteBit configuration loaded from Vault (UseMockMode: {UseMockMode})",
+                    whitebitSecrets.GetValueOrDefault("use_mock_mode", "not set"));
+            }
+
+            // OneInch Swap secrets
+            if (allSecrets.TryGetValue("oneinch", out var oneInchSecrets))
+            {
+                MapSecret(configDictionary, oneInchSecrets, "OneInch:ApiUrl", "api_url");
+                MapSecret(configDictionary, oneInchSecrets, "OneInch:ApiKey", "api_key");
+                MapSecret(configDictionary, oneInchSecrets, "OneInch:UseMockMode", "use_mock_mode");
+                logger.LogInformation("OneInch configuration loaded from Vault (UseMockMode: {UseMockMode})",
+                    oneInchSecrets.GetValueOrDefault("use_mock_mode", "not set"));
             }
 
             // Add Vault secrets to configuration

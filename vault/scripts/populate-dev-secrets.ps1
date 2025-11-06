@@ -58,7 +58,8 @@ docker exec -e VAULT_TOKEN=$VAULT_TOKEN coinpay-vault vault kv put secret/coinpa
   entity_secret='dc1ff0c795a9701035d45927a8cfc3dd54255f19e1ceebb8e50bafeaf2493d26' `
   webhook_secret='test_webhook_secret_def456ghi012jkl345mno678pqr901stu234' `
   api_base_url='https://api.circle.com/v1/w3s' `
-  app_id='0f473fcf-335f-5e52-b1d2-ee9de5d43c9f' > $null
+  app_id='0f473fcf-335f-5e52-b1d2-ee9de5d43c9f' `
+  use_mock_mode='true' > $null
 
 docker exec -e VAULT_TOKEN=$VAULT_TOKEN coinpay-vault vault kv put secret/coinpay/jwt `
   secret_key='DevelopmentSecretKey_ChangeInProduction_MinimumLength32Characters' `
@@ -70,6 +71,16 @@ docker exec -e VAULT_TOKEN=$VAULT_TOKEN coinpay-vault vault kv put secret/coinpa
 
 docker exec -e VAULT_TOKEN=$VAULT_TOKEN coinpay-vault vault kv put secret/coinpay/blockchain `
   test_wallet_private_key='YOUR_TEST_WALLET_PRIVATE_KEY_HERE' > $null
+
+docker exec -e VAULT_TOKEN=$VAULT_TOKEN coinpay-vault vault kv put secret/coinpay/whitebit `
+  api_url='https://whitebit.com/api/v4' `
+  base_url='https://whitebit.com' `
+  use_mock_mode='true' > $null
+
+docker exec -e VAULT_TOKEN=$VAULT_TOKEN coinpay-vault vault kv put secret/coinpay/oneinch `
+  api_url='https://api.1inch.dev/swap/v6.0' `
+  api_key='YOUR_1INCH_API_KEY_HERE' `
+  use_mock_mode='true' > $null
 
 Write-Host "[2/2] All secrets populated successfully!" -ForegroundColor Green
 Write-Host ""

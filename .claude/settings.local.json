@@ -103,7 +103,15 @@
       "Bash(find:*)",
       "Bash(cd:*)",
       "Bash(npm run lint)",
-      "Bash(Select-String -Pattern \"error|succeeded\")"
+      "Bash(Select-String -Pattern \"error|succeeded\")",
+      "Bash(timeout 10 docker logs:*)",
+      "Bash(timeout 15 docker logs:*)",
+      "Bash(api_base_url=\"https://api.circle.com/v1/w3s\" )",
+      "Bash(api_key=\"TEST_API_KEY:d93edad9d7011eae471468f01252bafa:8cc4aae56a478a0a313914a062be0445\" )",
+      "Bash(app_id=\"0f473fcf-335f-5e52-b1d2-ee9de5d43c9f\" )",
+      "Bash(entity_secret=\"dc1ff0c795a9701035d45927a8cfc3dd54255f19e1ceebb8e50bafeaf2493d26\" )",
+      "Bash(webhook_secret=\"test_webhook_secret_def456ghi012jkl345mno678pqr901stu234\":*)",
+      "Bash(use_mock_mode=\"true\")"
     ],
     "deny": [],
     "ask": []
