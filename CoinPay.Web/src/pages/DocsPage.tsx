@@ -5,6 +5,7 @@ import { env } from '@/config';
 export function DocsPage() {
   const { logout } = useAuthStore();
   const swaggerUrl = `${env.apiDirectUrl}/swagger`;
+  const docsUrl = 'http://localhost:8080'; // DocFX documentation portal
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -52,16 +53,21 @@ export function DocsPage() {
             <span className="text-blue-500 font-medium text-sm">Open Swagger UI →</span>
           </a>
 
-          <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow border-l-4 border-emerald-500 cursor-pointer">
+          <a
+            href={docsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow border-l-4 border-emerald-500"
+          >
             <div className="flex items-center gap-3 mb-3">
               <svg className="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <h3 className="text-xl font-semibold text-gray-900">Getting Started</h3>
+              <h3 className="text-xl font-semibold text-gray-900">Full Documentation</h3>
             </div>
-            <p className="text-gray-600 mb-2">Quick start guide for B2B integration</p>
-            <span className="text-emerald-500 font-medium text-sm">See below ↓</span>
-          </div>
+            <p className="text-gray-600 mb-2">Complete API documentation portal</p>
+            <span className="text-emerald-500 font-medium text-sm">Open Documentation →</span>
+          </a>
 
           <a
             href="https://github.com/developerhakart/CoinPay"
@@ -136,7 +142,7 @@ export function DocsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <a
-                href="https://github.com/developerhakart/CoinPay/blob/development/Documentations/API/AUTHENTICATION.md"
+                href={`${docsUrl}/articles/authentication.html`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="border-l-4 border-gray-700 pl-4 hover:bg-gray-50 p-4 rounded-r-lg transition-colors"
@@ -154,7 +160,7 @@ export function DocsPage() {
               </a>
 
               <a
-                href="https://github.com/developerhakart/CoinPay/blob/development/Documentations/API/WALLET_API.md"
+                href={`${docsUrl}/articles/wallet-api.html`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="border-l-4 border-blue-500 pl-4 hover:bg-gray-50 p-4 rounded-r-lg transition-colors"
@@ -172,7 +178,7 @@ export function DocsPage() {
               </a>
 
               <a
-                href="https://github.com/developerhakart/CoinPay/blob/development/Documentations/API/TRANSACTION_API.md"
+                href={`${docsUrl}/articles/transaction-api.html`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="border-l-4 border-emerald-500 pl-4 hover:bg-gray-50 p-4 rounded-r-lg transition-colors"
@@ -190,7 +196,7 @@ export function DocsPage() {
               </a>
 
               <a
-                href="https://github.com/developerhakart/CoinPay/blob/development/Documentations/API/SWAP_API.md"
+                href={`${docsUrl}/articles/swap-api.html`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="border-l-4 border-purple-500 pl-4 hover:bg-gray-50 p-4 rounded-r-lg transition-colors"
@@ -247,7 +253,7 @@ export function DocsPage() {
               </div>
 
               <a
-                href="https://github.com/developerhakart/CoinPay/blob/development/Documentations/API/guides/B2B_INTEGRATION_GUIDE.md"
+                href={`${docsUrl}/articles/b2b-integration.html`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="border-l-4 border-teal-500 pl-4 hover:bg-gray-50 p-4 rounded-r-lg transition-colors"

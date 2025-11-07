@@ -1,5 +1,19 @@
 - name: Getting Started
   href: getting-started.md
+- name: Quick Reference
+  href: quick-reference.md
+- name: API Reference
+  href: api-reference.md
+- name: Authentication API
+  href: authentication.md
+- name: Wallet API
+  href: wallet-api.md
+- name: Transaction API
+  href: transaction-api.md
+- name: Swap API
+  href: swap-api.md
+- name: B2B Integration Guide
+  href: b2b-integration.md
 - name: API Usage Examples
   href: api-examples.md
 - name: Configuration Guide
