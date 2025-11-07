@@ -61,6 +61,8 @@ docker exec -e VAULT_TOKEN=$VAULT_TOKEN coinpay-vault vault kv put secret/coinpa
   app_id='0f473fcf-335f-5e52-b1d2-ee9de5d43c9f' `
   use_mock_mode='true' > $null
 
+Write-Host "  [OK] Circle - UseMockMode: true" -ForegroundColor Cyan
+
 docker exec -e VAULT_TOKEN=$VAULT_TOKEN coinpay-vault vault kv put secret/coinpay/jwt `
   secret_key='DevelopmentSecretKey_ChangeInProduction_MinimumLength32Characters' `
   issuer='CoinPay' audience='CoinPay' expiration_minutes='1440' `
@@ -76,6 +78,8 @@ docker exec -e VAULT_TOKEN=$VAULT_TOKEN coinpay-vault vault kv put secret/coinpa
   api_url='https://whitebit.com/api/v4' `
   base_url='https://whitebit.com' `
   use_mock_mode='true' > $null
+
+Write-Host "  [OK] WhiteBit - UseMockMode: true" -ForegroundColor Cyan
 
 docker exec -e VAULT_TOKEN=$VAULT_TOKEN coinpay-vault vault kv put secret/coinpay/oneinch `
   api_url='https://api.1inch.dev/swap/v6.0' `

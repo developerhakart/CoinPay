@@ -227,10 +227,30 @@ builder.Services.AddAuthorization();
 // Register entity secret encryption service for Circle API
 builder.Services.AddSingleton<IEntitySecretEncryptionService, EntitySecretEncryptionService>();
 
-// Use real CircleService for testnet testing
-builder.Services.AddScoped<ICircleService, CircleService>();
-// Use MockCircleService for MVP testing (no real Circle API calls):
-// builder.Services.AddScoped<ICircleService, MockCircleService>();
+// Dynamically register CircleService based on configuration
+// If Circle:UseMockMode is true, use MockCircleService, otherwise use real CircleService
+builder.Services.AddScoped<ICircleService>(serviceProvider =>
+{
+    var config = serviceProvider.GetRequiredService<IConfiguration>();
+    var useMockMode = config.GetValue<bool>("Circle:UseMockMode", false);
+    var logger = serviceProvider.GetRequiredService<ILoggerFactory>();
+
+    if (useMockMode)
+    {
+        Log.Information("Circle API: Using MockCircleService (UseMockMode: true)");
+        return serviceProvider.GetRequiredService<MockCircleService>();
+    }
+    else
+    {
+        Log.Information("Circle API: Using real CircleService (UseMockMode: false)");
+        return serviceProvider.GetRequiredService<CircleService>();
+    }
+});
+
+// Register both implementations so they can be resolved
+builder.Services.AddScoped<CircleService>();
+builder.Services.AddScoped<MockCircleService>();
+
 builder.Services.AddScoped<ICircleWebhookHandler, CircleWebhookHandler>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<JwtTokenService>();
