@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store';
+import { env } from '@/config';
 
 export function DocsPage() {
   const { logout } = useAuthStore();
+  const swaggerUrl = `${env.apiDirectUrl}/swagger`;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -35,7 +37,7 @@ export function DocsPage() {
         {/* Quick Links Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <a
-            href="/api/swagger"
+            href={swaggerUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow border-l-4 border-blue-500"
@@ -415,7 +417,7 @@ def get_swap_quote():
               © 2025 CoinPay. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <a href="/api/swagger" target="_blank" className="text-gray-600 hover:text-gray-900 text-sm">
+              <a href={swaggerUrl} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900 text-sm">
                 API Reference
               </a>
               <a href="https://github.com/developerhakart/CoinPay" target="_blank" className="text-gray-600 hover:text-gray-900 text-sm">
