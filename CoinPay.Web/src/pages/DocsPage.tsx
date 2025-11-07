@@ -133,38 +133,83 @@ export function DocsPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Core API Features</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="border-l-4 border-blue-500 pl-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Wallet Management</h3>
-                <p className="text-gray-600 mb-2">Create and manage crypto wallets for your users</p>
+              <a
+                href="https://github.com/developerhakart/CoinPay/blob/development/Documentations/API/AUTHENTICATION.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-l-4 border-gray-700 pl-4 hover:bg-gray-50 p-4 rounded-r-lg transition-colors"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900">Authentication</h3>
+                  <span className="text-xs text-gray-500">→</span>
+                </div>
+                <p className="text-gray-600 mb-2">JWT-based authentication system</p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• POST /api/auth/login - Obtain JWT token</li>
+                  <li>• POST /api/auth/register - Create account</li>
+                  <li>• POST /api/auth/refresh - Refresh token</li>
+                </ul>
+              </a>
+
+              <a
+                href="https://github.com/developerhakart/CoinPay/blob/development/Documentations/API/WALLET_API.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-l-4 border-blue-500 pl-4 hover:bg-gray-50 p-4 rounded-r-lg transition-colors"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900">Wallet Management</h3>
+                  <span className="text-xs text-gray-500">→</span>
+                </div>
+                <p className="text-gray-600 mb-2">Create and manage crypto wallets</p>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>• GET /api/wallet - Get wallet details</li>
                   <li>• GET /api/wallet/balance - Check balance</li>
-                  <li>• POST /api/wallet/create - Create new wallet</li>
+                  <li>• GET /api/wallet/transactions - Transaction history</li>
                 </ul>
-              </div>
+              </a>
 
-              <div className="border-l-4 border-emerald-500 pl-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Transactions</h3>
+              <a
+                href="https://github.com/developerhakart/CoinPay/blob/development/Documentations/API/TRANSACTION_API.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-l-4 border-emerald-500 pl-4 hover:bg-gray-50 p-4 rounded-r-lg transition-colors"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900">Transactions</h3>
+                  <span className="text-xs text-gray-500">→</span>
+                </div>
                 <p className="text-gray-600 mb-2">Send and receive cryptocurrency payments</p>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>• POST /api/transactions - Create transaction</li>
                   <li>• GET /api/transactions - List transactions</li>
                   <li>• GET /api/transactions/{'{id}'} - Get details</li>
                 </ul>
-              </div>
+              </a>
 
-              <div className="border-l-4 border-purple-500 pl-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Token Swaps</h3>
-                <p className="text-gray-600 mb-2">Exchange tokens via DEX aggregators</p>
+              <a
+                href="https://github.com/developerhakart/CoinPay/blob/development/Documentations/API/SWAP_API.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-l-4 border-purple-500 pl-4 hover:bg-gray-50 p-4 rounded-r-lg transition-colors"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900">Token Swaps</h3>
+                  <span className="text-xs text-gray-500">→</span>
+                </div>
+                <p className="text-gray-600 mb-2">Exchange tokens via 1inch DEX aggregator</p>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>• GET /api/swap/quote - Get swap quote</li>
                   <li>• POST /api/swap/execute - Execute swap</li>
                   <li>• GET /api/swap/history - Swap history</li>
                 </ul>
-              </div>
+              </a>
 
-              <div className="border-l-4 border-orange-500 pl-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Withdrawals</h3>
+              <div className="border-l-4 border-orange-500 pl-4 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900">Withdrawals (Payouts)</h3>
+                  <span className="text-xs text-gray-400">Coming soon</span>
+                </div>
                 <p className="text-gray-600 mb-2">Fiat off-ramp to bank accounts</p>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>• POST /api/payouts - Create payout</li>
@@ -173,8 +218,11 @@ export function DocsPage() {
                 </ul>
               </div>
 
-              <div className="border-l-4 border-indigo-500 pl-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Investments</h3>
+              <div className="border-l-4 border-indigo-500 pl-4 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900">Investments</h3>
+                  <span className="text-xs text-gray-400">Coming soon</span>
+                </div>
                 <p className="text-gray-600 mb-2">Exchange staking and yield farming</p>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>• GET /api/investment/plans - Available plans</li>
@@ -183,8 +231,11 @@ export function DocsPage() {
                 </ul>
               </div>
 
-              <div className="border-l-4 border-pink-500 pl-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Bank Accounts</h3>
+              <div className="border-l-4 border-pink-500 pl-4 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900">Bank Accounts</h3>
+                  <span className="text-xs text-gray-400">Coming soon</span>
+                </div>
                 <p className="text-gray-600 mb-2">Link and manage bank accounts</p>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>• POST /api/bank-accounts - Add account</li>
@@ -192,6 +243,24 @@ export function DocsPage() {
                   <li>• DELETE /api/bank-accounts/{'{id}'} - Remove</li>
                 </ul>
               </div>
+
+              <a
+                href="https://github.com/developerhakart/CoinPay/blob/development/Documentations/API/guides/B2B_INTEGRATION_GUIDE.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-l-4 border-teal-500 pl-4 hover:bg-gray-50 p-4 rounded-r-lg transition-colors"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900">B2B Integration Guide</h3>
+                  <span className="text-xs text-gray-500">→</span>
+                </div>
+                <p className="text-gray-600 mb-2">Complete integration guide for businesses</p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Architecture diagrams</li>
+                  <li>• Setup instructions</li>
+                  <li>• Production checklist</li>
+                </ul>
+              </a>
             </div>
           </section>
 
