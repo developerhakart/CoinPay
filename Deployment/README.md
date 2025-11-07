@@ -2,29 +2,47 @@
 
 Production-ready Docker Compose deployment with **zero data loss** guarantees.
 
-## Quick Start
+## ⚡ Quick Start
+
+**For manual build, start, and stop operations, see:**
+📂 **[Start Folder](./Start/README.md)** - All deployment scripts and guides
 
 ```bash
-# 1. Create backup
-./backup-restore.sh backup
+# Build Docker images
+./Start/build-coinpay.sh
 
-# 2. Deploy
-docker-compose up -d
+# Start all services (includes Vault setup)
+./Start/start-coinpay.sh
 
-# 3. Run tests
-./regression-test.sh
+# Stop all services
+./Start/stop-coinpay.sh
 ```
 
-## 📁 Files
+## 📁 Project Structure
 
-| File | Purpose |
-|------|---------|
-| `docker-compose.yml` | Container orchestration |
-| `DOCKER-COMPOSE-DEPLOYMENT.md` | Comprehensive deployment guide |
-| `backup-restore.sh` | Backup/restore automation |
-| `regression-test.sh` | Post-deployment testing |
-| `.github-workflows-docker-deploy.yml` | CI/CD pipeline |
-| `README.md` | This file |
+| Location | Purpose |
+|----------|---------|
+| **`Start/`** | **Manual deployment scripts & guides** |
+| `docker-compose.yml` | Container orchestration configuration |
+| `regression-test.sh` | Post-deployment regression testing |
+| `.github-workflows-docker-deploy.yml` | CI/CD pipeline template |
+| `Archive/` | Historical deployment documentation |
+
+## 📂 Start Folder Contents
+
+The `Start/` folder contains everything needed for manual deployment:
+
+**Scripts:**
+- `build-coinpay.ps1` / `.sh` - Build all Docker images
+- `start-coinpay.ps1` / `.sh` - Start all services with Vault setup
+- `stop-coinpay.ps1` / `.sh` - Stop all services
+- `backup-restore.sh` - Database backup/restore utility
+
+**Guides:**
+- `README.md` - Complete deployment guide
+- `VAULT_ADMIN_GUIDE.md` - Vault configuration management
+- `DOCKER-COMPOSE-DEPLOYMENT.md` - Docker Compose reference
+- `SAFE-DEPLOYMENT-STRATEGY.md` - Production best practices
 
 ## 🚀 Deployment Steps
 

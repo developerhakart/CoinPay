@@ -156,7 +156,9 @@ public class VaultService : IVaultService
             "circle",
             "jwt",
             "gateway",
-            "blockchain"
+            "blockchain",
+            "whitebit",
+            "oneinch"
         };
 
         foreach (var secretPath in secretPaths)

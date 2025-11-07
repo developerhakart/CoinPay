@@ -227,11 +227,11 @@ public class MockCircleService : ICircleService
             new CircleTransactionResponse
             {
                 TransactionId = $"mock_tx_{Guid.NewGuid()}",
-                TxHash = $"0x{Guid.NewGuid():N}",
+                TxHash = $"0x{Guid.NewGuid():N}{Guid.NewGuid():N}".Substring(0, 66), // 64 hex chars + 0x prefix
                 Status = "CONFIRMED",
                 Blockchain = "MATIC-AMOY",
-                From = $"0x{Guid.NewGuid():N}".Substring(0, 42),
-                To = $"0x{Guid.NewGuid():N}".Substring(0, 42),
+                From = $"0x{Guid.NewGuid():N}{Guid.NewGuid():N}".Substring(0, 42), // 40 hex chars + 0x prefix
+                To = $"0x{Guid.NewGuid():N}{Guid.NewGuid():N}".Substring(0, 42), // 40 hex chars + 0x prefix
                 Amount = "10.0",
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
                 UpdatedAt = DateTime.UtcNow.AddDays(-1)

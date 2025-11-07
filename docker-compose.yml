@@ -51,6 +51,8 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - Vault__Address=http://vault:8200
       - Vault__Token=dev-root-token
+      - Vault__MountPoint=secret
+      - Vault__BasePath=coinpay
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=coinpay;Username=postgres;Password=root
     ports:
       - "7777:8080"
