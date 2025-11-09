@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { User } from '@/types';
 import { env } from '@/config/env';
+import circleService from '@/services/circleService';
 
 interface AuthState {
   user: User | null;
@@ -78,25 +79,37 @@ export const useAuthStore = create<AuthStore>()(
               throw new Error('User not found or login failed');
             }
 
-            const { challengeId, challenge } = await initiateResponse.json();
+            const responseData = await initiateResponse.json();
+            const { challengeId, userToken, encryptionKey } = responseData;
 
-            // For MVP: Simulate passkey signing (in production, use WebAuthn API)
-            const mockSignature = {
-              credentialId: `cred_${username}`,
-              authenticatorData: btoa(JSON.stringify({ challenge, username })),
-              signature: btoa(JSON.stringify({ username, timestamp: Date.now() })),
-            };
+            // Step 2: Execute challenge (with Circle SDK or mock)
+            let challengeResult: any;
+            if (circleService.shouldUseMock()) {
+              // MOCK MODE: Simulate passkey signing
+              challengeResult = {
+                credentialId: `cred_${username}`,
+                authenticatorData: btoa(JSON.stringify({ challengeId, username })),
+                signature: btoa(JSON.stringify({ username, timestamp: Date.now() })),
+              };
+            } else {
+              // REAL CIRCLE SDK: Execute passkey challenge
+              challengeResult = await circleService.executeChallenge(
+                challengeId,
+                userToken,
+                encryptionKey
+              );
+            }
 
-            // Step 2: Complete login
+            // Step 3: Complete login
             const completeResponse = await fetch(`${env.apiBaseUrl}/api/auth/login/complete`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 username,
                 challengeId,
-                credentialId: mockSignature.credentialId,
-                authenticatorData: mockSignature.authenticatorData,
-                signature: mockSignature.signature,
+                credentialId: challengeResult.credentialId,
+                authenticatorData: challengeResult.authenticatorData,
+                signature: challengeResult.signature,
               }),
             });
 
@@ -166,25 +179,37 @@ export const useAuthStore = create<AuthStore>()(
               throw new Error('Failed to initiate registration');
             }
 
-            const { challengeId, challenge, userId } = await initiateResponse.json();
+            const responseData = await initiateResponse.json();
+            const { challengeId, userId, userToken, encryptionKey } = responseData;
 
-            // For MVP: Simulate passkey creation (in production, use WebAuthn API)
-            const mockCredential = {
-              credentialId: `cred_${Date.now()}`,
-              publicKey: btoa(JSON.stringify({ username, timestamp: Date.now() })),
-              authenticatorData: btoa(JSON.stringify({ challenge, userId })),
-            };
+            // Step 3: Execute challenge (with Circle SDK or mock)
+            let challengeResult: any;
+            if (circleService.shouldUseMock()) {
+              // MOCK MODE: Simulate passkey creation
+              challengeResult = {
+                credentialId: `cred_${Date.now()}`,
+                publicKey: btoa(JSON.stringify({ username, timestamp: Date.now() })),
+                authenticatorData: btoa(JSON.stringify({ challengeId, userId })),
+              };
+            } else {
+              // REAL CIRCLE SDK: Execute passkey creation challenge
+              challengeResult = await circleService.executeChallenge(
+                challengeId,
+                userToken,
+                encryptionKey
+              );
+            }
 
-            // Step 3: Complete registration
+            // Step 4: Complete registration
             const completeResponse = await fetch(`${env.apiBaseUrl}/api/auth/register/complete`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 username,
                 challengeId,
-                credentialId: mockCredential.credentialId,
-                publicKey: mockCredential.publicKey,
-                authenticatorData: mockCredential.authenticatorData,
+                credentialId: challengeResult.credentialId,
+                publicKey: challengeResult.publicKey,
+                authenticatorData: challengeResult.authenticatorData,
               }),
             });
 

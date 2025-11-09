@@ -14,13 +14,13 @@ public class AuthService : IAuthService
     private readonly ICircleService _circleService;
     private readonly AppDbContext _dbContext;
     private readonly ILogger<AuthService> _logger;
-    private readonly JwtTokenService _jwtTokenService;
+    private readonly IJwtTokenService _jwtTokenService;
 
     public AuthService(
         ICircleService circleService,
         AppDbContext dbContext,
         ILogger<AuthService> logger,
-        JwtTokenService jwtTokenService)
+        IJwtTokenService jwtTokenService)
     {
         _circleService = circleService;
         _dbContext = dbContext;

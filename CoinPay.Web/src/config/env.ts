@@ -9,9 +9,14 @@ export const env = {
   appName: import.meta.env.VITE_APP_NAME || 'CoinPay',
   appVersion: import.meta.env.VITE_APP_VERSION || '1.0.0',
 
+  // Circle Web3 Services Configuration
+  circleAppId: import.meta.env.VITE_CIRCLE_APP_ID || '',
+  circleEnvironment: import.meta.env.VITE_CIRCLE_ENVIRONMENT || 'sandbox',
+
   // Feature Flags
   enableLogging: import.meta.env.VITE_ENABLE_LOGGING === 'true',
   enableMockApi: import.meta.env.VITE_ENABLE_MOCK_API === 'true',
+  useRealCircleSDK: import.meta.env.VITE_USE_REAL_CIRCLE_SDK === 'true',
 
   // Environment
   isDevelopment: import.meta.env.DEV,

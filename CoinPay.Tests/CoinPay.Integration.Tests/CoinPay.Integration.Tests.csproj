@@ -20,4 +20,8 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\CoinPay.Api\CoinPay.Api.csproj" />
+  </ItemGroup>
+
 </Project>
