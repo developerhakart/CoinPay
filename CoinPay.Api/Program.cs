@@ -41,22 +41,34 @@ Log.Logger = new LoggerConfiguration()
         outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
     .CreateLogger();
 
+// Declare builder and app outside try blocks for proper scoping
+WebApplicationBuilder builder;
+WebApplication app;
+
 try
 {
     Log.Information("Starting CoinPay API application");
 
-    var builder = WebApplication.CreateBuilder(args);
+    builder = WebApplication.CreateBuilder(args);
 
     // Use Serilog for logging
     builder.Host.UseSerilog();
 
-    // Load secrets from HashiCorp Vault
-    Log.Information("Loading configuration from HashiCorp Vault...");
-    await builder.LoadSecretsFromVaultAsync();
-    Log.Information("Vault configuration loaded successfully");
+    // Load secrets from HashiCorp Vault (skip in Testing environment)
+    var vaultEnabled = builder.Configuration.GetValue<bool>("Vault:Enabled", true);
+    if (builder.Environment.EnvironmentName != "Testing" && vaultEnabled)
+    {
+        Log.Information("Loading configuration from HashiCorp Vault...");
+        await builder.LoadSecretsFromVaultAsync();
+        Log.Information("Vault configuration loaded successfully");
 
-    // Add Vault configuration service
-    builder.Services.AddVaultConfiguration(builder.Configuration);
+        // Add Vault configuration service
+        builder.Services.AddVaultConfiguration(builder.Configuration);
+    }
+    else
+    {
+        Log.Information("Vault configuration skipped (Testing environment or Vault disabled)");
+    }
 
     // Load configuration settings
     var apiSettings = builder.Configuration.GetSection("ApiSettings").Get<ApiSettings>() ?? new ApiSettings();
@@ -253,7 +265,7 @@ builder.Services.AddScoped<MockCircleService>();
 
 builder.Services.AddScoped<ICircleWebhookHandler, CircleWebhookHandler>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<JwtTokenService>();
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 
 // Use PolygonAmoyRpcService for real blockchain balance queries
@@ -384,14 +396,41 @@ Log.Information("Circle Transaction Monitoring background service registered");
 builder.Services.AddHostedService<CoinPay.Api.Services.BackgroundWorkers.InvestmentPositionSyncService>();
 Log.Information("Sprint N04: Investment Position Sync background service registered");
 
-    var app = builder.Build();
+} // End try block for builder configuration
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application configuration failed");
+    throw;
+}
 
-    // Apply pending migrations automatically
-    using (var scope = app.Services.CreateScope())
+// Build the application (outside try block so 'app' is accessible for testing)
+app = builder.Build();
+
+try
+{
+
+    // Apply pending migrations automatically (skip for InMemory database and Testing environment)
+    if (!app.Environment.IsEnvironment("Testing"))
     {
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        dbContext.Database.Migrate();
-        Log.Information("Database migrations applied successfully");
+        using (var scope = app.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            // Only run migrations if using a relational database (not InMemory)
+            if (dbContext.Database.IsRelational())
+            {
+                dbContext.Database.Migrate();
+                Log.Information("Database migrations applied successfully");
+            }
+            else
+            {
+                Log.Information("Skipping migrations for non-relational database");
+            }
+        }
+    }
+    else
+    {
+        Log.Information("Skipping migrations in Testing environment");
     }
 
     // Configure the HTTP request pipeline.
@@ -903,7 +942,7 @@ app.MapPost("/api/auth/login/complete", async (CompleteLoginRequest request, IAu
 
 // POST: Development/Test login (bypasses passkey for testing)
 // WARNING: This endpoint should be disabled in production!
-app.MapPost("/api/auth/login/dev", async (DevLoginRequest request, AppDbContext db, JwtTokenService jwtService) =>
+app.MapPost("/api/auth/login/dev", async (DevLoginRequest request, AppDbContext db, IJwtTokenService jwtService) =>
 {
     Log.Warning("Development login endpoint used for username: {Username}", request.Username);
 
@@ -1162,15 +1201,25 @@ app.MapGet("/api/wallet/history/{walletAddress}", async (string walletAddress, I
 .WithDescription("Retrieves the transaction history for a wallet address");
 
     Log.Information("CoinPay API started successfully");
-    app.Run();
 }
 catch (Exception ex)
 {
     Log.Fatal(ex, "Application terminated unexpectedly");
+    throw; // Re-throw to ensure tests fail properly
 }
-finally
+
+// Only run the app if not in a test environment
+// WebApplicationFactory will handle app lifecycle during testing
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    Log.CloseAndFlush();
+    try
+    {
+        app.Run();
+    }
+    finally
+    {
+        Log.CloseAndFlush();
+    }
 }
 
 // ============================================================================
@@ -1196,3 +1245,6 @@ public class CorsSettings
 {
     public string[] AllowedOrigins { get; set; } = Array.Empty<string>();
 }
+
+// Make Program class accessible to integration tests
+public partial class Program { }

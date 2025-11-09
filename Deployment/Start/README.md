@@ -97,6 +97,48 @@ This folder contains all scripts and guides needed to manually build, start, and
 
 ---
 
+### Rebuild Scripts
+
+| Script | Description |
+|--------|-------------|
+| `rebuild-web.ps1` | Rebuild only the web (frontend) service |
+| `rebuild-all.ps1` | Rebuild all services (API, Gateway, Web, Docs) |
+
+**rebuild-web.ps1:**
+- Stops the web container
+- Rebuilds the web Docker image
+- Starts the web container
+- **Use after frontend code changes**
+
+**rebuild-all.ps1:**
+- Stops all containers (with backup)
+- Rebuilds all Docker images
+- Starts all containers (with restore)
+- **Use after backend or frontend code changes**
+
+**When to use:**
+- After pulling new code from Git
+- After modifying React/TypeScript frontend code
+- After modifying .NET backend code
+- After updating Dockerfiles
+
+**Example - After Git Pull:**
+```powershell
+# Pull latest code
+git pull origin development
+
+# Rebuild and restart
+.\Deployment\Start\rebuild-all.ps1
+```
+
+**Example - After Frontend Changes:**
+```powershell
+# Rebuild just the web service (faster)
+.\Deployment\Start\rebuild-web.ps1
+```
+
+---
+
 ### Stop Scripts
 
 | Script | Description |

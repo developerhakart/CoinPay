@@ -63,7 +63,7 @@ export const TransactionStatusDisplay = ({ transactionId, onStatusChange }: Tran
   };
 
   useEffect(() => {
-    let intervalId: number | null = null;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
     let shouldPoll = true;
 
     // Initial fetch

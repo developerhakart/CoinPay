@@ -6,7 +6,7 @@ using CoinPay.Api.Models;
 
 namespace CoinPay.Api.Services.Auth;
 
-public class JwtTokenService
+public class JwtTokenService : IJwtTokenService
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger<JwtTokenService> _logger;

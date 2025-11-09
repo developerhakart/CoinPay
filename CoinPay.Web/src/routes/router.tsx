@@ -22,6 +22,8 @@ const SwapPage = lazy(() => import('@/pages/SwapPage').then(module => ({ default
 const SwapHistoryPage = lazy(() => import('@/pages/SwapHistoryPage').then(module => ({ default: module.SwapHistoryPage })));
 // Phase 6: Help Center - Lazy loaded
 const HelpPage = lazy(() => import('@/pages/HelpPage').then(module => ({ default: module.HelpPage })));
+// Phase 7: Developer Documentation
+const DocsPage = lazy(() => import('@/pages/DocsPage').then(module => ({ default: module.DocsPage })));
 
 export const router = createBrowserRouter([
   {
@@ -109,6 +111,15 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<PageSkeleton />}>
             <HelpPage />
+          </Suspense>
+        ),
+      },
+      // Phase 7: Developer Documentation Routes
+      {
+        path: '/docs',
+        element: (
+          <Suspense fallback={<PageSkeleton />}>
+            <DocsPage />
           </Suspense>
         ),
       },

@@ -7,9 +7,9 @@
       "Bash(ConvertFrom-Json)",
       "Bash(Select-Object -ExpandProperty data)",
       "Bash(Select-Object -ExpandProperty data })",
-      "Bash(git merge:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(timeout 10 docker logs:*)",
+      "Bash(timeout 5 docker logs:*)",
+      "Bash(timeout 10 curl:*)"
     ],
     "deny": [],
     "ask": []

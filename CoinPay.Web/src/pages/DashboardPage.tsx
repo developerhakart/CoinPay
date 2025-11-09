@@ -88,14 +88,6 @@ export function DashboardPage() {
           </Link>
 
           <Link
-            to="/help"
-            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
-          >
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Help Center</h3>
-            <p className="text-gray-600">Get answers and learn how to use CoinPay</p>
-          </Link>
-
-          <Link
             to="/swap"
             className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
           >
@@ -117,6 +109,22 @@ export function DashboardPage() {
           >
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Bank Accounts</h3>
             <p className="text-gray-600">Manage your linked bank accounts</p>
+          </Link>
+
+          <Link
+            to="/docs"
+            className="bg-gradient-to-br from-emerald-600 to-teal-600 p-6 rounded-lg shadow hover:shadow-lg transition-shadow"
+          >
+            <h3 className="text-lg font-semibold text-white mb-2">Development</h3>
+            <p className="text-emerald-100">API docs and integration guides for developers</p>
+          </Link>
+
+          <Link
+            to="/help"
+            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Help Center</h3>
+            <p className="text-gray-600">Get answers and learn how to use CoinPay</p>
           </Link>
         </div>
 
