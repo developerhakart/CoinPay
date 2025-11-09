@@ -117,8 +117,15 @@ public class InvestmentPositionSyncService : BackgroundService
         IExchangeCredentialEncryptionService encryptionService,
         IInvestmentRepository investmentRepository)
     {
+        // Skip demo token positions - they don't sync with exchange
+        if (position.ExchangeConnectionId == null)
+        {
+            _logger.LogDebug("Skipping sync for demo token position {PositionId}", position.Id);
+            return;
+        }
+
         // Get exchange connection
-        var connection = await connectionRepository.GetByIdAsync(position.ExchangeConnectionId);
+        var connection = await connectionRepository.GetByIdAsync(position.ExchangeConnectionId.Value);
         if (connection == null)
         {
             _logger.LogWarning("Connection not found for position {PositionId}", position.Id);

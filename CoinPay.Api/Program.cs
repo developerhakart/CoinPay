@@ -122,7 +122,12 @@ Log.Information("Rate limiting service configured");
 
 // Add DbContext with PostgreSQL database
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    // Suppress pending model changes warning during development migrations
+    options.ConfigureWarnings(warnings =>
+        warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+});
 
 // Add Redis caching
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
@@ -301,6 +306,7 @@ builder.Services.AddScoped<IPayoutRepository, PayoutRepository>();
 // Sprint N04: Phase 4 - Exchange Investment repositories
 builder.Services.AddScoped<CoinPay.Api.Repositories.IExchangeConnectionRepository, CoinPay.Api.Repositories.ExchangeConnectionRepository>();
 builder.Services.AddScoped<CoinPay.Api.Repositories.IInvestmentRepository, CoinPay.Api.Repositories.InvestmentRepository>();
+builder.Services.AddScoped<CoinPay.Api.Repositories.IDemoTokenRepository, CoinPay.Api.Repositories.DemoTokenRepository>();
 
 // Register encryption service (Phase 3)
 builder.Services.AddSingleton<IEncryptionService, AesEncryptionService>();
@@ -310,6 +316,7 @@ builder.Services.AddScoped<CoinPay.Api.Services.Exchange.WhiteBit.IWhiteBitApiCl
 builder.Services.AddScoped<CoinPay.Api.Services.Exchange.WhiteBit.IWhiteBitAuthService, CoinPay.Api.Services.Exchange.WhiteBit.WhiteBitAuthService>();
 builder.Services.AddSingleton<CoinPay.Api.Services.Encryption.IExchangeCredentialEncryptionService, CoinPay.Api.Services.Encryption.ExchangeCredentialEncryptionService>();
 builder.Services.AddScoped<CoinPay.Api.Services.Investment.IRewardCalculationService, CoinPay.Api.Services.Investment.RewardCalculationService>();
+builder.Services.AddScoped<CoinPay.Api.Services.Investment.IDemoTokenService, CoinPay.Api.Services.Investment.DemoTokenService>();
 Log.Information("Sprint N04: Exchange Investment services registered");
 
 // Sprint N05: Phase 5 - Basic Swap (DEX Integration) services

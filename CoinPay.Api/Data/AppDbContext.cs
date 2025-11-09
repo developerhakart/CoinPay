@@ -30,6 +30,9 @@ public class AppDbContext : DbContext
     // Sprint N05: Phase 5 - Basic Swap (DEX Integration)
     public DbSet<SwapTransaction> SwapTransactions { get; set; }
 
+    // Demo Token Management - WhiteBIT integration
+    public DbSet<DemoTokenBalance> DemoTokenBalances { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -134,14 +137,14 @@ public class AppDbContext : DbContext
 
         // Configure InvestmentPosition relationships (Sprint N04)
         modelBuilder.Entity<InvestmentPosition>()
-            .HasOne<ExchangeConnection>()
+            .HasOne(i => i.ExchangeConnection)
             .WithMany()
             .HasForeignKey(i => i.ExchangeConnectionId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<InvestmentPosition>()
             .HasMany(i => i.Transactions)
-            .WithOne()
+            .WithOne(t => t.InvestmentPosition)
             .HasForeignKey(t => t.InvestmentPositionId)
             .OnDelete(DeleteBehavior.Cascade);
 
@@ -190,6 +193,18 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<SwapTransaction>()
             .HasIndex(s => new { s.UserId, s.CreatedAt })
             .HasDatabaseName("IX_SwapTransactions_UserId_CreatedAt");
+
+        // Demo Token Balance indexes
+        modelBuilder.Entity<DemoTokenBalance>()
+            .HasIndex(d => d.UserId);
+
+        modelBuilder.Entity<DemoTokenBalance>()
+            .HasIndex(d => new { d.UserId, d.TokenSymbol })
+            .IsUnique()
+            .HasDatabaseName("IX_DemoTokenBalances_UserId_TokenSymbol");
+
+        modelBuilder.Entity<DemoTokenBalance>()
+            .HasIndex(d => d.IsActive);
 
         // Seed some initial data with static timestamps
         modelBuilder.Entity<Transaction>().HasData(

@@ -102,6 +102,7 @@ public class CreateInvestmentRequest
 {
     public string PlanId { get; set; } = string.Empty;
     public decimal Amount { get; set; }
+    public string Asset { get; set; } = "USDC"; // Default to USDC, but can be DUSDT or DBTC for demo tokens
     public Guid WalletId { get; set; }
 }
 

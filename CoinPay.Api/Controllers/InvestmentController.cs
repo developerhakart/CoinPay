@@ -20,6 +20,7 @@ public class InvestmentController : ControllerBase
     private readonly IWhiteBitApiClient _whiteBitClient;
     private readonly IRewardCalculationService _rewardCalculation;
     private readonly IExchangeCredentialEncryptionService _encryptionService;
+    private readonly IDemoTokenService _demoTokenService;
     private readonly ILogger<InvestmentController> _logger;
 
     public InvestmentController(
@@ -28,6 +29,7 @@ public class InvestmentController : ControllerBase
         IWhiteBitApiClient whiteBitClient,
         IRewardCalculationService rewardCalculation,
         IExchangeCredentialEncryptionService encryptionService,
+        IDemoTokenService demoTokenService,
         ILogger<InvestmentController> logger)
     {
         _investmentRepository = investmentRepository;
@@ -35,6 +37,7 @@ public class InvestmentController : ControllerBase
         _whiteBitClient = whiteBitClient;
         _rewardCalculation = rewardCalculation;
         _encryptionService = encryptionService;
+        _demoTokenService = demoTokenService;
         _logger = logger;
     }
 
@@ -56,20 +59,54 @@ public class InvestmentController : ControllerBase
             }
             var userId = Guid.Parse($"00000000-0000-0000-0000-{userIdInt:D12}");
 
-            // Get exchange connection
-            var connection = await _connectionRepository.GetByUserAndExchangeAsync(userId, "whitebit");
-            if (connection == null)
+            // Check if using demo tokens (DUSDT, DBTC) - do this FIRST
+            var isDemoToken = _demoTokenService.IsDemoToken(request.Asset);
+
+            ExchangeConnection? connection = null;
+            string? apiKey = null;
+            string? apiSecret = null;
+            WhiteBitCreateInvestmentResponse? whiteBitResponse = null;
+
+            if (!isDemoToken)
             {
-                return BadRequest(new { error = "WhiteBit account not connected" });
+                // For real assets, require exchange connection
+                connection = await _connectionRepository.GetByUserAndExchangeAsync(userId, "whitebit");
+                if (connection == null)
+                {
+                    return BadRequest(new { error = "WhiteBit account not connected" });
+                }
+
+                // Decrypt credentials
+                apiKey = await _encryptionService.DecryptAsync(connection.ApiKeyEncrypted, userId);
+                apiSecret = await _encryptionService.DecryptAsync(connection.ApiSecretEncrypted, userId);
+
+                // Create investment via WhiteBit API
+                whiteBitResponse = await _whiteBitClient.CreateInvestmentAsync(
+                    apiKey, apiSecret, request.PlanId, request.Amount);
             }
+            else
+            {
+                // For demo tokens, verify and deduct balance
+                var hasSufficientBalance = await _demoTokenService.HasSufficientBalanceAsync(
+                    userIdInt, request.Asset, request.Amount);
 
-            // Decrypt credentials
-            var apiKey = await _encryptionService.DecryptAsync(connection.ApiKeyEncrypted, userId);
-            var apiSecret = await _encryptionService.DecryptAsync(connection.ApiSecretEncrypted, userId);
+                if (!hasSufficientBalance)
+                {
+                    return BadRequest(new { error = $"Insufficient {request.Asset} demo token balance" });
+                }
 
-            // Create investment via WhiteBit API
-            var whiteBitResponse = await _whiteBitClient.CreateInvestmentAsync(
-                apiKey, apiSecret, request.PlanId, request.Amount);
+                // Deduct demo tokens from user's balance
+                var deducted = await _demoTokenService.DeductBalanceAsync(
+                    userIdInt, request.Asset, request.Amount);
+
+                if (!deducted)
+                {
+                    return BadRequest(new { error = $"Failed to deduct {request.Asset} demo tokens" });
+                }
+
+                _logger.LogInformation("Deducted {Amount} {Asset} demo tokens from user {UserId} for investment",
+                    request.Amount, request.Asset, userIdInt);
+            }
 
             // Get APY from plan (hardcoded for MVP)
             decimal apy = 8.50m;
@@ -79,11 +116,11 @@ public class InvestmentController : ControllerBase
             {
                 UserId = userId,
                 UserId1 = userIdInt, // Set the actual FK to Users.Id
-                ExchangeConnectionId = connection.Id,
+                ExchangeConnectionId = connection?.Id, // Nullable for demo tokens
                 ExchangeName = "whitebit",
-                ExternalPositionId = whiteBitResponse.InvestmentId,
+                ExternalPositionId = whiteBitResponse?.InvestmentId ?? $"DEMO-{Guid.NewGuid()}", // Generate ID for demo tokens
                 PlanId = request.PlanId,
-                Asset = "USDC",
+                Asset = request.Asset, // Use asset from request (USDC, DUSDT, or DBTC)
                 PrincipalAmount = request.Amount,
                 CurrentValue = request.Amount,
                 AccruedRewards = 0,
@@ -102,7 +139,7 @@ public class InvestmentController : ControllerBase
                 UserId1 = userIdInt, // Set the actual FK to Users.Id
                 TransactionType = InvestmentTransactionType.Create,
                 Amount = request.Amount,
-                Asset = "USDC",
+                Asset = request.Asset, // Use asset from request (USDC, DUSDT, or DBTC)
                 Status = InvestmentTransactionStatus.Confirmed
             };
 
@@ -279,21 +316,33 @@ public class InvestmentController : ControllerBase
                 return BadRequest(new { error = "Investment position is not active" });
             }
 
-            // Get exchange connection
-            var connection = await _connectionRepository.GetByIdAsync(position.ExchangeConnectionId);
-            if (connection == null)
-            {
-                return BadRequest(new { error = "Exchange connection not found" });
-            }
+            // Check if this is a demo token investment
+            var isDemoToken = _demoTokenService.IsDemoToken(position.Asset);
 
-            // Decrypt credentials
-            var apiKey = await _encryptionService.DecryptAsync(connection.ApiKeyEncrypted, position.UserId);
-            var apiSecret = await _encryptionService.DecryptAsync(connection.ApiSecretEncrypted, position.UserId);
-
-            // Close investment via WhiteBit API
-            if (!string.IsNullOrEmpty(position.ExternalPositionId))
+            // For real assets, call WhiteBit API to close investment
+            if (!isDemoToken)
             {
-                await _whiteBitClient.CloseInvestmentAsync(apiKey, apiSecret, position.ExternalPositionId);
+                // Get exchange connection
+                if (position.ExchangeConnectionId == null)
+                {
+                    return BadRequest(new { error = "Exchange connection not found for non-demo investment" });
+                }
+
+                var connection = await _connectionRepository.GetByIdAsync(position.ExchangeConnectionId.Value);
+                if (connection == null)
+                {
+                    return BadRequest(new { error = "Exchange connection not found" });
+                }
+
+                // Decrypt credentials
+                var apiKey = await _encryptionService.DecryptAsync(connection.ApiKeyEncrypted, position.UserId);
+                var apiSecret = await _encryptionService.DecryptAsync(connection.ApiSecretEncrypted, position.UserId);
+
+                // Close investment via WhiteBit API
+                if (!string.IsNullOrEmpty(position.ExternalPositionId))
+                {
+                    await _whiteBitClient.CloseInvestmentAsync(apiKey, apiSecret, position.ExternalPositionId);
+                }
             }
 
             // Update position status
@@ -315,6 +364,24 @@ public class InvestmentController : ControllerBase
 
             await _investmentRepository.CreateTransactionAsync(transaction);
 
+            // If demo token investment, return tokens to user's balance
+            if (_demoTokenService.IsDemoToken(position.Asset))
+            {
+                var added = await _demoTokenService.AddBalanceAsync(
+                    position.UserId1, position.Asset, position.CurrentValue);
+
+                if (added)
+                {
+                    _logger.LogInformation("Returned {Amount} {Asset} demo tokens to user {UserId} after withdrawal",
+                        position.CurrentValue, position.Asset, position.UserId1);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to return {Amount} {Asset} demo tokens to user {UserId}",
+                        position.CurrentValue, position.Asset, position.UserId1);
+                }
+            }
+
             _logger.LogInformation("Withdrawn investment position {PositionId}", id);
 
             return Ok(new WithdrawInvestmentResponse
@@ -333,4 +400,95 @@ public class InvestmentController : ControllerBase
             return StatusCode(500, new { error = "Failed to withdraw investment" });
         }
     }
+
+    /// <summary>
+    /// Get user's demo token balances
+    /// </summary>
+    [HttpGet("demo-tokens/balances")]
+    [ProducesResponseType(typeof(List<DemoTokenBalance>), 200)]
+    public async Task<IActionResult> GetDemoTokenBalances()
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { error = "Invalid user authentication" });
+            }
+
+            var balances = await _demoTokenService.GetUserBalancesAsync(userId);
+            return Ok(balances);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get demo token balances");
+            return StatusCode(500, new { error = "Failed to retrieve demo token balances" });
+        }
+    }
+
+    /// <summary>
+    /// Issue demo tokens to user (for testing)
+    /// </summary>
+    [HttpPost("demo-tokens/issue")]
+    [ProducesResponseType(typeof(DemoTokenBalance), 200)]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> IssueDemoTokens([FromBody] IssueDemoTokenRequest request)
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { error = "Invalid user authentication" });
+            }
+
+            if (!_demoTokenService.IsDemoToken(request.TokenSymbol))
+            {
+                return BadRequest(new { error = $"Token {request.TokenSymbol} is not a supported demo token" });
+            }
+
+            if (request.Amount <= 0)
+            {
+                return BadRequest(new { error = "Amount must be positive" });
+            }
+
+            var balance = await _demoTokenService.IssueTokensAsync(
+                userId,
+                request.TokenSymbol,
+                request.Amount,
+                $"Issued via API at {DateTime.UtcNow}");
+
+            _logger.LogInformation("Issued {Amount} {TokenSymbol} demo tokens to user {UserId}",
+                request.Amount, request.TokenSymbol, userId);
+
+            return Ok(balance);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to issue demo tokens");
+            return StatusCode(500, new { error = "Failed to issue demo tokens" });
+        }
+    }
+
+    /// <summary>
+    /// Get list of supported demo tokens
+    /// </summary>
+    [HttpGet("demo-tokens")]
+    [ProducesResponseType(typeof(List<string>), 200)]
+    public IActionResult GetSupportedDemoTokens()
+    {
+        try
+        {
+            var tokens = _demoTokenService.GetSupportedDemoTokens();
+            return Ok(new { demoTokens = tokens });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get supported demo tokens");
+            return StatusCode(500, new { error = "Failed to retrieve supported demo tokens" });
+        }
+    }
 }
+
+// DTOs for demo token requests
+public record IssueDemoTokenRequest(string TokenSymbol, decimal Amount);

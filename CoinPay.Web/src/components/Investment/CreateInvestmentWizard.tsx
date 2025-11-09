@@ -28,6 +28,8 @@ export const CreateInvestmentWizard: React.FC<CreateInvestmentWizardProps> = ({
 
   const [currentStep, setCurrentStep] = useState<WizardStep>('plan');
   const [amount, setAmount] = useState<number>(1000);
+  const [selectedAsset, setSelectedAsset] = useState<string>('USDC');
+  const [demoTokenBalances, setDemoTokenBalances] = useState<any[]>([]);
   const [calculation, setCalculation] = useState<InvestmentCalculation | null>(null);
   const [validationError, setValidationError] = useState<string>('');
 
@@ -45,6 +47,19 @@ export const CreateInvestmentWizard: React.FC<CreateInvestmentWizardProps> = ({
     };
     fetchPlans();
   }, [plans.length, setPlans]);
+
+  // Fetch demo token balances
+  useEffect(() => {
+    const fetchDemoBalances = async () => {
+      try {
+        const balances = await investmentService.getDemoTokenBalances();
+        setDemoTokenBalances(balances);
+      } catch (error) {
+        console.error('Failed to load demo token balances:', error);
+      }
+    };
+    fetchDemoBalances();
+  }, []);
 
   // Calculate projections when amount or plan changes
   useEffect(() => {
@@ -113,6 +128,8 @@ export const CreateInvestmentWizard: React.FC<CreateInvestmentWizardProps> = ({
       const response = await investmentService.createInvestment({
         planId: selectedPlan.planId,
         amount: amount,
+        asset: selectedAsset,
+        walletId: '00000000-0000-0000-0000-000000000000',
       });
 
       // Add position to store
@@ -309,8 +326,49 @@ export const CreateInvestmentWizard: React.FC<CreateInvestmentWizardProps> = ({
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Asset
+              </label>
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                {['USDC', 'DUSDT', 'DBTC'].map((asset) => {
+                  const balance = demoTokenBalances.find(b => b.tokenSymbol === asset);
+                  const isDemoToken = asset !== 'USDC';
+
+                  return (
+                    <button
+                      key={asset}
+                      type="button"
+                      onClick={() => setSelectedAsset(asset)}
+                      className={`p-4 border-2 rounded-lg text-center transition-all ${
+                        selectedAsset === asset
+                          ? 'border-blue-600 bg-blue-50'
+                          : 'border-gray-200 hover:border-blue-300'
+                      }`}
+                    >
+                      <div className="font-bold text-lg">{asset}</div>
+                      {isDemoToken && (
+                        <div className="text-xs mt-1">
+                          {balance ? (
+                            <span className="text-green-600">
+                              Balance: {balance.balance.toFixed(2)}
+                            </span>
+                          ) : (
+                            <span className="text-gray-500">No balance</span>
+                          )}
+                        </div>
+                      )}
+                      {isDemoToken && (
+                        <div className="text-xs text-blue-600 mt-1">Demo Token</div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
               <label htmlFor="investAmount" className="block text-sm font-medium text-gray-700 mb-2">
-                Amount (USD)
+                Amount ({selectedAsset})
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-3 text-gray-500 text-lg">$</span>
@@ -378,6 +436,13 @@ export const CreateInvestmentWizard: React.FC<CreateInvestmentWizardProps> = ({
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">Investment Plan:</span>
                   <span className="font-bold text-gray-900">{selectedPlan.asset}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">Asset:</span>
+                  <span className="font-bold text-gray-900">
+                    {selectedAsset}
+                    {selectedAsset !== 'USDC' && <span className="text-xs ml-2 text-blue-600">(Demo)</span>}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">APY:</span>

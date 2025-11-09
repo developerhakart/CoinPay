@@ -82,6 +82,37 @@ export const investmentService = {
   },
 
   // ============================================================================
+  // DEMO TOKEN MANAGEMENT
+  // ============================================================================
+
+  /**
+   * Get user's demo token balances (DUSDT, DBTC)
+   */
+  async getDemoTokenBalances(): Promise<any[]> {
+    const response = await apiClient.get('/investment/demo-tokens/balances');
+    return response.data;
+  },
+
+  /**
+   * Issue demo tokens to user (for testing)
+   */
+  async issueDemoTokens(tokenSymbol: string, amount: number): Promise<any> {
+    const response = await apiClient.post('/investment/demo-tokens/issue', {
+      tokenSymbol,
+      amount
+    });
+    return response.data;
+  },
+
+  /**
+   * Get list of supported demo tokens
+   */
+  async getSupportedDemoTokens(): Promise<{demoTokens: string[]}> {
+    const response = await apiClient.get('/investment/demo-tokens');
+    return response.data;
+  },
+
+  // ============================================================================
   // UTILITY FUNCTIONS
   // ============================================================================
 

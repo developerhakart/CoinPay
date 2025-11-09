@@ -3,6 +3,7 @@ using System;
 using CoinPay.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CoinPay.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251109082811_MakeExchangeConnectionIdNullable")]
+    partial class MakeExchangeConnectionIdNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -380,6 +383,9 @@ namespace CoinPay.Api.Migrations
                     b.Property<Guid>("InvestmentPositionId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("InvestmentPositionId1")
+                        .HasColumnType("uuid");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
@@ -400,6 +406,8 @@ namespace CoinPay.Api.Migrations
                     b.HasIndex("CreatedAt");
 
                     b.HasIndex("InvestmentPositionId");
+
+                    b.HasIndex("InvestmentPositionId1");
 
                     b.HasIndex("UserId");
 
@@ -970,11 +978,18 @@ namespace CoinPay.Api.Migrations
 
             modelBuilder.Entity("CoinPay.Api.Models.InvestmentTransaction", b =>
                 {
-                    b.HasOne("CoinPay.Api.Models.InvestmentPosition", "InvestmentPosition")
+                    b.HasOne("CoinPay.Api.Models.InvestmentPosition", null)
                         .WithMany("Transactions")
                         .HasForeignKey("InvestmentPositionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("CoinPay.Api.Models.InvestmentPosition", "InvestmentPosition")
+                        .WithMany()
+                        .HasForeignKey("InvestmentPositionId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_InvestmentTransactions_InvestmentPositions_InvestmentPosit~1");
 
                     b.HasOne("CoinPay.Api.Models.User", "User")
                         .WithMany()

@@ -13,7 +13,7 @@ public class InvestmentPosition
     public Guid Id { get; set; }
     public Guid UserId { get; set; }
     public int UserId1 { get; set; } // EF Core shadow property - actual FK to Users.Id
-    public Guid ExchangeConnectionId { get; set; }
+    public Guid? ExchangeConnectionId { get; set; } // Nullable for demo token investments
     public string ExchangeName { get; set; } = "whitebit";
     public string? ExternalPositionId { get; set; }
     public string PlanId { get; set; } = string.Empty;
@@ -31,7 +31,7 @@ public class InvestmentPosition
 
     // Navigation
     public User User { get; set; } = null!;
-    public ExchangeConnection ExchangeConnection { get; set; } = null!;
+    public ExchangeConnection? ExchangeConnection { get; set; } // Nullable for demo token investments
     public ICollection<InvestmentTransaction> Transactions { get; set; } = new List<InvestmentTransaction>();
 }
 

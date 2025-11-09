@@ -35,6 +35,8 @@ export interface InvestmentPlan {
 export interface CreateInvestmentRequest {
   planId: string;
   amount: number;
+  asset?: string; // Optional: USDC (default), DUSDT, or DBTC for demo tokens
+  walletId?: string; // Required by backend
 }
 
 export interface CreateInvestmentResponse {
