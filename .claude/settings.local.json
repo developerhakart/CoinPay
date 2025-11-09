@@ -6,7 +6,10 @@
       "Bash(ForEach-Object { Get-Content $_ullName)",
       "Bash(ConvertFrom-Json)",
       "Bash(Select-Object -ExpandProperty data)",
-      "Bash(Select-Object -ExpandProperty data })"
+      "Bash(Select-Object -ExpandProperty data })",
+      "Bash(git merge:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
